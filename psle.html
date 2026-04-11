@@ -5,12 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pop, Smile, Learn, Enjoy!</title>
     <style>
-        * { 
-            box-sizing: border-box; 
-            font-family: 'Comic Sans MS', 'Nunito', sans-serif; 
-            user-select: none; 
-            -webkit-tap-highlight-color: transparent; 
-        }
+        * { box-sizing: border-box; font-family: 'Comic Sans MS', 'Nunito', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; padding: 0; overflow: hidden; background: linear-gradient(to bottom, #87CEEB, #E0F6FF); height: 100vh; color: #333; }
         
         #hud { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 15px 30px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100; font-size: 20px; font-weight: 900; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
@@ -66,6 +61,20 @@
     </div>
 
 <script>
+    // 🟢 【终极防作弊验票系统】
+    const spellingPageURL = "https://andydang2007.github.io/"; 
+    const urlParams = new URLSearchParams(window.location.search);
+    const ticket = urlParams.get('ticket');
+
+    if (!ticket || localStorage.getItem('psle_used_ticket') === ticket) {
+        // 无效票或旧票，瞬间踢回拼写页面！
+        window.location.replace(spellingPageURL); 
+    } else {
+        // 验票通过，撕毁门票
+        localStorage.setItem('psle_used_ticket', ticket);
+    }
+
+    // ---------------- 游戏常规代码 ----------------
     const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
     const TARGETS = [1000, 1500, 2000, 2500, 3000, 3500, 5000];
     let state = { levelIndex: 0, coins: 0, time: 30, isPlaying: false };
@@ -166,9 +175,8 @@
         document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.<br><br><span style="font-size:16px;">Returning to spelling...</span>`;
         document.getElementById('modal-btn').style.display = 'none';
 
-        // 🟢 【Game Over 跳转逻辑】 2秒后跳回
         setTimeout(function() {
-            window.location.href = "https://andydang2007.github.io/"; 
+            window.location.replace(spellingPageURL); 
         }, 2000);
     }
 
@@ -212,9 +220,8 @@
                     }, i*350);
                 }
 
-                // 🟢 【终极通关跳转逻辑】 4.5秒后跳回
                 setTimeout(function() {
-                    window.location.href = "https://andydang2007.github.io/spelling"; 
+                    window.location.replace(spellingPageURL); 
                 }, 4500);
             }
         }, 800); 
@@ -226,6 +233,7 @@
         const balloon = document.createElement('div'); balloon.className = 'balloon';
         wrap.appendChild(balloon);
         
+        // 💡 气球大小与点击次数逻辑：大=少点(2-3次)，小=多点(5-6次)
         const isBig = Math.random() > 0.5;
         const sizeBase = isBig ? (Math.random() * 20 + 100) : (Math.random() * 20 + 60); 
         const targetClicks = isBig ? (Math.floor(Math.random() * 2) + 2) : (Math.floor(Math.random() * 2) + 5); 
