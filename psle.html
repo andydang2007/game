@@ -162,24 +162,16 @@
         state.isPlaying = false; stopBGM(); clearInterval(timerId); clearInterval(spawnId);
         document.getElementById('overlay').style.display = 'flex';
         document.getElementById('modal-title').innerText = '😢 Game Over';
-        document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.`;
-        document.getElementById('modal-btn').style.display = 'none';
-    }
-
-function endGame() {
-        state.isPlaying = false; stopBGM(); clearInterval(timerId); clearInterval(spawnId);
-        document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('modal-title').innerText = '😢 Game Over';
-        document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.`;
+        document.getElementById('modal-title').style.color = '#64748b';
+        document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.<br><br><span style="font-size:16px;">Returning to spelling...</span>`;
         document.getElementById('modal-btn').style.display = 'none';
 
-        // --- 新增：2秒后自动跳回拼写页面 ---
+        // 🟢 【Game Over 跳转逻辑】 2秒后跳回
         setTimeout(function() {
-            // 请把下面的网址替换成你拼写页面的真实网址！
-            window.location.href = "https://andydang2007.github.io/game/psle.html"; 
-        }, 2000); 
+            window.location.href = "https://andydang2007.github.io/"; 
+        }, 2000);
     }
-    
+
     function levelUp() {
         state.isPlaying = false; stopBGM(); clearInterval(timerId); clearInterval(spawnId);
         cheerAudio.currentTime = 0; cheerAudio.play().catch(e => console.log(e)); 
@@ -207,11 +199,11 @@ function endGame() {
                 btn.innerText = `Take PSLE`;
                 btn.style.background = '#f43f5e';
                 btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
-
-                } else { 
+            } else { 
                 titleEl.innerHTML = `Congratulations!<br><span style="font-size:26px; color:#475569; display:block; margin-top:15px;">You passed PSLE and graduated!</span>`;
                 titleEl.style.color = '#eab308'; titleEl.style.fontSize = '42px';
-                descEl.innerHTML = ''; btn.style.display = 'none';
+                descEl.innerHTML = '<span style="font-size:16px;">Returning to spelling shortly...</span>'; 
+                btn.style.display = 'none';
                 
                 for(let i=0; i<8; i++) {
                     setTimeout(() => { 
@@ -220,12 +212,12 @@ function endGame() {
                     }, i*350);
                 }
 
-                // --- 新增：看完特效后，自动跳回拼写页面 ---
+                // 🟢 【终极通关跳转逻辑】 4.5秒后跳回
                 setTimeout(function() {
-                    // 请把下面的网址替换成你拼写页面的真实网址！
-                    window.location.href = "https://andydang2007.github.io/你的拼写页面地址.html"; 
-                }, 4500); // 建议 4.5 秒，给特效一点时间。如果你坚决要 2 秒，把 4500 改成 2000 即可。
+                    window.location.href = "https://andydang2007.github.io/"; 
+                }, 4500);
             }
+        }, 800); 
     }
 
     function spawnBalloon() {
@@ -257,13 +249,11 @@ function endGame() {
 
         animation.onfinish = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
 
-        // 恢复了常规的点击/触摸事件绑定
         balloon.onmousedown = (e) => {
             if (!state.isPlaying) return;
             currentClicks++;
             if (currentClicks >= targetClicks) { 
                 playBurstSound(isGolden); 
-                // 兼容鼠标和触摸事件提取坐标
                 let clientX = e.clientX || (e.touches && e.touches[0].clientX);
                 let clientY = e.clientY || (e.touches && e.touches[0].clientY);
                 popBalloon(wrap, clientX, clientY, isGolden); 
@@ -285,7 +275,7 @@ function endGame() {
         const text = document.createElement('div'); text.className = 'float-text';
         text.innerText = '+' + earned;
         if (isGolden) { text.style.fontSize = '48px'; text.style.textShadow = '0 0 10px #ffd700'; }
-        // 防止坐标未获取到时报错
+        
         if(x && y) {
             text.style.left = (x - 30) + 'px'; text.style.top = (y - 30) + 'px';
         } else {
