@@ -166,6 +166,20 @@
         document.getElementById('modal-btn').style.display = 'none';
     }
 
+function endGame() {
+        state.isPlaying = false; stopBGM(); clearInterval(timerId); clearInterval(spawnId);
+        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('modal-title').innerText = '😢 Game Over';
+        document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.`;
+        document.getElementById('modal-btn').style.display = 'none';
+
+        // --- 新增：2秒后自动跳回拼写页面 ---
+        setTimeout(function() {
+            // 请把下面的网址替换成你拼写页面的真实网址！
+            window.location.href = "https://andydang2007.github.io/game/psle.html"; 
+        }, 2000); 
+    }
+    
     function levelUp() {
         state.isPlaying = false; stopBGM(); clearInterval(timerId); clearInterval(spawnId);
         cheerAudio.currentTime = 0; cheerAudio.play().catch(e => console.log(e)); 
@@ -193,15 +207,25 @@
                 btn.innerText = `Take PSLE`;
                 btn.style.background = '#f43f5e';
                 btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
-            } else { 
+
+                } else { 
                 titleEl.innerHTML = `Congratulations!<br><span style="font-size:26px; color:#475569; display:block; margin-top:15px;">You passed PSLE and graduated!</span>`;
                 titleEl.style.color = '#eab308'; titleEl.style.fontSize = '42px';
                 descEl.innerHTML = ''; btn.style.display = 'none';
+                
                 for(let i=0; i<8; i++) {
-                    setTimeout(() => { createConfetti(Math.random() * window.innerWidth, window.innerHeight/2, 40); createCaps(Math.random() * window.innerWidth, window.innerHeight * 0.8, 3); }, i*350);
+                    setTimeout(() => { 
+                        createConfetti(Math.random() * window.innerWidth, window.innerHeight/2, 40); 
+                        createCaps(Math.random() * window.innerWidth, window.innerHeight * 0.8, 3); 
+                    }, i*350);
                 }
+
+                // --- 新增：看完特效后，自动跳回拼写页面 ---
+                setTimeout(function() {
+                    // 请把下面的网址替换成你拼写页面的真实网址！
+                    window.location.href = "https://andydang2007.github.io/你的拼写页面地址.html"; 
+                }, 4500); // 建议 4.5 秒，给特效一点时间。如果你坚决要 2 秒，把 4500 改成 2000 即可。
             }
-        }, 800); 
     }
 
     function spawnBalloon() {
