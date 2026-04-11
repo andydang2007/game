@@ -16,9 +16,7 @@
 
         #game-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 10; }
 
-        /* 外层负责飞行位置，内层负责变大动画，互不干扰 */
         .balloon-wrap { position: absolute; bottom: -180px; display: flex; justify-content: center; align-items: center; }
-        
         .balloon { position: relative; border-radius: 50%; cursor: pointer; transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: center center; box-shadow: inset -12px -12px 24px rgba(0,0,0,0.15), inset 6px 6px 18px rgba(255,255,255,0.4); display: flex; justify-content: center; align-items: center; }
         
         .balloon::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid inherit; filter: brightness(0.85); }
@@ -47,8 +45,8 @@
 
     <div id="hud">
         <div class="stat"><span>Level</span><div id="ui-level" class="highlight">P1</div></div>
-        <div class="stat"><span>Time</span><div id="ui-time" class="highlight">30s</div></div>
-        <div class="stat"><span>Coins</span><div class="highlight"><span id="ui-coins">0</span> / <span id="ui-target">300</span></div></div>
+        <div class="stat"><span>Time</span><div id="ui-time" class="highlight">20s</div></div>
+        <div class="stat"><span>Coins</span><div class="highlight"><span id="ui-coins">0</span> / <span id="ui-target">1000</span></div></div>
     </div>
 
     <div id="game-area"></div>
@@ -63,11 +61,12 @@
 
 <script>
     const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
+    const TARGETS = [1000, 1500, 2000, 2500, 3000, 3500, 5000];
+    
     let state = {
         levelIndex: 0,
         coins: 0,
-        target: 300, 
-        time: 30,
+        time: 20,
         isPlaying: false
     };
 
@@ -75,8 +74,20 @@
     const gameArea = document.getElementById('game-area');
     const colors = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 
-    // --- 音效系统引擎 (Web Audio API) ---
+    // --- 音效与 BGM 系统引擎 ---
     let audioCtx = null;
+    let isPlayingBgm = false;
+    let nextNoteTime = 0;
+    let noteIndex = 0;
+    let bgmTimeout = null;
+
+    // 欢快 8-bit 旋律音阶 (C大调琶音)
+    const melody = [
+        261.63, 329.63, 392.00, 523.25, 
+        392.00, 329.63, 349.23, 440.00, 
+        523.25, 440.00, 349.23, 329.63
+    ];
+
     const cheerAudio = new Audio("https://actions.google.com/sounds/v1/foley/cheer_short.ogg");
     
     function initAudio() {
@@ -84,6 +95,46 @@
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playBGMNote() {
+        if (!isPlayingBgm || !audioCtx) return;
+        const noteLength = 0.15; 
+        
+        while (nextNoteTime < audioCtx.currentTime + 0.1) {
+            let freq = melody[noteIndex % melody.length];
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            
+            osc.type = 'triangle'; // 圆润的 8-bit 声音
+            osc.frequency.value = freq;
+            
+            gain.gain.setValueAtTime(0.04, nextNoteTime); // BGM音量稍低，不刺耳
+            gain.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + noteLength - 0.02);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start(nextNoteTime);
+            osc.stop(nextNoteTime + noteLength);
+            
+            nextNoteTime += noteLength;
+            noteIndex++;
+        }
+        bgmTimeout = setTimeout(playBGMNote, 25);
+    }
+
+    function startBGM() {
+        if (!audioCtx) return;
+        if (isPlayingBgm) return;
+        isPlayingBgm = true;
+        nextNoteTime = audioCtx.currentTime + 0.1;
+        playBGMNote();
+    }
+
+    function stopBGM() {
+        isPlayingBgm = false;
+        clearTimeout(bgmTimeout);
     }
 
     function playPopSound() {
@@ -94,23 +145,22 @@
         gainNode.connect(audioCtx.destination);
         
         osc.type = 'sine';
-        // 瞬间音调抬升，模拟气球的“啵”声
-        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
         
-        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
         
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.1);
+        osc.stop(audioCtx.currentTime + 0.08);
     }
 
-    // --- 游戏逻辑 ---
+    // --- 游戏主逻辑 ---
     function updateHUD() {
         document.getElementById('ui-level').innerText = LEVELS[state.levelIndex];
         document.getElementById('ui-time').innerText = state.time + 's';
         document.getElementById('ui-coins').innerText = state.coins;
-        document.getElementById('ui-target').innerText = state.target;
+        document.getElementById('ui-target').innerText = TARGETS[state.levelIndex];
         
         if (state.time <= 5) {
             document.getElementById('ui-time').classList.add('time-warning');
@@ -120,15 +170,18 @@
     }
 
     function startGame() {
-        initAudio(); // 玩家点击按钮后允许开启声音
+        initAudio(); 
+        startBGM(); 
+        
         document.getElementById('overlay').style.display = 'none';
         state.coins = 0;
-        state.time = 30;
+        state.time = 20; // 统一为 20 秒
         state.isPlaying = true;
         gameArea.innerHTML = ''; 
         updateHUD();
 
-        let currentSpawnRate = Math.max(450, 900 - (state.levelIndex * 60));
+        // 难度极度拉满：因为20秒要点几千分，气球必须密密麻麻地出来
+        let currentSpawnRate = Math.max(120, 350 - (state.levelIndex * 40));
         timerId = setInterval(gameTick, 1000);
         spawnId = setInterval(spawnBalloon, currentSpawnRate);
     }
@@ -140,13 +193,14 @@
 
         if (state.time <= 0) {
             endGame();
-        } else if (state.coins >= state.target) {
+        } else if (state.coins >= TARGETS[state.levelIndex]) {
             levelUp();
         }
     }
 
     function endGame() {
         state.isPlaying = false;
+        stopBGM();
         clearInterval(timerId);
         clearInterval(spawnId);
         
@@ -160,9 +214,10 @@
 
     function levelUp() {
         state.isPlaying = false;
+        stopBGM();
         clearInterval(timerId);
         clearInterval(spawnId);
-        cheerAudio.play().catch(e => console.log(e)); // 播放欢呼声
+        cheerAudio.play().catch(e => console.log(e)); 
 
         document.getElementById('overlay').style.display = 'flex';
         let btn = document.getElementById('modal-btn');
@@ -172,7 +227,7 @@
         if (state.levelIndex < 5) { // P1 to P5
             titleEl.innerHTML = `You have finished ${LEVELS[state.levelIndex]}`;
             titleEl.style.color = '#22c55e';
-            descEl.innerHTML = `Target reached!`;
+            descEl.innerHTML = ``; // 移除了 Target reached
             
             btn.style.display = 'inline-block';
             btn.innerText = `Enter ${LEVELS[state.levelIndex + 1]}`;
@@ -180,13 +235,12 @@
             btn.style.boxShadow = '0 8px 0 #2563eb';
             btn.onclick = () => {
                 state.levelIndex++;
-                state.target += 100;
                 startGame();
             };
-        } else if (state.levelIndex === 5) { // P6
+        } else if (state.levelIndex === 5) { // P6 通关
             titleEl.innerHTML = `You have finished P6`;
             titleEl.style.color = '#f59e0b';
-            descEl.innerHTML = `You are ready!`;
+            descEl.innerHTML = ``; 
             
             btn.style.display = 'inline-block';
             btn.innerText = `Take PSLE`;
@@ -194,19 +248,18 @@
             btn.style.boxShadow = '0 8px 0 #be123c';
             btn.onclick = () => {
                 state.levelIndex++;
-                state.target += 100;
                 startGame();
             };
-        } else { // Beat PSLE (Index 6)
-            titleEl.innerHTML = `Congratulations! You passed PSLE and graduated!`;
+        } else { // Beat PSLE
+            titleEl.innerHTML = `Congratulations!<br><span style="font-size:26px; color:#475569; display:block; margin-top:15px;">You passed PSLE and graduated!</span>`;
             titleEl.style.color = '#eab308';
-            titleEl.style.fontSize = '30px';
+            titleEl.style.fontSize = '42px';
             descEl.innerHTML = '';
             
-            btn.style.display = 'none'; // 移除按钮
+            btn.style.display = 'none';
             
-            for(let i=0; i<6; i++) {
-                setTimeout(() => createConfetti(window.innerWidth/2, window.innerHeight/2, 50), i*400);
+            for(let i=0; i<8; i++) {
+                setTimeout(() => createConfetti(window.innerWidth/2, window.innerHeight/2, 60), i*350);
             }
         }
     }
@@ -214,16 +267,14 @@
     function spawnBalloon() {
         if (!state.isPlaying) return;
 
-        // 外层：负责位置和飞行
         const wrap = document.createElement('div');
         wrap.className = 'balloon-wrap';
         
-        // 内层：负责外观和变大缩放
         const balloon = document.createElement('div');
         balloon.className = 'balloon';
         wrap.appendChild(balloon);
         
-        const sizeBase = Math.random() * 20 + 90; // 大气球 90-110px
+        const sizeBase = Math.random() * 20 + 90; 
         const color = colors[Math.floor(Math.random() * colors.length)];
         const leftPos = Math.random() * 80 + 10; 
         
@@ -238,8 +289,8 @@
         
         wrap.style.left = leftPos + '%';
 
-        const baseDuration = Math.random() * 3500 + 3500; 
-        const floatDuration = Math.max(2500, baseDuration - (state.levelIndex * 150)); 
+        const baseDuration = Math.random() * 2500 + 3000; 
+        const floatDuration = Math.max(1800, baseDuration - (state.levelIndex * 150)); 
         const swayAmount = Math.random() * 60 - 30;
         
         const animation = wrap.animate([
@@ -257,11 +308,9 @@
             if (!state.isPlaying) return;
             currentClicks++;
             
-            // 点击一次，专属音效响一次
             playPopSound();
             
-            // 每次点击显著变大
-            currentScale += 0.25; 
+            currentScale += 0.20; 
             balloon.style.transform = `scale(${currentScale})`;
 
             if (currentClicks >= targetClicks) { 
@@ -289,7 +338,7 @@
 
         createConfetti(x, y, 15);
 
-        if (state.coins >= state.target && state.time > 0) {
+        if (state.coins >= TARGETS[state.levelIndex] && state.time > 0) {
             levelUp();
         }
     }
