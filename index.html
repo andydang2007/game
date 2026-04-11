@@ -25,6 +25,8 @@
         .confetti { position: absolute; width: 8px; height: 16px; opacity: 1; border-radius: 3px; }
         .float-text { position: absolute; color: #FFD700; font-weight: 900; font-size: 32px; text-shadow: 2px 2px 0 #FF4500, -1px -1px 0 #FFF; pointer-events: none; z-index: 50; animation: floatUpText 0.8s forwards; }
 
+        #flash-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 150; opacity: 0; pointer-events: none; display: none; }
+
         #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); z-index: 200; display: flex; justify-content: center; align-items: center; }
         .modal { background: white; padding: 40px 50px; border-radius: 35px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.4); transform: scale(0.8); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; max-width: 90%; }
         
@@ -33,29 +35,31 @@
         
         .sle { color: #f43f5e; font-size: 1.3em; font-weight: 900; text-shadow: 2px 2px 0 #fecdd3; }
 
-        .btn { padding: 16px 45px; font-size: 24px; font-weight: 900; color: white; background: #10b981; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 8px 0 #059669; transition: 0.15s; outline: none; }
+        .btn { padding: 16px 45px; font-size: 24px; font-weight: 900; color: white; background: #10b981; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 8px 0 #059669; transition: 0.15s; outline: none; margin-top: 10px; }
         .btn:active { transform: translateY(8px); box-shadow: 0 0 0 transparent; }
 
         @keyframes floatUpText { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 50% { transform: translateY(-45px) scale(1.2); opacity: 1; } 100% { transform: translateY(-90px) scale(1); opacity: 0; } }
         @keyframes popIn { to { transform: scale(1); } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes flashWhite { 0% { opacity: 1; } 100% { opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div id="hud">
         <div class="stat"><span>Level</span><div id="ui-level" class="highlight">P1</div></div>
-        <div class="stat"><span>Time</span><div id="ui-time" class="highlight">20s</div></div>
+        <div class="stat"><span>Time</span><div id="ui-time" class="highlight">30s</div></div>
         <div class="stat"><span>Coins</span><div class="highlight"><span id="ui-coins">0</span> / <span id="ui-target">1000</span></div></div>
     </div>
 
     <div id="game-area"></div>
+    <div id="flash-overlay"></div> 
 
     <div id="overlay">
         <div class="modal" id="modal-box">
             <h1 id="modal-title"><span class="sle">P</span>op, <span class="sle">S</span>mile, <span class="sle">L</span>earn, <span class="sle">E</span>njoy!</h1>
             <p id="modal-desc">Tap the balloons to pop them.</p>
-            <button class="btn" id="modal-btn" onclick="startGame()">Start Game</button>
+            <button class="btn" id="modal-btn" onclick="startOrNextLevel()">Start Game</button>
         </div>
     </div>
 
@@ -63,61 +67,57 @@
     const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
     const TARGETS = [1000, 1500, 2000, 2500, 3000, 3500, 5000];
     
-    let state = {
-        levelIndex: 0,
-        coins: 0,
-        time: 20,
-        isPlaying: false
-    };
-
+    let state = { levelIndex: 0, coins: 0, time: 30, isPlaying: false };
     let timerId, spawnId;
     const gameArea = document.getElementById('game-area');
     const colors = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 
-    // --- 音效与 BGM 系统引擎 ---
+    // --- 全屏控制 API ---
+    function openFullscreen() {
+        let elem = document.documentElement;
+        if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); } 
+        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+        else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+    }
+
+    function closeFullscreen() {
+        if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+            if (document.exitFullscreen) { document.exitFullscreen().catch(err => console.log(err)); } 
+            else if (document.webkitExitFullscreen) { document.webkitExitFullscreen(); } 
+            else if (document.msExitFullscreen) { document.msExitFullscreen(); }
+        }
+    }
+
+    // --- 音效与 BGM ---
     let audioCtx = null;
     let isPlayingBgm = false;
     let nextNoteTime = 0;
     let noteIndex = 0;
     let bgmTimeout = null;
 
-    // 欢快 8-bit 旋律音阶 (C大调琶音)
-    const melody = [
-        261.63, 329.63, 392.00, 523.25, 
-        392.00, 329.63, 349.23, 440.00, 
-        523.25, 440.00, 349.23, 329.63
-    ];
-
+    const melody = [ 261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 349.23, 440.00, 523.25, 440.00, 349.23, 329.63 ];
     const cheerAudio = new Audio("https://actions.google.com/sounds/v1/foley/cheer_short.ogg");
     
     function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function playBGMNote() {
         if (!isPlayingBgm || !audioCtx) return;
         const noteLength = 0.15; 
-        
         while (nextNoteTime < audioCtx.currentTime + 0.1) {
             let freq = melody[noteIndex % melody.length];
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
-            
-            osc.type = 'triangle'; // 圆润的 8-bit 声音
+            osc.type = 'triangle'; 
             osc.frequency.value = freq;
-            
-            gain.gain.setValueAtTime(0.04, nextNoteTime); // BGM音量稍低，不刺耳
+            gain.gain.setValueAtTime(0.04, nextNoteTime); 
             gain.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + noteLength - 0.02);
-            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            
             osc.start(nextNoteTime);
             osc.stop(nextNoteTime + noteLength);
-            
             nextNoteTime += noteLength;
             noteIndex++;
         }
@@ -125,8 +125,7 @@
     }
 
     function startBGM() {
-        if (!audioCtx) return;
-        if (isPlayingBgm) return;
+        if (!audioCtx || isPlayingBgm) return;
         isPlayingBgm = true;
         nextNoteTime = audioCtx.currentTime + 0.1;
         playBGMNote();
@@ -137,22 +136,33 @@
         clearTimeout(bgmTimeout);
     }
 
-    function playPopSound() {
+    function playTapSound() {
         if (!audioCtx) return;
         const osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         osc.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.08);
-        
-        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-        
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
         osc.start();
-        osc.stop(audioCtx.currentTime + 0.08);
+        osc.stop(audioCtx.currentTime + 0.05);
+    }
+
+    function playBurstSound() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.type = 'square'; 
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.15);
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
     }
 
     // --- 游戏主逻辑 ---
@@ -161,27 +171,25 @@
         document.getElementById('ui-time').innerText = state.time + 's';
         document.getElementById('ui-coins').innerText = state.coins;
         document.getElementById('ui-target').innerText = TARGETS[state.levelIndex];
-        
-        if (state.time <= 5) {
-            document.getElementById('ui-time').classList.add('time-warning');
-        } else {
-            document.getElementById('ui-time').classList.remove('time-warning');
-        }
+        if (state.time <= 5) document.getElementById('ui-time').classList.add('time-warning');
+        else document.getElementById('ui-time').classList.remove('time-warning');
     }
 
-    function startGame() {
+    // 按钮的统一入口
+    function startOrNextLevel() {
+        openFullscreen(); // 尝试全屏
         initAudio(); 
         startBGM(); 
         
         document.getElementById('overlay').style.display = 'none';
         state.coins = 0;
-        state.time = 20; // 统一为 20 秒
+        state.time = 30; // 恢复30秒
         state.isPlaying = true;
         gameArea.innerHTML = ''; 
         updateHUD();
 
-        // 难度极度拉满：因为20秒要点几千分，气球必须密密麻麻地出来
-        let currentSpawnRate = Math.max(120, 350 - (state.levelIndex * 40));
+        // 难度曲线调整，PSLE(Index 6)时生成间隔仅需 120ms，气球疯狂涌出
+        let currentSpawnRate = Math.max(120, 360 - (state.levelIndex * 40));
         timerId = setInterval(gameTick, 1000);
         spawnId = setInterval(spawnBalloon, currentSpawnRate);
     }
@@ -190,12 +198,8 @@
         if (!state.isPlaying) return;
         state.time--;
         updateHUD();
-
-        if (state.time <= 0) {
-            endGame();
-        } else if (state.coins >= TARGETS[state.levelIndex]) {
-            levelUp();
-        }
+        if (state.time <= 0) endGame();
+        else if (state.coins >= TARGETS[state.levelIndex]) levelUp();
     }
 
     function endGame() {
@@ -203,13 +207,29 @@
         stopBGM();
         clearInterval(timerId);
         clearInterval(spawnId);
-        
+        closeFullscreen(); // 失败时退出全屏
+
         document.getElementById('overlay').style.display = 'flex';
         document.getElementById('modal-title').innerText = '😢 Game Over';
         document.getElementById('modal-title').style.color = '#64748b';
         document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.`;
-        
         document.getElementById('modal-btn').style.display = 'none';
+    }
+
+    function playLevelUpEffect() {
+        cheerAudio.currentTime = 0;
+        cheerAudio.play().catch(e => console.log(e)); 
+        
+        const flash = document.getElementById('flash-overlay');
+        flash.style.display = 'block';
+        flash.style.animation = 'none';
+        void flash.offsetWidth; 
+        flash.style.animation = 'flashWhite 0.8s ease-out forwards';
+        setTimeout(() => { flash.style.display = 'none'; }, 800);
+
+        setTimeout(() => createConfetti(window.innerWidth * 0.2, window.innerHeight * 0.6, 30), 100);
+        setTimeout(() => createConfetti(window.innerWidth * 0.5, window.innerHeight * 0.8, 50), 200);
+        setTimeout(() => createConfetti(window.innerWidth * 0.8, window.innerHeight * 0.6, 30), 300);
     }
 
     function levelUp() {
@@ -217,51 +237,46 @@
         stopBGM();
         clearInterval(timerId);
         clearInterval(spawnId);
-        cheerAudio.play().catch(e => console.log(e)); 
+        
+        playLevelUpEffect(); 
 
-        document.getElementById('overlay').style.display = 'flex';
-        let btn = document.getElementById('modal-btn');
-        let titleEl = document.getElementById('modal-title');
-        let descEl = document.getElementById('modal-desc');
+        setTimeout(() => {
+            document.getElementById('overlay').style.display = 'flex';
+            let btn = document.getElementById('modal-btn');
+            let titleEl = document.getElementById('modal-title');
+            let descEl = document.getElementById('modal-desc');
 
-        if (state.levelIndex < 5) { // P1 to P5
-            titleEl.innerHTML = `You have finished ${LEVELS[state.levelIndex]}`;
-            titleEl.style.color = '#22c55e';
-            descEl.innerHTML = ``; // 移除了 Target reached
-            
-            btn.style.display = 'inline-block';
-            btn.innerText = `Enter ${LEVELS[state.levelIndex + 1]}`;
-            btn.style.background = '#3b82f6';
-            btn.style.boxShadow = '0 8px 0 #2563eb';
-            btn.onclick = () => {
-                state.levelIndex++;
-                startGame();
-            };
-        } else if (state.levelIndex === 5) { // P6 通关
-            titleEl.innerHTML = `You have finished P6`;
-            titleEl.style.color = '#f59e0b';
-            descEl.innerHTML = ``; 
-            
-            btn.style.display = 'inline-block';
-            btn.innerText = `Take PSLE`;
-            btn.style.background = '#f43f5e';
-            btn.style.boxShadow = '0 8px 0 #be123c';
-            btn.onclick = () => {
-                state.levelIndex++;
-                startGame();
-            };
-        } else { // Beat PSLE
-            titleEl.innerHTML = `Congratulations!<br><span style="font-size:26px; color:#475569; display:block; margin-top:15px;">You passed PSLE and graduated!</span>`;
-            titleEl.style.color = '#eab308';
-            titleEl.style.fontSize = '42px';
-            descEl.innerHTML = '';
-            
-            btn.style.display = 'none';
-            
-            for(let i=0; i<8; i++) {
-                setTimeout(() => createConfetti(window.innerWidth/2, window.innerHeight/2, 60), i*350);
+            if (state.levelIndex < 5) { 
+                titleEl.innerHTML = `You have finished ${LEVELS[state.levelIndex]}`;
+                titleEl.style.color = '#22c55e';
+                descEl.innerHTML = ``; 
+                btn.style.display = 'inline-block';
+                btn.innerText = `Enter ${LEVELS[state.levelIndex + 1]}`;
+                btn.style.background = '#3b82f6';
+                btn.style.boxShadow = '0 8px 0 #2563eb';
+                btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
+            } else if (state.levelIndex === 5) { 
+                titleEl.innerHTML = `You have finished P6`;
+                titleEl.style.color = '#f59e0b';
+                descEl.innerHTML = ``; 
+                btn.style.display = 'inline-block';
+                btn.innerText = `Take PSLE`;
+                btn.style.background = '#f43f5e';
+                btn.style.boxShadow = '0 8px 0 #be123c';
+                btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
+            } else { 
+                closeFullscreen(); // 通关 PSLE 退出全屏
+                titleEl.innerHTML = `Congratulations!<br><span style="font-size:26px; color:#475569; display:block; margin-top:15px;">You passed PSLE and graduated!</span>`;
+                titleEl.style.color = '#eab308';
+                titleEl.style.fontSize = '42px';
+                descEl.innerHTML = '';
+                btn.style.display = 'none';
+                
+                for(let i=0; i<8; i++) {
+                    setTimeout(() => createConfetti(window.innerWidth/2, window.innerHeight/2, 60), i*350);
+                }
             }
-        }
+        }, 1000); 
     }
 
     function spawnBalloon() {
@@ -289,8 +304,9 @@
         
         wrap.style.left = leftPos + '%';
 
-        const baseDuration = Math.random() * 2500 + 3000; 
-        const floatDuration = Math.max(1800, baseDuration - (state.levelIndex * 150)); 
+        // 速度调快：配合30秒的高分要求
+        const baseDuration = Math.random() * 2000 + 2500; 
+        const floatDuration = Math.max(1600, baseDuration - (state.levelIndex * 150)); 
         const swayAmount = Math.random() * 60 - 30;
         
         const animation = wrap.animate([
@@ -308,13 +324,13 @@
             if (!state.isPlaying) return;
             currentClicks++;
             
-            playPopSound();
-            
-            currentScale += 0.20; 
-            balloon.style.transform = `scale(${currentScale})`;
-
             if (currentClicks >= targetClicks) { 
+                playBurstSound(); 
                 popBalloon(wrap, e.clientX, e.clientY);
+            } else {
+                playTapSound(); 
+                currentScale += 0.20; 
+                balloon.style.transform = `scale(${currentScale})`;
             }
         };
 
