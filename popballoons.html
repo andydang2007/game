@@ -70,19 +70,23 @@
     </div>
 
 <script>
-    // 🟢 【终极防作弊验票系统】
-    const spellingPageURL = "https://andydang2007.github.io/spelling"; 
+
+// 🟢 【终极防作弊验票系统 & 动态返程】
     const urlParams = new URLSearchParams(window.location.search);
     const ticket = urlParams.get('ticket');
+    const returnUrlParam = urlParams.get('returnUrl');
+    
+    // 如果网址里带了返程车票就解码它，如果没有，就默认退回 Spelling 页面兜底
+    const returnURL = returnUrlParam ? decodeURIComponent(returnUrlParam) : "https://andydang2007.github.io/spelling";
 
     if (!ticket || localStorage.getItem('psle_used_ticket') === ticket) {
-        // 无效票或旧票，瞬间踢回拼写页面！
-        window.location.replace(spellingPageURL); 
+        // 无效票或旧票，瞬间踢回老家！
+        window.location.replace(returnURL); 
     } else {
-        // 验票通过，撕毁门票
+        // 验票通过，撕毁门票放入黑名单
         localStorage.setItem('psle_used_ticket', ticket);
     }
-
+    
     // ---------------- 游戏常规代码 ----------------
     const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
     const TARGETS = [1000, 2000, 3000, 4000, 5000, 6000, 8000];
@@ -185,7 +189,7 @@
         document.getElementById('modal-btn').style.display = 'none';
 
         setTimeout(function() {
-            window.location.replace(spellingPageURL); 
+            window.location.replace(returnURL);
         }, 2000);
     }
 
@@ -219,7 +223,7 @@
             } else { 
                 titleEl.innerHTML = `Congratulations!<br><span style="font-size:26px; color:#475569; display:block; margin-top:15px;">You passed PSLE and graduated!</span>`;
                 titleEl.style.color = '#eab308'; titleEl.style.fontSize = '42px';
-                descEl.innerHTML = '<span style="font-size:16px;">Returning to spelling shortly...</span>'; 
+                descEl.innerHTML = '<span style="font-size:16px;">Returning...</span>'; 
                 btn.style.display = 'none';
                 
                 for(let i=0; i<8; i++) {
@@ -230,7 +234,7 @@
                 }
 
                 setTimeout(function() {
-                    window.location.replace(spellingPageURL); 
+                    window.location.replace(returnURL); 
                 }, 4500);
             }
         }, 800); 
