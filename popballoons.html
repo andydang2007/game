@@ -1,21 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-M04YCD1PQK"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M04YCD1PQK"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-M04YCD1PQK');
 </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pop, Smile, Learn, Enjoy!</title>
     <style>
         * { box-sizing: border-box; font-family: 'Comic Sans MS', 'Nunito', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; overflow: hidden; background: linear-gradient(to bottom, #87CEEB, #E0F6FF); height: 100vh; color: #333; }
+        body { margin: 0; padding: 0; overflow: hidden; background: linear-gradient(to bottom, #87CEEB, #E0F6FF); height: 100dvh; color: #333; }
         
         #hud { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 15px 30px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100; font-size: 20px; font-weight: 900; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
         .stat { display: flex; flex-direction: column; align-items: center; }
@@ -70,20 +68,26 @@
     </div>
 
 <script>
-
-// 🟢 【终极防作弊验票系统 & 动态返程】
+    // 🟢 【10.0 终极防作弊验证系统】
     const urlParams = new URLSearchParams(window.location.search);
     const ticket = urlParams.get('ticket');
     const returnUrlParam = urlParams.get('returnUrl');
     
-    // 如果网址里带了返程车票就解码它，如果没有，就默认退回 Spelling 页面兜底
-    const returnURL = returnUrlParam ? decodeURIComponent(returnUrlParam) : "https://andydang2007.github.io/spelling";
+    // 💡 默认安全退回纯净版听写页面，除非明确指定了返程车票
+    const returnURL = returnUrlParam ? decodeURIComponent(returnUrlParam) : "spelling.html";
 
-    if (!ticket || localStorage.getItem('psle_used_ticket') === ticket) {
-        // 无效票或旧票，瞬间踢回老家！
-        window.location.replace(returnURL); 
+    const now = Date.now();
+    const ticketTime = parseInt(ticket);
+
+    // 严苛的验票逻辑：无票 / 票已过期(超过10秒) / 票在未来 / 这张票已经被用过
+    if (!ticket || isNaN(ticketTime) || (now - ticketTime > 10000) || ticketTime > now + 2000 || localStorage.getItem('psle_used_ticket') === ticket) {
+        // 无效票！直接将非法的入侵者踢回老家
+        document.getElementById('modal-title').innerText = "🚫 Invalid Access";
+        document.getElementById('modal-desc').innerText = "Please complete the task first.";
+        document.getElementById('modal-btn').style.display = "none";
+        setTimeout(() => { window.location.replace(returnURL); }, 1500);
     } else {
-        // 验票通过，撕毁门票放入黑名单
+        // 验票通过，立刻销毁这张票（存入黑名单）
         localStorage.setItem('psle_used_ticket', ticket);
     }
     
@@ -185,12 +189,12 @@
         document.getElementById('overlay').style.display = 'flex';
         document.getElementById('modal-title').innerText = '😢 Game Over';
         document.getElementById('modal-title').style.color = '#64748b';
-        document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.<br><br><span style="font-size:16px;">Returning to spelling...</span>`;
+        document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.<br><br><span style="font-size:16px;">Returning...</span>`;
         document.getElementById('modal-btn').style.display = 'none';
 
         setTimeout(function() {
             window.location.replace(returnURL);
-        }, 2000);
+        }, 2500);
     }
 
     function levelUp() {
@@ -246,7 +250,6 @@
         const balloon = document.createElement('div'); balloon.className = 'balloon';
         wrap.appendChild(balloon);
         
-        // 💡 气球大小与点击次数逻辑：大=少点(2-3次)，小=多点(5-6次)
         const isBig = Math.random() > 0.5;
         const sizeBase = isBig ? (Math.random() * 20 + 100) : (Math.random() * 20 + 60); 
         const targetClicks = isBig ? (Math.floor(Math.random() * 2) + 2) : (Math.floor(Math.random() * 2) + 5); 
