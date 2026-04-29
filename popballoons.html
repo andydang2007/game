@@ -68,29 +68,50 @@
     </div>
 
 <script>
-    // 🟢 【10.0 终极防作弊验证系统】
+    // 🟢 【10.0 终极防作弊验证系统 & 导航 GPS 系统】
     const urlParams = new URLSearchParams(window.location.search);
     const ticket = urlParams.get('ticket');
     const returnUrlParam = urlParams.get('returnUrl');
     
-    // 💡 默认安全退回纯净版听写页面，除非明确指定了返程车票
-    const returnURL = returnUrlParam ? decodeURIComponent(returnUrlParam) : "spelling.html";
+    // 🌟 强效 GPS 寻路逻辑：绝对不会再迷路到气球游戏自己身上
+    let returnURL = "https://andydang2007.github.io/"; 
+    if (returnUrlParam) {
+        if (returnUrlParam.startsWith('http')) {
+            returnURL = decodeURIComponent(returnUrlParam);
+        } else if (document.referrer) {
+            try {
+                let ref = new URL(document.referrer);
+                let paths = ref.pathname.split('/');
+                paths[paths.length - 1] = decodeURIComponent(returnUrlParam);
+                returnURL = ref.origin + paths.join('/');
+            } catch(e) {
+                returnURL = document.referrer;
+            }
+        }
+    } else if (document.referrer) {
+        returnURL = document.referrer; // 如果什么都没传，从哪来的回哪去
+    }
 
     const now = Date.now();
     const ticketTime = parseInt(ticket);
 
-    // 严苛的验票逻辑：无票 / 票已过期(超过10秒) / 票在未来 / 这张票已经被用过
+    // 严苛的验票逻辑：无票 / 票已过期 / 票在未来 / 这张票已经被用过
     if (!ticket || isNaN(ticketTime) || (now - ticketTime > 10000) || ticketTime > now + 2000 || localStorage.getItem('psle_used_ticket') === ticket) {
-        // 无效票！直接将非法的入侵者踢回老家
         document.getElementById('modal-title').innerText = "🚫 Invalid Access";
         document.getElementById('modal-desc').innerText = "Please complete the task first.";
         document.getElementById('modal-btn').style.display = "none";
         setTimeout(() => { window.location.replace(returnURL); }, 1500);
     } else {
-        // 验票通过，立刻销毁这张票（存入黑名单）
         localStorage.setItem('psle_used_ticket', ticket);
     }
     
+    // 🛡️ 防御 iPad "滑动返回" 作弊 (Bfcache Defense)
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted && document.getElementById('overlay').style.display !== 'flex') {
+            window.location.replace(returnURL);
+        }
+    });
+
     // ---------------- 游戏常规代码 ----------------
     const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
     const TARGETS = [1000, 2000, 3000, 4000, 5000, 6000, 8000];
@@ -107,6 +128,10 @@
     const melody = [ 261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 349.23, 440.00, 523.25, 440.00, 349.23, 329.63 ];
     const cheerAudio = new Audio("https://actions.google.com/sounds/v1/foley/cheer_short.ogg");
     
+    // 🌟 防 iPad 死机补丁：给点击声和爆炸声加上独立冷却计时器
+    let lastTapTime = 0;
+    let lastBurstTime = 0;
+
     function initAudio() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -132,16 +157,10 @@
     function startBGM() { if (!audioCtx || isPlayingBgm) return; isPlayingBgm = true; nextNoteTime = audioCtx.currentTime + 0.1; playBGMNote(); }
     function stopBGM() { isPlayingBgm = false; clearTimeout(bgmTimeout); }
 
-    // 🌟 防 iPad 死机补丁：给点击声和爆炸声加上独立冷却计时器
-    let lastTapTime = 0;
-    let lastBurstTime = 0;
-
     function playTapSound() {
         if (!audioCtx) return;
-        
         let now = Date.now();
-        // 🛡️ 强制冷却：如果两次点击间隔小于 80 毫秒，直接丢弃发音指令
-        if (now - lastTapTime < 80) return;
+        if (now - lastTapTime < 80) return; // 🛡️ 强制冷却
         lastTapTime = now;
 
         const osc = audioCtx.createOscillator();
@@ -156,10 +175,8 @@
 
     function playBurstSound(isGolden) {
         if (!audioCtx) return;
-        
         let now = Date.now();
-        // 🛡️ 强制冷却：防止多指同时捏爆多个气球导致音频崩溃
-        if (now - lastBurstTime < 80) return;
+        if (now - lastBurstTime < 80) return; // 🛡️ 强制冷却
         lastBurstTime = now;
 
         const osc = audioCtx.createOscillator();
@@ -209,7 +226,7 @@
         document.getElementById('modal-btn').style.display = 'none';
 
         setTimeout(function() {
-            window.location.replace(returnURL);
+            window.location.replace(returnURL); // 🌟 使用 GPS 回城
         }, 2500);
     }
 
@@ -254,7 +271,7 @@
                 }
 
                 setTimeout(function() {
-                    window.location.replace(returnURL); 
+                    window.location.replace(returnURL); // 🌟 使用 GPS 回城
                 }, 4500);
             }
         }, 800); 
