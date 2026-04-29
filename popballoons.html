@@ -132,8 +132,18 @@
     function startBGM() { if (!audioCtx || isPlayingBgm) return; isPlayingBgm = true; nextNoteTime = audioCtx.currentTime + 0.1; playBGMNote(); }
     function stopBGM() { isPlayingBgm = false; clearTimeout(bgmTimeout); }
 
+    // 🌟 防 iPad 死机补丁：给点击声和爆炸声加上独立冷却计时器
+    let lastTapTime = 0;
+    let lastBurstTime = 0;
+
     function playTapSound() {
         if (!audioCtx) return;
+        
+        let now = Date.now();
+        // 🛡️ 强制冷却：如果两次点击间隔小于 80 毫秒，直接丢弃发音指令
+        if (now - lastTapTime < 80) return;
+        lastTapTime = now;
+
         const osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         osc.connect(gainNode); gainNode.connect(audioCtx.destination);
@@ -146,6 +156,12 @@
 
     function playBurstSound(isGolden) {
         if (!audioCtx) return;
+        
+        let now = Date.now();
+        // 🛡️ 强制冷却：防止多指同时捏爆多个气球导致音频崩溃
+        if (now - lastBurstTime < 80) return;
+        lastBurstTime = now;
+
         const osc = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         osc.connect(gainNode); gainNode.connect(audioCtx.destination);
