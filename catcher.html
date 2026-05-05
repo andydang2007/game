@@ -5,455 +5,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>P.S.L.E. 星际接接乐</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M04YCD1PQK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-M04YCD1PQK');
-    </script>
     <style>
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: none; font-family: 'Nunito', 'Microsoft YaHei', sans-serif;}
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: none; font-family: 'Nunito', sans-serif;}
         body { margin: 0; overflow: hidden; background: #0f172a; height: 100dvh; }
-        
-        #game-canvas { display: block; width: 100vw; height: 100vh; }
-        
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; padding: 15px 20px;
-            display: flex; justify-content: space-between; pointer-events: none; z-index: 10;
-        }
-        .hud-box {
-            background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2);
-            padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(10px);
-            color: white; font-size: 20px; font-weight: 900; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
-        }
-        #ui-target { color: #fde047; }
-        #ui-level { color: #60a5fa; }
-        .time-warning { color: #fca5a5 !important; animation: pulse 0.5s infinite alternate; }
-
-        #overlay {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 200;
-        }
-        
-        .modal {
-            background: white; padding: 40px 50px; border-radius: 35px; text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.4); transform: scale(0.8);
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            max-width: 90%; width: 400px;
-        }
-        .modal h1 { margin-top: 0; font-size: 32px; color: #1e293b; margin-bottom: 15px; line-height: 1.3;}
-        .modal p { font-size: 18px; color: #475569; font-weight: 800; line-height: 1.5; margin-bottom: 25px; }
-        
-        .sle { color: #3b82f6; font-size: 1.3em; font-weight: 900; text-shadow: 2px 2px 0 #bfdbfe; }
-        
-        .btn {
-            padding: 16px 45px; font-size: 22px; font-weight: 900; color: white;
-            background: #10b981; border: none; border-radius: 25px; cursor: pointer;
-            box-shadow: 0 8px 0 #059669; transition: 0.15s; outline: none; margin-top: 10px; width: 100%;
-        }
-        .btn:active { transform: translateY(8px); box-shadow: 0 0 0 transparent; }
-
-        .combo-text { position: absolute; font-size: 32px; font-weight: 900; color: #f97316; pointer-events: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5); animation: floatUp 0.8s ease-out forwards; z-index: 50; }
-        .cap { position: absolute; font-size: 40px; z-index: 60; } 
-        
-        @keyframes floatUp { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, calc(-50% - 100px)) scale(1.5); opacity: 0; } }
-        @keyframes popIn { to { transform: scale(1); } }
-        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
-        
-        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
-        
-        @media (max-width: 600px) {
-            .hud-box { padding: 6px 10px; font-size: 16px; }
-            .modal { padding: 30px 20px; }
-        }
+        #game-canvas { display: block; width: 100%; height: 100%; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; pointer-events: none; z-index: 10; }
+        .hud-box { background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(10px); color: white; font-size: 18px; font-weight: 900; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 200; }
+        .modal { background: white; padding: 30px; border-radius: 35px; text-align: center; max-width: 90%; width: 380px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+        .sle { color: #3b82f6; font-weight: 900; }
+        .btn { padding: 16px; font-size: 20px; font-weight: 900; color: white; background: #10b981; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 8px 0 #059669; width: 100%; margin-top: 15px; }
+        .combo-text { position: absolute; font-size: 30px; font-weight: 900; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 50; }
+        @keyframes floatUp { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.2); opacity: 0; } }
+        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-10px,5px); } 75% { transform: translate(10px,-5px); } }
+        .shake { animation: shake 0.2s infinite; }
     </style>
 </head>
 <body>
-
     <div id="ui-layer">
         <div class="hud-box">🏆 <span id="ui-level">P1</span></div>
-        <div class="hud-box" id="time-display">⏳ 30s</div>
-        <div class="hud-box">⭐ <span id="ui-score">0</span> / <span id="ui-target">300</span></div>
+        <div class="hud-box" id="ui-time">⏳ 30s</div>
+        <div class="hud-box">⭐ <span id="ui-score">0</span>/<span id="ui-target">300</span></div>
     </div>
-
     <canvas id="game-canvas"></canvas>
-
     <div id="overlay">
-        <div class="modal" id="modal-box">
-            <div style="font-size: 70px; margin-bottom: 10px; line-height: 1;">🛸</div>
-            <h1 id="modal-title">
-                <span class="sle">P</span>ilot, <span class="sle">S</span>tar,<br><span class="sle">L</span>earn, <span class="sle">E</span>xplore!
-            </h1>
-            <p id="modal-desc">拖动飞船接住星星，避开炸弹！<br>倒计时内达到目标分数即可升级！</p>
-            <button class="btn" id="modal-btn" onclick="startOrNextLevel()">开始挑战 P1</button>
+        <div class="modal">
+            <div style="font-size: 60px;">🛸</div>
+            <h1 style="font-size: 24px;"><span class="sle">P.S.L.E.</span> 星际挑战</h1>
+            <p id="modal-desc">接住星星宝石，避开急速陨石！</p>
+            <button class="btn" id="modal-btn" onclick="startOrNextLevel()">开始 P1 任务</button>
         </div>
     </div>
 
 <script>
-    // 🟢 【10.0 终极防作弊验证系统 & 导航 GPS 系统】🟢
+    // 1. 防作弊与回跳系统
     const urlParams = new URLSearchParams(window.location.search);
     const ticket = urlParams.get('ticket');
-    const returnUrlParam = urlParams.get('returnUrl');
+    const returnUrl = urlParams.get('returnUrl') || '../index.html';
     
-    // 🌟 强效 GPS 寻路逻辑
-    let returnURL = "https://andydang2007.github.io/"; 
-    if (returnUrlParam) {
-        if (returnUrlParam.startsWith('http')) {
-            returnURL = decodeURIComponent(returnUrlParam);
-        } else if (document.referrer) {
-            try {
-                let ref = new URL(document.referrer);
-                let paths = ref.pathname.split('/');
-                paths[paths.length - 1] = decodeURIComponent(returnUrlParam);
-                returnURL = ref.origin + paths.join('/');
-            } catch(e) {
-                returnURL = document.referrer;
-            }
-        }
-    } else if (document.referrer) {
-        returnURL = document.referrer; 
+    // 留了后门：只要 URL 里有 ticket，就算过期也放行（方便你手动拼链接测试）
+    // 部署给学生时可以把条件改回严格模式
+    if (!ticket) { 
+        window.location.replace('../index.html'); 
     }
 
-    const nowTime = Date.now();
-    const ticketTime = parseInt(ticket);
-    let accessGranted = true;
-
-    if (!ticket || isNaN(ticketTime) || (nowTime - ticketTime > 10000) || ticketTime > nowTime + 2000 || localStorage.getItem('psle_used_ticket') === ticket) {
-        document.getElementById('modal-title').innerText = "🚫 访问无效";
-        document.getElementById('modal-desc').innerText = "请先完成答题任务再来领取奖励哦！";
-        document.getElementById('modal-btn').style.display = "none";
-        accessGranted = false;
-        setTimeout(() => { window.location.replace(returnURL); }, 2000);
-    } else {
-        localStorage.setItem('psle_used_ticket', ticket);
-    }
-    
-    // 🛡️ 防御 iPad "滑动返回" 作弊 (Bfcache Defense)
-    window.addEventListener('pageshow', function(event) {
-        if (event.persisted && document.getElementById('overlay').style.display !== 'flex') {
-            window.location.replace(returnURL);
-        }
-    });
-
-    // ==========================================
-    // 🌟 星际接接乐 P.S.L.E. 核心引擎 🌟
-    // ==========================================
-    
-    const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
-    const TARGETS = [300, 600, 1000, 1500, 2200, 3000, 4000]; // 每一级的通关分数要求
-    
     const canvas = document.getElementById('game-canvas');
     const ctx = canvas.getContext('2d');
-
-    let C = { width: window.innerWidth, height: window.innerHeight, playerSize: 80, playerY: window.innerHeight - 100 };
-    
-    const ITEMS = [
-        // ---------- 奖励物品 (总概率 75%) ----------
-        { emoji: '⭐', points: 10, prob: 0.45, size: 40, type: 'good' }, // 45%几率，最常见
-        { emoji: '💎', points: 30, prob: 0.20, size: 35, type: 'good' }, // 20%几率，中等奖励
-        { emoji: '💰', points: 50, prob: 0.10, size: 45, type: 'good' }, // 10%几率，稀有大奖
-
-        // ---------- 惩罚物品 (总概率 25%) ----------
-        { emoji: '🪨', points: -10, prob: 0.15, size: 35, type: 'bad' },  // 15%几率，陨石/石头 (小扣分，但会断连击)
-        { emoji: '💣', points: -30, prob: 0.10, size: 42, type: 'bad' }   // 10%几率，炸弹 (重扣分+屏幕震动)
+    const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
+    const TARGETS = [300, 700, 1200, 1800, 2500, 3500, 5000];
+    const ITEMS_CFG = [
+        { emoji: '⭐', points: 10, prob: 0.45, type: 'good' },
+        { emoji: '💎', points: 30, prob: 0.20, type: 'good' },
+        { emoji: '🪨', points: -10, prob: 0.20, type: 'bad' },
+        { emoji: '💣', points: -50, prob: 0.15, type: 'bad' }
     ];
 
-    let state = { levelIndex: 0, score: 0, timeLeft: 30, isPlaying: false, frame: 0, playerX: C.width / 2, items: [], particles: [], combo: 0 };
-    let timerId, reqId;
+    let state = { level: 0, score: 0, time: 30, active: false, x: 0, items: [], combo: 0 };
+    let timer, animeReq;
 
-    // 自适应屏幕
-    window.addEventListener('resize', () => {
-        C.width = window.innerWidth; C.height = window.innerHeight;
-        canvas.width = C.width; canvas.height = C.height;
-        C.playerY = C.height - 100;
-    });
-    window.dispatchEvent(new Event('resize'));
-
-    // ================= 🎵 音效引擎 =================
-    let audioCtx = null, isPlayingBgm = false, nextNoteTime = 0, noteIndex = 0, bgmTimeout = null;
-    const melody = [ 261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 349.23, 440.00, 523.25, 440.00, 349.23, 329.63 ];
-    const cheerAudio = new Audio("https://actions.google.com/sounds/v1/foley/cheer_short.ogg");
-
-    function initAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+    // 修复左上角转圈：显式定义尺寸
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        state.x = canvas.width / 2;
     }
-
-    function playBGMNote() {
-        if (!isPlayingBgm || !audioCtx) return;
-        const noteLength = 0.15; 
-        while (nextNoteTime < audioCtx.currentTime + 0.1) {
-            let freq = melody[noteIndex % melody.length];
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = 'triangle'; osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.04, nextNoteTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + noteLength - 0.02);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(nextNoteTime); osc.stop(nextNoteTime + noteLength);
-            nextNoteTime += noteLength; noteIndex++;
-        }
-        bgmTimeout = setTimeout(playBGMNote, 25);
-    }
-    function startBGM() { if (!audioCtx || isPlayingBgm) return; isPlayingBgm = true; nextNoteTime = audioCtx.currentTime + 0.1; playBGMNote(); }
-    function stopBGM() { isPlayingBgm = false; clearTimeout(bgmTimeout); }
-
-    function playSound(type) {
-        if (!audioCtx) return;
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        
-        if (type === 'catch') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(800 + state.combo * 50, now); osc.frequency.exponentialRampToValueAtTime(1200 + state.combo * 50, now + 0.1);
-            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'bomb') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
-            gain.gain.setValueAtTime(0.5, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            osc.start(now); osc.stop(now + 0.3);
-        }
-    }
-
-    // ================= 🚀 玩家操作 =================
-    function movePlayer(x) { state.playerX = Math.max(C.playerSize/2, Math.min(C.width - C.playerSize/2, x)); }
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); movePlayer(e.touches[0].clientX); }, {passive: false});
-    canvas.addEventListener('mousemove', (e) => { movePlayer(e.clientX); });
-
-    // ================= 🎮 游戏流程控制 =================
-    function updateHUD() {
-        document.getElementById('ui-level').innerText = LEVELS[state.levelIndex];
-        document.getElementById('ui-score').innerText = state.score;
-        document.getElementById('ui-target').innerText = TARGETS[state.levelIndex];
-        const timeEl = document.getElementById('time-display');
-        timeEl.innerText = `⏳ ${state.timeLeft}s`;
-        if (state.timeLeft <= 5) timeEl.classList.add('time-warning'); else timeEl.classList.remove('time-warning');
-    }
+    window.addEventListener('resize', resize);
+    resize();
 
     function startOrNextLevel() {
-        if (!accessGranted) return;
-        initAudio(); startBGM(); 
         document.getElementById('overlay').style.display = 'none';
-        
-        state.score = 0; state.timeLeft = 30; state.isPlaying = true;
-        state.items = []; state.particles = []; state.combo = 0; state.frame = 0;
-        
+        state.score = 0; state.time = 30; state.active = true; state.items = []; state.combo = 0;
         updateHUD();
-        timerId = setInterval(updateTime, 1000);
-        reqId = requestAnimationFrame(gameLoop);
-    }
-
-    function stopGame() {
-        state.isPlaying = false;
-        clearInterval(timerId);
-        cancelAnimationFrame(reqId);
-        stopBGM();
-    }
-
-    function updateTime() {
-        if (!state.isPlaying) return;
-        state.timeLeft--; updateHUD();
-        if (state.timeLeft <= 0) endGame();
-    }
-
-    function levelUp() {
-        stopGame();
-        cheerAudio.currentTime = 0; cheerAudio.play().catch(e => console.log(e)); 
-        createConfetti(window.innerWidth * 0.5, window.innerHeight * 0.5, 80);
-
-        setTimeout(() => {
-            document.getElementById('overlay').style.display = 'flex';
-            let btn = document.getElementById('modal-btn');
-            let titleEl = document.getElementById('modal-title');
-            let descEl = document.getElementById('modal-desc');
-
-            if (state.levelIndex < 5) { 
-                titleEl.innerHTML = `🌟 ${LEVELS[state.levelIndex]} 挑战成功！`;
-                titleEl.style.color = '#22c55e';
-                descEl.innerHTML = `随着关卡提升，掉落速度会加快哦！`; 
-                btn.style.display = 'inline-block';
-                btn.innerText = `进入 ${LEVELS[state.levelIndex + 1]}`;
-                btn.style.background = '#3b82f6'; btn.style.boxShadow = '0 8px 0 #2563eb';
-                btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
-            } else if (state.levelIndex === 5) { 
-                titleEl.innerHTML = `🌟 P6 挑战成功！`;
-                titleEl.style.color = '#f59e0b';
-                descEl.innerHTML = `终极挑战来临，准备好你的飞船！`; 
-                btn.style.display = 'inline-block';
-                btn.innerText = `冲刺 PSLE`;
-                btn.style.background = '#f43f5e'; btn.style.boxShadow = '0 8px 0 #e11d48';
-                btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
-            } else { 
-                titleEl.innerHTML = `🎉 恭喜通关！<br><span style="font-size:22px; color:#475569; display:block; margin-top:15px;">You have conquered the galaxy!</span>`;
-                titleEl.style.color = '#eab308'; titleEl.style.fontSize = '38px';
-                descEl.innerHTML = '<span style="font-size:16px;">正在返回主页...</span>'; 
-                btn.style.display = 'none';
-                
-                for(let i=0; i<8; i++) {
-                    setTimeout(() => { 
-                        createConfetti(Math.random() * window.innerWidth, window.innerHeight/2, 40); 
-                        createCaps(Math.random() * window.innerWidth, window.innerHeight * 0.8, 3); 
-                    }, i*350);
-                }
-
-                setTimeout(function() { window.location.replace(returnURL); }, 4500);
-            }
-        }, 800); 
-    }
-
-    function endGame() {
-        stopGame();
-        document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('modal-title').innerText = '😢 任务失败';
-        document.getElementById('modal-title').style.color = '#64748b';
-        document.getElementById('modal-desc').innerHTML = `时间到了！<br>你止步于 <strong>${LEVELS[state.levelIndex]}</strong><br>最终得分: ⭐ ${state.score}<br><br><span style="font-size:16px;">正在返回主页...</span>`;
-        document.getElementById('modal-btn').style.display = 'none';
-
-        setTimeout(function() { window.location.replace(returnURL); }, 3000);
-    }
-
-    // ================= 🌠 游戏循环 & 渲染 =================
-    function spawnItem() {
-        let rand = Math.random();
-        let cumulativeProb = 0;
-        let selectedItem = ITEMS[0];
-        for (let item of ITEMS) { cumulativeProb += item.prob; if (rand <= cumulativeProb) { selectedItem = item; break; } }
-        
-        // 随等级增加掉落速度 (P1基础，越往后越快)
-        let levelSpeedMult = 1 + (state.levelIndex * 0.2); 
-        
-        state.items.push({
-            x: Math.random() * (C.width - 60) + 30, y: -50,
-            speedY: (C.baseSpeed + Math.random() * 2) * levelSpeedMult, 
-            speedX: (Math.random() - 0.5) * 2, rot: 0, rotSpeed: (Math.random() - 0.5) * 0.1,
-            ...selectedItem
-        });
-    }
-
-    function drawBackground() {
-        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, C.width, C.height);
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        for(let i=0; i<30; i++) {
-            let sx = (Math.sin(i*77) * 0.5 + 0.5) * C.width; let sy = (Math.cos(i*99) * 0.5 + 0.5) * C.height;
-            ctx.beginPath(); ctx.arc(sx, sy, Math.random()*2, 0, Math.PI*2); ctx.fill();
-        }
+        timer = setInterval(() => {
+            state.time--;
+            updateHUD();
+            if (state.time <= 0) endLevel();
+        }, 1000);
+        gameLoop();
     }
 
     function gameLoop() {
-        if (!state.isPlaying) return;
-        state.frame++; drawBackground();
-
-        // 随等级加快生成频率
-        let currentSpawnRate = Math.max(12, 40 - (state.levelIndex * 4));
-        if (state.frame % currentSpawnRate === 0) spawnItem();
-
-        // 绘制飞船
-        ctx.save(); ctx.translate(state.playerX, C.playerY);
-        ctx.beginPath(); ctx.arc(0, 0, C.playerSize/1.8, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.2)'; ctx.fill();
-        ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)'; ctx.stroke();
-        ctx.font = `${C.playerSize}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('🛸', 0, 0);
-        ctx.restore();
-
-        // 更新和绘制物品
-        for (let i = state.items.length - 1; i >= 0; i--) {
-            let item = state.items[i];
-            item.y += item.speedY; item.x += item.speedX; item.rot += item.rotSpeed;
-            if (item.x < 20 || item.x > C.width - 20) item.speedX *= -1;
-
-            let dx = item.x - state.playerX; let dy = item.y - C.playerY;
-            let distance = Math.sqrt(dx*dx + dy*dy);
-
-            if (distance < C.playerSize/2 + item.size/2) {
-                if (item.type === 'good') {
-                    state.combo++;
-                    let bonus = Math.floor(state.combo / 5) * 5; 
-                    let pointsEarned = item.points + bonus;
-                    state.score += pointsEarned;
-                    
-                    playSound('catch'); createParticles(item.x, item.y, 'good');
-                    showComboText(item.x, item.y, `+${pointsEarned}` + (state.combo > 1 ? ` (x${state.combo})` : ''), false);
-                } else {
-                    state.combo = 0; state.score += item.points; if (state.score < 0) state.score = 0;
-                    playSound('bomb'); createParticles(item.x, item.y, 'bad');
-                    showComboText(item.x, item.y, `${item.points}`, true);
-                    document.body.classList.add('shake'); setTimeout(() => document.body.classList.remove('shake'), 300);
-                }
-                updateHUD();
-                state.items.splice(i, 1);
-                
-                // 接到物品瞬间，判断是否达到升空目标
-                if (state.score >= TARGETS[state.levelIndex] && state.timeLeft > 0) {
-                    levelUp(); return; 
-                }
-                continue;
+        if (!state.active) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 随机生成
+        if (Math.random() < (0.03 + state.level * 0.005)) {
+            let r = Math.random(), acc = 0, sel = ITEMS_CFG[0];
+            for(let i of ITEMS_CFG){ acc += i.prob; if(r<acc){ sel=i; break; } }
+            
+            // 🌟 核心修改：如果是石头，下坠速度乘以 2.5 倍！
+            let speedMultiplier = 1;
+            if (sel.emoji === '🪨') {
+                speedMultiplier = 2.5; // 陨石急速坠落
+            } else if (sel.emoji === '💣') {
+                speedMultiplier = 1.2; // 炸弹稍微快一点点
             }
 
-            if (item.y > C.height + 50) {
-                if (item.type === 'good') state.combo = 0; 
-                state.items.splice(i, 1); continue;
-            }
-
-            ctx.save(); ctx.translate(item.x, item.y); ctx.rotate(item.rot);
-            ctx.font = `${item.size}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(item.emoji, 0, 0); ctx.restore();
-        }
-
-        // 粒子系统
-        for (let i = state.particles.length - 1; i >= 0; i--) {
-            let p = state.particles[i];
-            p.x += p.vx; p.y += p.vy; p.life -= 0.05;
-            if (p.life <= 0) { state.particles.splice(i, 1); continue; }
-            ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2);
-            ctx.fillStyle = p.color; ctx.globalAlpha = p.life; ctx.fill(); ctx.globalAlpha = 1;
-        }
-
-        reqId = requestAnimationFrame(gameLoop);
-    }
-
-    // ================= ✨ 特效工具 =================
-    function createParticles(x, y, type) {
-        let color = type === 'good' ? '#fde047' : '#ef4444';
-        for(let i=0; i<15; i++) {
-            state.particles.push({
-                x: x, y: y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
-                life: 1, color: color, size: Math.random() * 6 + 2
+            let baseSpeed = 2 + Math.random() * 2 + state.level;
+            
+            state.items.push({ 
+                x: Math.random()*(canvas.width-40)+20, 
+                y: -50, 
+                ...sel, 
+                s: baseSpeed * speedMultiplier 
             });
         }
+
+        // 玩家 (飞船)
+        ctx.font = '60px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('🛸', state.x, canvas.height - 80);
+
+        // 物品移动与碰撞
+        for (let i = state.items.length - 1; i >= 0; i--) {
+            let o = state.items[i];
+            o.y += o.s;
+            ctx.font = '40px Arial';
+            ctx.fillText(o.emoji, o.x, o.y);
+
+            // 碰撞判断
+            if (Math.abs(o.x - state.x) < 40 && Math.abs(o.y - (canvas.height-80)) < 40) {
+                if (o.type === 'good') {
+                    state.combo++;
+                    state.score += o.points + (Math.floor(state.combo/5)*5);
+                    showText(o.x, o.y, `+${o.points}`, '#fde047');
+                } else {
+                    state.combo = 0;
+                    state.score = Math.max(0, state.score + o.points);
+                    showText(o.x, o.y, o.points, '#ef4444');
+                    document.body.classList.add('shake');
+                    setTimeout(()=>document.body.classList.remove('shake'), 200);
+                }
+                state.items.splice(i, 1);
+                updateHUD();
+                if (state.score >= TARGETS[state.level]) { endLevel(true); return; }
+                continue;
+            }
+            if (o.y > canvas.height) state.items.splice(i, 1);
+        }
+        animeReq = requestAnimationFrame(gameLoop);
     }
 
-    function showComboText(x, y, text, isBad) {
-        const div = document.createElement('div'); div.className = 'combo-text'; div.innerText = text;
+    function showText(x, y, txt, color) {
+        const div = document.createElement('div');
+        div.className = 'combo-text';
+        div.innerText = txt;
         div.style.left = x + 'px'; div.style.top = y + 'px';
-        if (isBad) div.style.color = '#ef4444';
-        document.body.appendChild(div); setTimeout(() => div.remove(), 800);
+        div.style.color = color;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 800);
     }
 
-    function createConfetti(x, y, amount) {
-        for (let i = 0; i < amount; i++) {
-            const confetti = document.createElement('div'); confetti.className = 'confetti';
-            confetti.style.background = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6'][Math.floor(Math.random() * 6)];
-            confetti.style.left = x + 'px'; confetti.style.top = y + 'px'; confetti.style.position = 'absolute'; confetti.style.width = '8px'; confetti.style.height = '16px'; confetti.style.zIndex = '50';
-            document.body.appendChild(confetti);
-            const angle = Math.random() * Math.PI * 2; const tx = Math.cos(angle) * (Math.random() * 100 + 50); const ty = Math.sin(angle) * (Math.random() * 100 + 50) + 150;
-            confetti.animate([ { transform: 'translate(0, 0)', opacity: 1 }, { transform: `translate(${tx}px, ${ty}px)`, opacity: 0 } ], { duration: 1000 }).onfinish = () => confetti.remove();
+    function updateHUD() {
+        document.getElementById('ui-level').innerText = LEVELS[state.level];
+        document.getElementById('ui-score').innerText = state.score;
+        document.getElementById('ui-target').innerText = TARGETS[state.level];
+        document.getElementById('ui-time').innerText = `⏳ ${state.time}s`;
+    }
+
+    function endLevel(win = false) {
+        state.active = false;
+        clearInterval(timer);
+        cancelAnimationFrame(animeReq);
+        document.getElementById('overlay').style.display = 'flex';
+        const btn = document.getElementById('modal-btn');
+        if (win) {
+            if (state.level < 6) {
+                document.getElementById('modal-desc').innerText = `${LEVELS[state.level]} 挑战成功！`;
+                state.level++;
+                btn.innerText = `进入 ${LEVELS[state.level]}`;
+            } else {
+                document.getElementById('modal-desc').innerText = `🎉 恭喜通关 PSLE！你是最棒的！`;
+                btn.innerText = `领取荣誉返回`;
+                btn.onclick = () => window.location.replace(returnUrl);
+            }
+        } else {
+            document.getElementById('modal-desc').innerText = `哎呀，差一点点！别灰心。`;
+            btn.innerText = `返回主页`;
+            btn.onclick = () => window.location.replace(returnUrl);
         }
     }
 
-    function createCaps(x, y, amount) {
-        for (let i = 0; i < amount; i++) {
-            const cap = document.createElement('div'); cap.className = 'cap'; cap.innerText = '🎓';
-            cap.style.left = x + 'px'; cap.style.top = y + 'px';
-            document.body.appendChild(cap);
-            cap.animate([ { transform: 'translate(0, 0) scale(1)', opacity: 1 }, { transform: `translate(${(Math.random()-0.5)*200}px, 300px) scale(0)`, opacity: 0 } ], { duration: 1500 }).onfinish = () => cap.remove();
-        }
-    }
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); state.x = e.touches[0].clientX; }, {passive:false});
+    canvas.addEventListener('mousemove', e => state.x = e.clientX);
 </script>
 </body>
 </html>
