@@ -103,10 +103,14 @@
 
     // 物品图鉴 (全靠 Emoji)
     const ITEMS = [
-        { emoji: '⭐', points: 10, prob: 0.5, size: 40, type: 'good' },
-        { emoji: '💎', points: 30, prob: 0.25, size: 35, type: 'good' },
-        { emoji: '💰', points: 50, prob: 0.1, size: 45, type: 'good' },
-        { emoji: '💣', points: -20, prob: 0.15, size: 40, type: 'bad' }
+        // ---------- 奖励物品 (总概率 75%) ----------
+        { emoji: '⭐', points: 10, prob: 0.45, size: 40, type: 'good' }, // 45%几率，最常见
+        { emoji: '💎', points: 30, prob: 0.20, size: 35, type: 'good' }, // 20%几率，中等奖励
+        { emoji: '💰', points: 50, prob: 0.10, size: 45, type: 'good' }, // 10%几率，稀有大奖
+
+        // ---------- 惩罚物品 (总概率 25%) ----------
+        { emoji: '🪨', points: -10, prob: 0.15, size: 35, type: 'bad' },  // 15%几率，陨石/石头 (小扣分，但会断连击)
+        { emoji: '💣', points: -30, prob: 0.10, size: 42, type: 'bad' }   // 10%几率，炸弹 (重扣分+屏幕震动)
     ];
 
     let state = {
