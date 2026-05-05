@@ -1,372 +1,208 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M04YCD1PQK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-M04YCD1PQK');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pop, Smile, Learn, Enjoy!</title>
+    <title>Pilot, Smile, Learn, Enjoy!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; font-family: 'Comic Sans MS', 'Nunito', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; overflow: hidden; background: linear-gradient(to bottom, #87CEEB, #E0F6FF); height: 100dvh; color: #333; }
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: none; font-family: 'Comic Sans MS', 'Nunito', sans-serif;}
+        body { margin: 0; overflow: hidden; background: #0f172a; height: 100dvh; }
+        #game-canvas { display: block; width: 100%; height: 100%; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; pointer-events: none; z-index: 10; }
+        .hud-box { background: rgba(255, 255, 255, 0.1); border: 2px solid rgba(255, 255, 255, 0.2); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(10px); color: white; font-size: 18px; font-weight: 900; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 200; }
+        .modal { background: white; padding: 30px; border-radius: 35px; text-align: center; max-width: 90%; width: 380px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
         
-        #hud { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-between; padding: 15px 30px; background: rgba(255, 255, 255, 0.9); box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100; font-size: 20px; font-weight: 900; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; }
-        .stat { display: flex; flex-direction: column; align-items: center; }
-        .stat span { font-size: 14px; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .highlight { color: #f43f5e; font-size: 24px; }
-        .time-warning { color: red !important; animation: pulse 1s infinite; }
-
-        #game-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; z-index: 10; }
-
-        .balloon-wrap { position: absolute; bottom: -180px; display: flex; justify-content: center; align-items: center; }
-        .balloon { position: relative; border-radius: 50%; cursor: pointer; transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: center center; box-shadow: inset -12px -12px 24px rgba(0,0,0,0.15), inset 6px 6px 18px rgba(255,255,255,0.4); display: flex; justify-content: center; align-items: center; }
-        .balloon::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 12px solid inherit; filter: brightness(0.85); }
-        .balloon::before { content: ''; position: absolute; bottom: -58px; left: 50%; transform: translateX(-50%); width: 2.5px; height: 50px; background: rgba(255, 255, 255, 0.7); z-index: -1; border-radius: 2px; }
-
-        .golden { background: radial-gradient(circle at 30% 30%, #fff 0%, #ffd700 50%, #b8860b 100%) !important; border-bottom-color: #ffd700 !important; box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), inset -12px -12px 24px rgba(184,134,11,0.5), inset 6px 6px 18px rgba(255,255,255,0.8) !important; animation: glow 1s alternate infinite; }
-
-        .confetti { position: absolute; width: 8px; height: 16px; opacity: 1; border-radius: 3px; z-index: 50;}
-        .cap { position: absolute; font-size: 40px; z-index: 60; } 
-        .float-text { position: absolute; color: #FFD700; font-weight: 900; font-size: 36px; text-shadow: 2px 2px 0 #FF4500, -1px -1px 0 #FFF; pointer-events: none; z-index: 70; animation: floatUpText 0.8s forwards; }
-
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); z-index: 200; display: flex; justify-content: center; align-items: center; }
-        .modal { background: white; padding: 40px 50px; border-radius: 35px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.4); transform: scale(0.8); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; max-width: 90%; }
-        .modal h1 { margin-top: 0; font-size: 34px; color: #1e293b; margin-bottom: 15px; }
-        .modal p { font-size: 22px; color: #475569; font-weight: 800; line-height: 1.5; margin-bottom: 25px; }
-        .sle { color: #f43f5e; font-size: 1.3em; font-weight: 900; text-shadow: 2px 2px 0 #fecdd3; }
-
-        .btn { padding: 16px 45px; font-size: 24px; font-weight: 900; color: white; background: #10b981; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 8px 0 #059669; transition: 0.15s; outline: none; margin-top: 10px; }
-        .btn:active { transform: translateY(8px); box-shadow: 0 0 0 transparent; }
-
-        @keyframes floatUpText { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 50% { transform: translateY(-45px) scale(1.2); opacity: 1; } 100% { transform: translateY(-90px) scale(1); opacity: 0; } }
-        @keyframes popIn { to { transform: scale(1); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes glow { from { filter: brightness(1); } to { filter: brightness(1.3); } }
+        /* 经典 PSLE 样式还原 */
+        .modal h1 { margin-top: 0; font-size: 28px; color: #1e293b; margin-bottom: 15px; }
+        .sle { color: #f43f5e; font-size: 1.2em; font-weight: 900; text-shadow: 2px 2px 0 #fecdd3; }
+        
+        .btn { padding: 16px; font-size: 20px; font-weight: 900; color: white; background: #10b981; border: none; border-radius: 25px; cursor: pointer; box-shadow: 0 8px 0 #059669; width: 100%; margin-top: 15px; }
+        .combo-text { position: absolute; font-size: 30px; font-weight: 900; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 50; }
+        
+        @keyframes floatUp { 0% { transform: translate(-50%, 0) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -100px) scale(1.2); opacity: 0; } }
+        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-10px,5px); } 75% { transform: translate(10px,-5px); } }
+        .shake { animation: shake 0.2s infinite; }
     </style>
 </head>
 <body>
-
-    <div id="hud">
-        <div class="stat"><span>Level</span><div id="ui-level" class="highlight">P1</div></div>
-        <div class="stat"><span>Time</span><div id="ui-time" class="highlight">30s</div></div>
-        <div class="stat"><span>Coins</span><div class="highlight"><span id="ui-coins">0</span> / <span id="ui-target">1000</span></div></div>
+    <div id="ui-layer">
+        <div class="hud-box">🏆 <span id="ui-level">P1</span></div>
+        <div class="hud-box" id="ui-time">⏳ 30s</div>
+        <div class="hud-box">⭐ <span id="ui-score">0</span>/<span id="ui-target">1000</span></div>
     </div>
-
-    <div id="game-area"></div>
-
+    <canvas id="game-canvas"></canvas>
+    
     <div id="overlay">
-        <div class="modal" id="modal-box">
+        <div class="modal">
+            <div style="font-size: 60px;">🛸</div>
             <h1 id="modal-title"><span class="sle">P</span>op, <span class="sle">S</span>mile, <span class="sle">L</span>earn, <span class="sle">E</span>njoy!</h1>
-            <p id="modal-desc">Tap the balloons to pop them.</p>
-            <button class="btn" id="modal-btn" onclick="startOrNextLevel()">Start Game</button>
+            <p id="modal-desc" style="font-size: 18px; color: #475569; font-weight: 800;">拖动飞船接住星星，避开陨石！</p>
+            <button class="btn" id="modal-btn" onclick="startOrNextLevel()">开始 P1 任务</button>
         </div>
     </div>
 
 <script>
-    // 🟢 【10.0 终极防作弊验证系统 & 导航 GPS 系统】
+    // 1. 防作弊与回跳系统
     const urlParams = new URLSearchParams(window.location.search);
     const ticket = urlParams.get('ticket');
-    const returnUrlParam = urlParams.get('returnUrl');
+    const returnUrl = urlParams.get('returnUrl') || '../index.html';
     
-    // 🌟 强效 GPS 寻路逻辑：绝对不会再迷路到气球游戏自己身上
-    let returnURL = "https://andydang2007.github.io/"; 
-    if (returnUrlParam) {
-        if (returnUrlParam.startsWith('http')) {
-            returnURL = decodeURIComponent(returnUrlParam);
-        } else if (document.referrer) {
-            try {
-                let ref = new URL(document.referrer);
-                let paths = ref.pathname.split('/');
-                paths[paths.length - 1] = decodeURIComponent(returnUrlParam);
-                returnURL = ref.origin + paths.join('/');
-            } catch(e) {
-                returnURL = document.referrer;
-            }
-        }
-    } else if (document.referrer) {
-        returnURL = document.referrer; // 如果什么都没传，从哪来的回哪去
+    // 如果没有 ticket，自动踢回主页
+    if (!ticket) { 
+        window.location.replace('../index.html'); 
     }
 
-    const now = Date.now();
-    const ticketTime = parseInt(ticket);
-
-    // 严苛的验票逻辑：无票 / 票已过期 / 票在未来 / 这张票已经被用过
-    if (!ticket || isNaN(ticketTime) || (now - ticketTime > 10000) || ticketTime > now + 2000 || localStorage.getItem('psle_used_ticket') === ticket) {
-        document.getElementById('modal-title').innerText = "🚫 Invalid Access";
-        document.getElementById('modal-desc').innerText = "Please complete the task first.";
-        document.getElementById('modal-btn').style.display = "none";
-        setTimeout(() => { window.location.replace(returnURL); }, 1500);
-    } else {
-        localStorage.setItem('psle_used_ticket', ticket);
-    }
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
     
-    // 🛡️ 防御 iPad "滑动返回" 作弊 (Bfcache Defense)
-    window.addEventListener('pageshow', function(event) {
-        if (event.persisted && document.getElementById('overlay').style.display !== 'flex') {
-            window.location.replace(returnURL);
-        }
-    });
-
-    // ---------------- 游戏常规代码 ----------------
+    // 🌟 过关目标对齐打气球游戏
     const LEVELS = ['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'PSLE'];
     const TARGETS = [1000, 2000, 3000, 4000, 5000, 6000, 8000];
-    let state = { levelIndex: 0, coins: 0, time: 30, isPlaying: false };
-    let timerId, spawnId;
-    const gameArea = document.getElementById('game-area');
-    const colors = ['#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
-
-    let audioCtx = null;
-    let isPlayingBgm = false;
-    let nextNoteTime = 0;
-    let noteIndex = 0;
-    let bgmTimeout = null;
-    const melody = [ 261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 349.23, 440.00, 523.25, 440.00, 349.23, 329.63 ];
-    const cheerAudio = new Audio("https://actions.google.com/sounds/v1/foley/cheer_short.ogg");
     
-    // 🌟 防 iPad 死机补丁：给点击声和爆炸声加上独立冷却计时器
-    let lastTapTime = 0;
-    let lastBurstTime = 0;
+    // 🌟 得分逻辑改版：基础+100，宝石+500
+    const ITEMS_CFG = [
+        { emoji: '⭐', points: 100, prob: 0.50, type: 'good' },
+        { emoji: '💎', points: 500, prob: 0.15, type: 'good' },
+        { emoji: '🪨', points: -100, prob: 0.20, type: 'bad' },
+        { emoji: '💣', points: -300, prob: 0.15, type: 'bad' }
+    ];
 
-    function initAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+    let state = { level: 0, score: 0, time: 30, active: false, x: 0, items: [], combo: 0 };
+    let timer, animeReq;
+
+    // 修复尺寸初始化
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        state.x = canvas.width / 2;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function startOrNextLevel() {
+        document.getElementById('overlay').style.display = 'none';
+        state.score = 0; state.time = 30; state.active = true; state.items = []; state.combo = 0;
+        updateHUD();
+        timer = setInterval(() => {
+            state.time--;
+            updateHUD();
+            if (state.time <= 0) endLevel();
+        }, 1000);
+        gameLoop();
     }
 
-    function playBGMNote() {
-        if (!isPlayingBgm || !audioCtx) return;
-        const noteLength = 0.15; 
-        while (nextNoteTime < audioCtx.currentTime + 0.1) {
-            let freq = melody[noteIndex % melody.length];
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.type = 'triangle'; osc.frequency.value = freq;
-            gain.gain.setValueAtTime(0.04, nextNoteTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, nextNoteTime + noteLength - 0.02);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(nextNoteTime); osc.stop(nextNoteTime + noteLength);
-            nextNoteTime += noteLength; noteIndex++;
+    function gameLoop() {
+        if (!state.active) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 随机生成
+        if (Math.random() < (0.03 + state.level * 0.005)) {
+            let r = Math.random(), acc = 0, sel = ITEMS_CFG[0];
+            for(let i of ITEMS_CFG){ acc += i.prob; if(r<acc){ sel=i; break; } }
+            
+            // 🌟 难度大幅削弱：石头降至 1.6 倍速
+            let speedMultiplier = 1;
+            if (sel.emoji === '🪨') {
+                speedMultiplier = 1.6; 
+            } else if (sel.emoji === '💣') {
+                speedMultiplier = 1.1; 
+            }
+
+            // 基础掉落速度调慢
+            let baseSpeed = 1.5 + Math.random() * 2 + (state.level * 0.5);
+            
+            state.items.push({ 
+                x: Math.random()*(canvas.width-40)+20, 
+                y: -50, 
+                ...sel, 
+                s: baseSpeed * speedMultiplier 
+            });
         }
-        bgmTimeout = setTimeout(playBGMNote, 25);
+
+        // 玩家 (飞船)
+        ctx.font = '60px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('🛸', state.x, canvas.height - 80);
+
+        // 物品移动与碰撞
+        for (let i = state.items.length - 1; i >= 0; i--) {
+            let o = state.items[i];
+            o.y += o.s;
+            ctx.font = '40px Arial';
+            ctx.fillText(o.emoji, o.x, o.y);
+
+            // 碰撞判断
+            if (Math.abs(o.x - state.x) < 40 && Math.abs(o.y - (canvas.height-80)) < 40) {
+                if (o.type === 'good') {
+                    state.combo++;
+                    // 每 5 连击额外加 50 分
+                    let bonus = Math.floor(state.combo / 5) * 50;
+                    let earned = o.points + bonus;
+                    state.score += earned;
+                    showText(o.x, o.y, `+${earned}`, '#fde047');
+                } else {
+                    state.combo = 0;
+                    state.score = Math.max(0, state.score + o.points); // 扣分但不掉到负数
+                    showText(o.x, o.y, o.points, '#ef4444');
+                    document.body.classList.add('shake');
+                    setTimeout(()=>document.body.classList.remove('shake'), 200);
+                }
+                state.items.splice(i, 1);
+                updateHUD();
+                if (state.score >= TARGETS[state.level]) { endLevel(true); return; }
+                continue;
+            }
+            if (o.y > canvas.height) state.items.splice(i, 1);
+        }
+        animeReq = requestAnimationFrame(gameLoop);
     }
 
-    function startBGM() { if (!audioCtx || isPlayingBgm) return; isPlayingBgm = true; nextNoteTime = audioCtx.currentTime + 0.1; playBGMNote(); }
-    function stopBGM() { isPlayingBgm = false; clearTimeout(bgmTimeout); }
-
-    function playTapSound() {
-        if (!audioCtx) return;
-        let now = Date.now();
-        if (now - lastTapTime < 80) return; // 🛡️ 强制冷却
-        lastTapTime = now;
-
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-        osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.05);
-        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-    }
-
-    function playBurstSound(isGolden) {
-        if (!audioCtx) return;
-        let now = Date.now();
-        if (now - lastBurstTime < 80) return; // 🛡️ 强制冷却
-        lastBurstTime = now;
-
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-        osc.type = 'square'; 
-        let startFreq = isGolden ? 600 : 300;
-        osc.frequency.setValueAtTime(startFreq, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.15);
-        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    function showText(x, y, txt, color) {
+        const div = document.createElement('div');
+        div.className = 'combo-text';
+        div.innerText = txt;
+        div.style.left = x + 'px'; div.style.top = y + 'px';
+        div.style.color = color;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 800);
     }
 
     function updateHUD() {
-        document.getElementById('ui-level').innerText = LEVELS[state.levelIndex];
-        document.getElementById('ui-time').innerText = state.time + 's';
-        document.getElementById('ui-coins').innerText = state.coins;
-        document.getElementById('ui-target').innerText = TARGETS[state.levelIndex];
-        if (state.time <= 5) document.getElementById('ui-time').classList.add('time-warning');
-        else document.getElementById('ui-time').classList.remove('time-warning');
+        document.getElementById('ui-level').innerText = LEVELS[state.level];
+        document.getElementById('ui-score').innerText = state.score;
+        document.getElementById('ui-target').innerText = TARGETS[state.level];
+        document.getElementById('ui-time').innerText = `⏳ ${state.time}s`;
     }
 
-    function startOrNextLevel() {
-        initAudio(); startBGM(); 
-        document.getElementById('overlay').style.display = 'none';
-        state.coins = 0; state.time = 30; state.isPlaying = true;
-        gameArea.innerHTML = ''; updateHUD();
-        let currentSpawnRate = Math.max(120, 360 - (state.levelIndex * 40));
-        timerId = setInterval(gameTick, 1000);
-        spawnId = setInterval(spawnBalloon, currentSpawnRate);
-    }
-
-    function gameTick() {
-        if (!state.isPlaying) return;
-        state.time--; updateHUD();
-        if (state.time <= 0) endGame();
-        else if (state.coins >= TARGETS[state.levelIndex]) levelUp();
-    }
-
-    function endGame() {
-        state.isPlaying = false; stopBGM(); clearInterval(timerId); clearInterval(spawnId);
+    function endLevel(win = false) {
+        state.active = false;
+        clearInterval(timer);
+        cancelAnimationFrame(animeReq);
         document.getElementById('overlay').style.display = 'flex';
-        document.getElementById('modal-title').innerText = '😢 Game Over';
-        document.getElementById('modal-title').style.color = '#64748b';
-        document.getElementById('modal-desc').innerHTML = `Time's up!<br>You reached <strong>${LEVELS[state.levelIndex]}</strong><br>Earned ${state.coins} coins.<br><br><span style="font-size:16px;">Returning...</span>`;
-        document.getElementById('modal-btn').style.display = 'none';
-
-        setTimeout(function() {
-            window.location.replace(returnURL); // 🌟 使用 GPS 回城
-        }, 2500);
-    }
-
-    function levelUp() {
-        state.isPlaying = false; stopBGM(); clearInterval(timerId); clearInterval(spawnId);
-        cheerAudio.currentTime = 0; cheerAudio.play().catch(e => console.log(e)); 
-        createConfetti(window.innerWidth * 0.5, window.innerHeight * 0.5, 80);
-
-        setTimeout(() => {
-            document.getElementById('overlay').style.display = 'flex';
-            let btn = document.getElementById('modal-btn');
-            let titleEl = document.getElementById('modal-title');
-            let descEl = document.getElementById('modal-desc');
-
-            if (state.levelIndex < 5) { 
-                titleEl.innerHTML = `You have finished ${LEVELS[state.levelIndex]}`;
-                titleEl.style.color = '#22c55e';
-                descEl.innerHTML = ``; 
-                btn.style.display = 'inline-block';
-                btn.innerText = `Enter ${LEVELS[state.levelIndex + 1]}`;
-                btn.style.background = '#3b82f6';
-                btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
-            } else if (state.levelIndex === 5) { 
-                titleEl.innerHTML = `You have finished P6`;
-                titleEl.style.color = '#f59e0b';
-                descEl.innerHTML = ``; 
-                btn.style.display = 'inline-block';
-                btn.innerText = `Take PSLE`;
-                btn.style.background = '#f43f5e';
-                btn.onclick = () => { state.levelIndex++; startOrNextLevel(); };
-            } else { 
-                titleEl.innerHTML = `Congratulations!<br><span style="font-size:26px; color:#475569; display:block; margin-top:15px;">You passed PSLE and graduated!</span>`;
-                titleEl.style.color = '#eab308'; titleEl.style.fontSize = '42px';
-                descEl.innerHTML = '<span style="font-size:16px;">Returning...</span>'; 
+        const btn = document.getElementById('modal-btn');
+        if (win) {
+            if (state.level < 6) {
+                document.getElementById('modal-desc').innerText = `${LEVELS[state.level]} 挑战成功！`;
+                state.level++;
+                btn.innerText = `进入 ${LEVELS[state.level]}`;
+            } else {
+                document.getElementById('modal-title').innerHTML = `Congratulations!<br><span style="font-size:20px; color:#475569; display:block; margin-top:10px;">You passed PSLE and graduated!</span>`;
+                document.getElementById('modal-desc').innerHTML = '<span style="font-size:16px;">正在返回...</span>'; 
                 btn.style.display = 'none';
-                
-                for(let i=0; i<8; i++) {
-                    setTimeout(() => { 
-                        createConfetti(Math.random() * window.innerWidth, window.innerHeight/2, 40); 
-                        createCaps(Math.random() * window.innerWidth, window.innerHeight * 0.8, 3); 
-                    }, i*350);
-                }
-
-                setTimeout(function() {
-                    window.location.replace(returnURL); // 🌟 使用 GPS 回城
-                }, 4500);
+                setTimeout(() => window.location.replace(returnUrl), 4500);
             }
-        }, 800); 
-    }
-
-    function spawnBalloon() {
-        if (!state.isPlaying) return;
-        const wrap = document.createElement('div'); wrap.className = 'balloon-wrap';
-        const balloon = document.createElement('div'); balloon.className = 'balloon';
-        wrap.appendChild(balloon);
-        
-        const isBig = Math.random() > 0.5;
-        const sizeBase = isBig ? (Math.random() * 20 + 100) : (Math.random() * 20 + 60); 
-        const targetClicks = isBig ? (Math.floor(Math.random() * 2) + 2) : (Math.floor(Math.random() * 2) + 5); 
-        const isGolden = Math.random() < 0.1;
-        if (isGolden) { balloon.classList.add('golden'); } 
-        else {
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            balloon.style.background = `radial-gradient(circle at 30% 30%, #ffffff 0%, ${color} 60%, #333333 100%)`;
-            balloon.style.borderBottomColor = color; 
-        }
-
-        const leftPos = Math.random() * 80 + 10; 
-        let currentClicks = 0; let currentScale = 1;
-        balloon.style.width = sizeBase + 'px'; balloon.style.height = sizeBase + 'px'; 
-        wrap.style.left = leftPos + '%';
-        const floatDuration = Math.max(2000, (Math.random() * 2000 + 2500) - (state.levelIndex * 150)); 
-        
-        const animation = wrap.animate([
-            { transform: `translateY(0)` }, { transform: `translateY(-${window.innerHeight + 300}px)` }
-        ], { duration: floatDuration, easing: 'linear', fill: 'forwards' });
-
-        animation.onfinish = () => { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
-
-        balloon.onmousedown = (e) => {
-            if (!state.isPlaying) return;
-            currentClicks++;
-            if (currentClicks >= targetClicks) { 
-                playBurstSound(isGolden); 
-                let clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                let clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                popBalloon(wrap, clientX, clientY, isGolden); 
-            } 
-            else { 
-                playTapSound(); 
-                currentScale += 0.20; 
-                balloon.style.transform = `scale(${currentScale})`; 
-            }
-        };
-        balloon.ontouchstart = (e) => { balloon.onmousedown(e); };
-
-        gameArea.appendChild(wrap);
-    }
-
-    function popBalloon(wrap, x, y, isGolden) {
-        if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
-        const earned = isGolden ? 500 : 100; state.coins += earned; updateHUD();
-        const text = document.createElement('div'); text.className = 'float-text';
-        text.innerText = '+' + earned;
-        if (isGolden) { text.style.fontSize = '48px'; text.style.textShadow = '0 0 10px #ffd700'; }
-        
-        if(x && y) {
-            text.style.left = (x - 30) + 'px'; text.style.top = (y - 30) + 'px';
         } else {
-            text.style.left = '50%'; text.style.top = '50%';
-        }
-        
-        gameArea.appendChild(text);
-        setTimeout(() => { if (text.parentNode) text.parentNode.removeChild(text); }, 800);
-        if(x && y) createConfetti(x, y, isGolden ? 30 : 15);
-        if (state.coins >= TARGETS[state.levelIndex] && state.time > 0) levelUp();
-    }
-
-    function createConfetti(x, y, amount) {
-        for (let i = 0; i < amount; i++) {
-            const confetti = document.createElement('div'); confetti.className = 'confetti';
-            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.left = x + 'px'; confetti.style.top = y + 'px';
-            gameArea.appendChild(confetti);
-            const angle = Math.random() * Math.PI * 2;
-            const tx = Math.cos(angle) * (Math.random() * 100 + 50);
-            const ty = Math.sin(angle) * (Math.random() * 100 + 50) + 150;
-            confetti.animate([ { transform: 'translate(0, 0)', opacity: 1 }, { transform: `translate(${tx}px, ${ty}px)`, opacity: 0 } ], { duration: 1000 }).onfinish = () => confetti.remove();
+            document.getElementById('modal-title').innerText = '😢 Game Over';
+            document.getElementById('modal-desc').innerHTML = `时间到了！<br>你止步于 <strong>${LEVELS[state.level]}</strong><br>最终得分: ⭐ ${state.score}<br><br><span style="font-size:16px;">正在返回...</span>`;
+            btn.style.display = 'none';
+            setTimeout(() => window.location.replace(returnUrl), 3500);
         }
     }
 
-    function createCaps(x, y, amount) {
-        for (let i = 0; i < amount; i++) {
-            const cap = document.createElement('div'); cap.className = 'cap'; cap.innerText = '🎓';
-            cap.style.left = x + 'px'; cap.style.top = y + 'px';
-            gameArea.appendChild(cap);
-            cap.animate([ { transform: 'translate(0, 0) scale(1)', opacity: 1 }, { transform: `translate(${(Math.random()-0.5)*200}px, 300px) scale(0)`, opacity: 0 } ], { duration: 1500 }).onfinish = () => cap.remove();
-        }
-    }
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); state.x = e.touches[0].clientX; }, {passive:false});
+    canvas.addEventListener('mousemove', e => state.x = e.clientX);
 </script>
-
 </body>
 </html>
