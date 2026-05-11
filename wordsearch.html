@@ -51,7 +51,7 @@
     <div id="game-area">
         <div class="word-list" id="word-list"></div>
         <div id="ws-grid"></div>
-        <button class="btn-action" style="background:#f1f5f9; color:#64748b; border: 3px solid #e2e8f0; box-shadow: 0 4px 0 #cbd5e1; margin-top: 10px;" onclick="window.location.href='index.html'">← Back</button>
+        <button class="btn-action" style="background:#f1f5f9; color:#64748b; border: 3px solid #e2e8f0; box-shadow: 0 4px 0 #cbd5e1; margin-top: 10px;" onclick="window.location.href='https://andydang2007.github.io/valerie-venessa-learn/index.html'">← Back</button>
     </div>
 </div>
 
@@ -258,11 +258,8 @@
         if (foundWordsCount >= targetWords.length) {
             confetti({ particleCount: 300, spread: 100, origin: { y: 0.5 } });
             
-            // 奖励 1 个金币并同步云端
-            let vaultCoins = parseInt(localStorage.getItem('gold_coins_vault') || "0");
-            localStorage.setItem('gold_coins_vault', vaultCoins + 1);
+            // 暂时取消金币奖励，但保留后端数据统计
             try {
-                fetch(SYNC_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'coin_update', user: curUser, earned: 1 }) });
                 fetch(SYNC_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'badge', user: curUser, grade: curGrade, subject: 'English', icon: '🔍', title: '火眼金睛', desc: '完成找单词游戏' }) });
             } catch(e) {}
 
@@ -270,9 +267,9 @@
                 document.getElementById('game-area').innerHTML = `
                     <div style="font-size:80px; margin:20px 0;">🎉</div>
                     <h2 style="color:#0f172a; font-weight:900;">You found them all!</h2>
-                    <p style="color:#059669; font-weight:900; font-size:18px;">💰 Team Coins +1</p>
+                    <p style="color:#64748b; font-weight:900; font-size:18px;">Great job!</p>
                     <button class="btn-action" style="background:#3b82f6; color:white; box-shadow: 0 4px 0 #2563eb; margin-top:20px;" onclick="window.location.reload()">再玩一次 Play Again</button>
-                    <button class="btn-action" style="background:#f1f5f9; color:#64748b; border: 3px solid #e2e8f0; box-shadow: 0 4px 0 #cbd5e1; margin-top: 15px;" onclick="window.location.href='index.html'">← 返回主页 Home</button>
+                    <button class="btn-action" style="background:#f1f5f9; color:#64748b; border: 3px solid #e2e8f0; box-shadow: 0 4px 0 #cbd5e1; margin-top: 15px;" onclick="window.location.href='https://andydang2007.github.io/valerie-venessa-learn/index.html'">← 返回主页 Home</button>
                 `;
             }, 1500);
         }
