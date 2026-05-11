@@ -15,28 +15,21 @@
         * { box-sizing: border-box; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* 容器拓宽，充分利用横向空间 */
         .container { width: 100%; max-width: 800px; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); text-align: center; border: 4px solid #ffffff; backdrop-filter: blur(12px); display: flex; flex-direction: column; align-items: center; margin-top: 2vh; }
         
         .header-tag { background: #ecfdf5; color: #059669; padding: 10px 25px; border-radius: 30px; font-weight: 900; font-size: 20px; border: 3px solid #a7f3d0; box-shadow: 0 3px 0 #6ee7b7; margin-bottom: 25px; }
 
-        /* 游戏主体左右分栏布局 */
         .game-layout { display: flex; flex-direction: row; width: 100%; gap: 25px; align-items: flex-start; justify-content: center; margin-bottom: 25px; }
 
-        /* 左侧：目标单词列表（竖排） */
         .word-list { display: flex; flex-direction: column; gap: 12px; width: 30%; min-width: 140px; }
         .word-item { background: #f1f5f9; color: #475569; padding: 12px 15px; border-radius: 15px; font-weight: 900; font-size: 18px; border: 2px dashed #cbd5e1; transition: 0.3s; text-align: center; }
         .word-item.found { background: #d1fae5; color: #059669; border-style: solid; border-color: #34d399; text-decoration: line-through; opacity: 0.7; }
 
-        /* 右侧：字母矩阵容器 */
         #ws-grid { flex: 1; display: grid; gap: 6px; touch-action: none; background: #e2e8f0; padding: 8px; border-radius: 20px; max-width: 550px; }
         
-        /* 字母格子：字号和点击区域大幅放大 */
         .ws-cell { background: white; border-radius: 12px; font-size: 30px; font-weight: 900; color: #1e293b; display: flex; align-items: center; justify-content: center; text-transform: uppercase; border: 2px solid #cbd5e1; box-shadow: 0 4px 0 #94a3b8; transition: 0.1s; cursor: pointer; aspect-ratio: 1/1; }
         
-        /* 选中状态（黄色） */
         .ws-cell.highlight { background: #fef08a; border-color: #eab308; box-shadow: 0 4px 0 #ca8a04; color: #854d0e; transform: translateY(3px); }
-        /* 找到单词状态（绿色） */
         .ws-cell.found { background: #34d399; border-color: #10b981; box-shadow: 0 4px 0 #059669; color: white; transform: translateY(3px); }
 
         .btn-action { width: 100%; border-radius: 20px; border: none; font-weight: 900; font-size: 20px; cursor: pointer; transition: 0.15s; padding: 18px; display: flex; align-items: center; justify-content: center; }
@@ -45,7 +38,6 @@
         #loading { font-size: 20px; font-weight: 900; color: #3b82f6; padding: 50px; }
         #game-area { display: none; width: 100%; flex-direction: column; align-items: center; }
 
-        /* 如果遇到屏幕很窄的手机，自动切换回上下排版防错位 */
         @media (max-width: 600px) {
             .game-layout { flex-direction: column-reverse; align-items: center; gap: 20px; }
             .word-list { flex-direction: row; flex-wrap: wrap; width: 100%; justify-content: center; }
@@ -73,9 +65,9 @@
 <script>
     const SYNC_API_URL = "https://script.google.com/macros/s/AKfycbzbNOgg7deW9uVVyfYGTfKGOtVgNs_9ZfUQ9J_9cYpG2Ufow9KLDICHgsinBXrPJlmz/exec";
     const SHEET_ID = "1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4";
-    const ENG_GID = "1893311738"; // 英文题库
+    const ENG_GID = "1893311738"; 
 
-    const gridSize = 8; // 8x8的格子，最适合孩子
+    const gridSize = 8; 
     let grid = [];
     let targetWords = [];
     let foundWordsCount = 0;
@@ -87,6 +79,47 @@
     let curUser = localStorage.getItem('currentPlayer') || 'Valerie';
     let curGrade = localStorage.getItem('currentGrade') || 'P3';
 
+    // --- 音效合成器 (Web Audio API) ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const masterGain = audioCtx.createGain();
+        masterGain.connect(audioCtx.destination);
+
+        if (type === 'ding') {
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+            
+            masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            masterGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            
+            osc.connect(masterGain);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.2);
+        } else if (type === 'tada') {
+            const playNote = (freq, startTime, duration) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.2, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+            let now = audioCtx.currentTime;
+            playNote(523.25, now, 0.4);       // C5
+            playNote(659.25, now + 0.15, 0.4); // E5
+            playNote(783.99, now + 0.3, 0.5);  // G5
+            playNote(1046.50, now + 0.45, 0.8);// C6
+        }
+    }
+
     async function init() {
         Papa.parse(`https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=${ENG_GID}&single=true&output=csv&t=${Date.now()}`, {
             download: true, header: true, skipEmptyLines: 'greedy',
@@ -94,13 +127,12 @@
                 let allWords = [];
                 results.data.forEach(row => {
                     let grade = (row.Grade || row.GRADE || "").toUpperCase();
-                    if (grade !== curGrade) return; // 只取当前年级的词
+                    if (grade !== curGrade) return; 
 
                     let ans = (row['Correct Answer'] || row['ANSWER'] || "").toString().trim().toUpperCase();
                     if (ans && /^[A-Z]{3,7}$/.test(ans)) allWords.push(ans);
                 });
                 
-                // 去重并打乱
                 allWords = [...new Set(allWords)].sort(() => 0.5 - Math.random());
                 
                 if (allWords.length < 5) {
@@ -122,7 +154,7 @@
             let placed = false;
             let attempts = 0;
             while (!placed && attempts < 100) {
-                let dir = Math.floor(Math.random() * 3); // 0:水平, 1:垂直, 2:对角线
+                let dir = Math.floor(Math.random() * 3); 
                 let r = Math.floor(Math.random() * gridSize);
                 let c = Math.floor(Math.random() * gridSize);
                 
@@ -156,11 +188,9 @@
         document.getElementById('loading').style.display = 'none';
         document.getElementById('game-area').style.display = 'flex';
         
-        // 渲染单词表
         const wl = document.getElementById('word-list');
         wl.innerHTML = targetWords.map(w => `<div class="word-item" id="word-${w}">${w}</div>`).join('');
         
-        // 渲染字母网格
         const wsGrid = document.getElementById('ws-grid');
         wsGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
         wsGrid.innerHTML = '';
@@ -192,6 +222,7 @@
     }
 
     function handleStart(e) {
+        if (audioCtx.state === 'suspended') audioCtx.resume(); // 唤醒音频引擎
         let cell = getCellFromEvent(e);
         if (cell) {
             isDragging = true;
@@ -242,6 +273,7 @@
             let actualWord = targetWords.includes(selectedWord) ? selectedWord : reversedWord;
             let badge = document.getElementById(`word-${actualWord}`);
             if (!badge.classList.contains('found')) {
+                playSound('ding'); // 播放找对单词的音效
                 badge.classList.add('found');
                 currentHighlight.forEach(cell => {
                     cell.classList.remove('highlight');
@@ -261,9 +293,9 @@
 
     function checkWin() {
         if (foundWordsCount >= targetWords.length) {
+            playSound('tada'); // 播放通关音效
             confetti({ particleCount: 300, spread: 100, origin: { y: 0.5 } });
             
-            // 仅在后台Log中记录，不发金币
             try {
                 fetch(SYNC_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'badge', user: curUser, grade: curGrade, subject: 'English', icon: '🔍', title: '火眼金睛', desc: '完成找单词游戏' }) });
             } catch(e) {}
