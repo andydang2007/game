@@ -113,7 +113,7 @@
             complete: function(results) {
                 results.data.forEach(row => {
                     // 逻辑：寻找 ANSWER 列，以及你指定的 PARTS (Parts) 列
-                    let targetWord = row['ANSWER'] || row['CORRECT ANSWER'] || ""; 
+                    let targetWord = row['QUESTION'] || row['CORRECT ANSWER'] || ""; 
                     let partsStr = row['PARTS'] || row['部件'] || ""; 
                     
                     if (targetWord && partsStr) {
