@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PSLE: Perfect Sequence Language Express (Desert Prototype)</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <title>PSLE: 汉字连击快线</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; font-family: 'Nunito', "Chalkboard SE", sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         
-        /* 🌵 大漠狂沙风格基调 🌵 */
         :root {
-            --bg-desert-top: #f59e0b; /* 浅金黄沙沙色 */
-            --bg-desert-bottom: #ca8a04; /* 深赭石沙色 */
-            --tank-body: #b45309; /* 锈铁棕色 */
-            --tank-border: #92400e; /* 深锈棕色 */
-            --key-bg: #92400e; /* 烤焦泥土色 */
-            --key-border: #713f12; /* 深焦土色 */
-            --text-main: #fef3c7; /* 浅黄米色文本 */
-            --defense-line: #f43f5e; /* 鲜红防线 */
+            --bg-desert-top: #f59e0b; 
+            --bg-desert-bottom: #ca8a04; 
+            --key-bg: #92400e; 
+            --key-border: #713f12; 
+            --text-main: #fef3c7; 
+            --defense-line: #f43f5e; 
         }
 
-        body { margin: 0; padding: 0; height: 100vh; background: linear-gradient(180deg, var(--bg-desert-top) 0%, var(--bg-desert-bottom) 100%); display: flex; flex-direction: column; overflow: hidden; color: var(--text-main); position: relative; }
+        body { margin: 0; padding: 0; height: 100vh; background: linear-gradient(180deg, var(--bg-desert-top) 0%, var(--bg-desert-bottom) 100%); display: flex; flex-direction: column; overflow: hidden; color: var(--text-main); }
         
         /* 简单背景沙尘粒子 */
         #sand-storm { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.3; background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; animation: windScroll 20s linear infinite; }
@@ -31,52 +29,52 @@
         .score-box { color: #facc15; }
         .lives-box { color: #f43f5e; font-size: 24px; letter-spacing: 2px; }
 
-        /* 游戏掉落区 (塔防主战场) */
+        /* ======== 中间游乐区 (主战场) ======== */
         #play-area { flex: 1; width: 100%; max-width: 800px; margin: 0 auto; position: relative; overflow: hidden; z-index: 5; border-bottom: 4px solid var(--key-border); }
         
         /* 屏幕最右侧的防线 */
-        #defense-wall { position: absolute; top: 0; right: 0; bottom: 0; width: 8px; background: var(--defense-line); box-shadow: -5px 0 15px rgba(244, 63, 94, 0.7); z-index: 6; }
+        #defense-wall { position: absolute; top: 0; right: 0; bottom: 0; width: 10px; background: var(--defense-line); box-shadow: -5px 0 15px rgba(244, 63, 94, 0.7); z-index: 6; }
         #play-area.hurt { animation: screenFlash 0.15s; }
         @keyframes screenFlash { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(244, 63, 94, 0.3); } }
 
-        /* ======== 战车白模样式 (爆胎逻辑验证) ======== */
-        .tank-vehicle { position: absolute; left: -250px; /* 默认在左侧屏幕外出生 */ display: flex; flex-direction: column; align-items: center; transition: left 0.05s linear; /* 极其平滑的横向移动 */ z-index: 7; }
+        /* ======== 战车与图片样式 ======== */
+        .tank-vehicle { position: absolute; left: -250px; transition: left 0.05s linear; z-index: 7; display: flex; flex-direction: column; align-items: center; justify-content: center;}
         
-        /* 战车主体 (锈铁棕色方块) */
-        .tank-body { background: var(--tank-body); border: 4px solid var(--tank-border); border-radius: 12px; padding: 10px; text-align: center; box-shadow: 0 10px 0 rgba(0,0,0,0.3); width: 130px; position: relative; transition: transform 0.1s; }
+        /* 图片容器，用来包裹图片和汉字 */
+        .vehicle-wrapper { position: relative; display: inline-block; }
         
-        /* 目标大汉字 */
-        .target-char { font-family: 'ZCOOL KuaiLe', cursive; font-size: 60px; color: #fff; font-weight: bold; text-shadow: 0 4px 0 var(--tank-border), 0 0 15px rgba(255,255,255,0.5); margin: -10px 0 0 0; }
+        /* 真实战车图片 */
+        .vehicle-img { height: 120px; /* 控制战车图片大小，可根据你的图微调 */ object-fit: contain; transition: transform 0.1s; }
         
-        /* 词语提示 (可选开关) */
-        .word-hint { font-size: 14px; color: rgba(255,255,255,0.8); font-weight: 900; margin-top: -5px; }
+        /* 目标大汉字：绝对定位，叠在图片上 */
+        .target-char { position: absolute; top: 15%; /* 调整这个百分比，让字正好坐在车厢上 */ left: 0; width: 100%; text-align: center; font-size: 50px; color: #fff; font-weight: 900; text-shadow: 0px 4px 6px rgba(0,0,0,0.8), 0px 0px 10px rgba(0,0,0,0.5); z-index: 10; }
 
-        /* 被击中时的红光闪烁 (破防) */
-        .tank-body.hurt { animation: tankFlash 0.1s; }
-        @keyframes tankFlash { 0%, 100% { border-color: var(--tank-border); } 50% { border-color: #f43f5e; box-shadow: 0 0 20px #f43f5e; } }
+        /* 受击红光闪烁特效 */
+        .vehicle-img.hurt { filter: drop-shadow(0 0 15px #f43f5e) brightness(1.5); animation: shakeTank 0.2s; }
+        @keyframes shakeTank { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
-        /* 爆炸/死亡动画 */
-        .tank-vehicle.exploded { transform: scale(1.5) rotate(15deg); opacity: 0; transition: all 0.3s ease-out; }
+        /* 爆胎死亡消失动画 (最后状态) */
+        .tank-vehicle.exploded { animation: deadBlink 0.4s forwards; }
+        @keyframes deadBlink { 
+            0% { opacity: 1; transform: scale(1); filter: brightness(2); } 
+            50% { opacity: 0; transform: scale(1.2); }
+            100% { opacity: 0; } 
+        }
 
-        /* 车轮区域 */
-        .wheels-container { display: flex; justify-content: space-evenly; width: 100%; margin-top: -8px; z-index: 6; padding: 0 5px;}
-        .wheel { font-size: 30px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        /* 爆胎动画: 旋转飞出 */
-        .wheel.blown { transform: translate(50px, -50px) rotate(720deg) scale(0); opacity: 0; }
-
-        /* 底部操作键盘 */
-        #keyboard { width: 100%; max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.4); padding: 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; z-index: 10; flex: none; }
-        .key-btn { aspect-ratio: 1/1; border-radius: 12px; background: var(--key-bg); color: var(--text-main); font-size: 34px; font-weight: 900; border: none; border-bottom: 6px solid var(--key-border); cursor: pointer; transition: 0.1s; outline: none; display: flex; align-items: center; justify-content: center; position: relative;}
+        /* ======== 底部操作键盘 ======== */
+        /* 强制在底部 */
+        #keyboard { width: 100%; max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.5); padding: 15px 15px 25px 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; z-index: 10; flex: none; }
+        
+        .key-btn { aspect-ratio: 1/1; border-radius: 12px; background: var(--key-bg); color: var(--text-main); font-size: 36px; font-weight: 900; border: none; border-bottom: 6px solid var(--key-border); cursor: pointer; transition: 0.1s; outline: none; display: flex; align-items: center; justify-content: center;}
         .key-btn:active { transform: translateY(6px); border-bottom-width: 0; }
-        .key-btn.wrong { background: #f43f5e; border-color: #be123c; animation: shake 0.2s; }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
+        .key-btn.wrong { background: #f43f5e; border-color: #be123c; animation: shakeBtn 0.2s; }
+        @keyframes shakeBtn { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
 
-        /* 开始/结束屏幕 */
+        /* UI 覆盖层 */
         .overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; text-align: center; padding: 20px; }
-        .overlay h1 { font-family: 'ZCOOL KuaiLe', cursive; font-size: 56px; margin: 0 0 20px 0; color: #facc15; text-shadow: 0 6px 0 #ca8a04; }
-        .overlay p { font-size: 20px; color: #cbd5e1; margin-bottom: 40px; line-height: 1.5; font-weight: 900; }
-        .overlay b { color: #f43f5e; }
-        .btn-start { background: #3b82f6; color: white; font-size: 26px; font-weight: 900; padding: 15px 40px; border-radius: 30px; border: 4px solid #93c5fd; box-shadow: 0 8px 0 #2563eb; cursor: pointer; transition: 0.1s; font-family: 'ZCOOL KuaiLe', cursive; }
+        .overlay h1 { font-size: 50px; margin: 0 0 20px 0; color: #facc15; text-shadow: 0 6px 0 #ca8a04; }
+        .overlay p { font-size: 20px; color: #cbd5e1; margin-bottom: 40px; font-weight: 900; }
+        .btn-start { background: #3b82f6; color: white; font-size: 26px; font-weight: 900; padding: 15px 40px; border-radius: 30px; border: 4px solid #93c5fd; box-shadow: 0 8px 0 #2563eb; cursor: pointer; transition: 0.1s; }
         .btn-start:active { transform: translateY(8px); box-shadow: 0 0 0 transparent; }
     </style>
 </head>
@@ -84,89 +82,99 @@
 
 <div id="sand-storm"></div>
 
-<div id="game-container">
-    <div id="header">
-        <div class="score-box">⭐️ <span id="score">0</span></div>
-        <div class="lives-box" id="lives">❤️❤️❤️</div>
-    </div>
-    
-    <div id="play-area">
-        <div id="defense-wall"></div>
-        </div>
-    
-    <div id="keyboard">
-        </div>
+<div id="header">
+    <div class="score-box">⭐️ <span id="score">0</span></div>
+    <div class="lives-box" id="lives">❤️❤️❤️</div>
+</div>
 
-    <div id="start-screen" class="overlay">
-        <h1>完美序列 · 大漠狂沙特快</h1>
-        <p>看准从<b>左边</b>疯狂冲刺过来的战车特快！<br>
-           在键盘上按顺序打对字根，<b>粉碎轮胎来强制减速</b>！<br>
-           打爆所有轮子，消灭怪物，守住右侧防线！<br><br>
-           Valerie 专用难度：多车同屏挑战！</p>
-        <button class="btn-start" onclick="startGame()">开始战斗 🚀</button>
+<div id="play-area">
+    <div id="defense-wall"></div>
     </div>
 
-    <div id="game-over-screen" class="overlay" style="display:none;">
-        <h1>Game Over</h1>
-        <p style="font-size:24px;">防线失守！你的得分: <span id="final-score" style="color:#facc15; font-weight:900; font-size:36px;">0</span></p>
-        <button class="btn-start" style="background:#10b981; border-color:#6ee7b7; box-shadow: 0 8px 0 #059669;" onclick="startGame()">再来一局 🔄</button>
+<div id="keyboard">
     </div>
+
+<div id="start-screen" class="overlay">
+    <h1 id="loading-msg">题库加载中...</h1>
+    <p>正在连接 Google Sheet 题库</p>
+</div>
+
+<div id="game-over-screen" class="overlay" style="display:none;">
+    <h1>Game Over</h1>
+    <p>防线失守！得分: <span id="final-score" style="color:#facc15; font-size:36px;">0</span></p>
+    <button class="btn-start" style="background:#10b981; border-color:#6ee7b7; box-shadow: 0 8px 0 #059669;" onclick="startGame()">再来一局 🔄</button>
 </div>
 
 <script>
-    // 💡 序列题库：包含目标字和【必须按顺序点击】的部件数组
-    const dictionary = [
-        { word: "请", parts: ["讠", "青"] },                 // 2轮
-        { word: "树", parts: ["木", "又", "寸"] },            // 3轮
-        { word: "跑", parts: ["足", "包"] },                  // 2轮
-        { word: "游", parts: ["氵", "方", "𠂉", "子"] },      // 4轮 坦克
-        { word: "照", parts: ["日", "刀", "口", "灬"] },      // 4轮 坦克
-        { word: "江", parts: ["氵", "工"] },                 // 2轮
-        { word: "机", parts: ["木", "几"] }                  // 2轮
-    ];
+    // 🌟 你的真实题库链接 (注意一定要确保表格里加了 "PARTS" 或 "部件" 这一列！)
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6wi8MMQvvVS7HukVf43huxpW1EOWZhfJpNQGi-2RAz0K37y2bYyZi2bTbbVhw2d5NlUfjxggCIvA3/pub?gid=266851979&single=true&output=csv";
 
-    // 干扰项偏旁池
-    const distractors = ["扌", "亻", "心", "月", "虫", "门", "广", "走", "雨", "艹", "口"];
+    // 全局题库
+    let dictionary = [];
+    const distractors = ["扌", "亻", "心", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日"];
 
     let score = 0;
     let lives = 3;
     let isPlaying = false;
-    let activeVehicles = []; // 存储当前在场上的所有战车数据
+    let activeVehicles = []; 
     let spawnTimer = null;
     let gameLoopRef = null;
-    let lastTime = 0; // 增量时间计算
+    let lastTime = 0; 
 
     const playArea = document.getElementById('play-area');
     const keyboard = document.getElementById('keyboard');
-    const defenseWallX = playArea.clientWidth; // 防线在最右侧
 
-    // --- 音效生成器 (纯代码) ---
+    // ========== 1. 加载 Google Sheet 数据 ==========
+    window.onload = function() {
+        Papa.parse(SHEET_URL + "&t=" + Date.now(), {
+            download: true, 
+            header: true, 
+            skipEmptyLines: 'greedy',
+            transformHeader: h => h.replace(/^\uFEFF/, '').trim().toUpperCase(),
+            complete: function(results) {
+                results.data.forEach(row => {
+                    let targetWord = row['ANSWER'] || row['CORRECT ANSWER'] || ""; 
+                    let partsStr = row['PARTS'] || row['部件'] || ""; 
+                    
+                    if (targetWord && partsStr) {
+                        dictionary.push({
+                            word: targetWord.trim(),
+                            parts: partsStr.split(/[,，]/).map(p => p.trim()) // 支持中英文逗号
+                        });
+                    }
+                });
+
+                const startScreen = document.getElementById('start-screen');
+                if (dictionary.length > 0) {
+                    startScreen.innerHTML = `
+                        <h1>大漠狂沙特快</h1>
+                        <p>已加载 <b>${dictionary.length}</b> 个装甲汉字！<br><br>看准目标，按顺序打出偏旁部首。<br>每打中一次，战车破损减速一挡！</p>
+                        <button class="btn-start" onclick="startGame()">全军出击 🚀</button>
+                    `;
+                } else {
+                    startScreen.innerHTML = `<h1>数据加载失败</h1><p>请检查表格中是否添加了【PARTS】或【部件】列，并用逗号隔开。</p>`;
+                }
+            }
+        });
+    };
+
+    // 音效
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
-
-        if (type === 'hit') { // 打中爆胎：街机清脆声
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+        if (type === 'hit') {
+            osc.type = 'square'; osc.frequency.setValueAtTime(500, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        } else if (type === 'explode') { // 死亡：沉闷爆炸
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
-            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-        } else if (type === 'wrong') { // 打错：警告音
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        } else if (type === 'explode') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+        } else if (type === 'wrong') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
             osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         }
     }
@@ -174,6 +182,8 @@
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('game-over-screen').style.display = 'none';
+        
+        // 保留防线，清除多余战车
         playArea.innerHTML = '<div id="defense-wall"></div>';
         activeVehicles = [];
         score = 0;
@@ -183,7 +193,7 @@
         isPlaying = true;
         if (audioCtx.state === 'suspended') audioCtx.resume();
         
-        spawnTimer = setTimeout(spawnVehicleLoop, 1000); // 1秒后开始生成
+        spawnTimer = setTimeout(spawnVehicleLoop, 1000); 
         lastTime = performance.now();
         gameLoopRef = requestAnimationFrame(gameLoop);
     }
@@ -193,112 +203,103 @@
         document.getElementById('lives').innerText = "❤️".repeat(lives) + "🖤".repeat(3-lives);
     }
 
-    // 循环生成怪物 (多车同屏)
     function spawnVehicleLoop() {
         if (!isPlaying) return;
-        
         spawnVehicle();
-        
-        // 随机生成间隔，造成超车现象
-        let interval = 3000 + Math.random() * 2000; 
+        let interval = 3000 + Math.random() * 2500; // 随机出兵间隔
         spawnTimer = setTimeout(spawnVehicleLoop, interval);
     }
 
-    // 生成一辆新战车数据
+    // 🌟 获取图片路径的辅助函数：完美适配你的命名规则
+    function getImagePath(totalParts, currentHits) {
+        // totalParts: 比如 3个部件就是 3轮车
+        // currentHits: 0(出场) -> 1 -> 2 -> 3(爆破)
+        // 对应图片: 3l1.png -> 3l2.png -> 3l3.png -> 3l4.png
+        let stateNum = currentHits + 1;
+        return `redicalfiles/${totalParts}l${stateNum}.png`;
+    }
+
     function spawnVehicle() {
-        // 随机抽取一道题
         const wordData = dictionary[Math.floor(Math.random() * dictionary.length)];
-        
-        // 分配一个车道 (Y 坐标)，避免重合
-        let lanePos = 30 + Math.random() * (playArea.clientHeight - 200); 
+        const totalP = wordData.parts.length;
+        let lanePos = 20 + Math.random() * (playArea.clientHeight - 180); 
 
         const el = document.createElement('div');
         el.className = 'tank-vehicle';
         
-        // 生成车轮 Emoji (根据部件数)
-        let wheelsHtml = wordData.parts.map((p, i) => `<div class="wheel" id="wheel-${p}">🛞</div>`).join('');
-        
-        // 白模结构：锈铁棕色方块 + 车轮
+        // 初始图片状态
+        const initialImgSrc = getImagePath(totalP, 0);
+
+        // 🌟 将汉字绝对定位覆盖在真实的 PNG 图片上
         el.innerHTML = `
-            <div class="tank-body" id="tank-body">
+            <div class="vehicle-wrapper">
+                <img src="${initialImgSrc}" class="vehicle-img" id="img-${Date.now()}" onerror="this.src=''; this.alt='缺图:${totalP}l1'">
                 <div class="target-char">${wordData.word}</div>
-            </div>
-            <div class="wheels-container">
-                ${wheelsHtml}
             </div>
         `;
         el.style.top = lanePos + 'px';
         playArea.appendChild(el);
         
-        // 🌟 硬核速度逻辑设定：不管几轮车，初始都是满速出击！给你极大的压迫感！
-        const base_speed_on_start = 1.6 + Math.random() * 0.4; // 1.6 - 2.0 之间的基础初速
+        const base_speed_on_start = 1.2 + Math.random() * 0.6; // 初始全速
 
         activeVehicles.push({
-            id: Date.now(), // 唯一ID，用于精准射击
+            id: Date.now(),
             el: el,
-            bodyEl: el.querySelector('.tank-body'),
-            x: -200, // 初始位置在屏幕外
-            totalParts: wordData.parts.length,
-            targetParts: [...wordData.parts], // 待点击的部件序列
-            nextPartIndex: 0, // 当前应该打第几个
-            baseSpeed: base_speed_on_start, // 初始四挡全速
-            currentSpeed: base_speed_on_start, // 当前速度
-            wheelsRemaining: wordData.parts.length // 剩余车轮数
+            imgEl: el.querySelector('.vehicle-img'), // 用于切换 SRC 的图片元素
+            x: -200, 
+            totalParts: totalP,
+            targetParts: [...wordData.parts], 
+            hits: 0, // 当前被打了几下
+            baseSpeed: base_speed_on_start, 
+            currentSpeed: base_speed_on_start 
         });
 
-        // 战车生成时，刷新底部键盘，保证至少有这几个战车的开头字母
         renderKeyboardPool();
     }
 
-    // 游戏主循环 (物理引擎)
     function gameLoop(currentTime) {
         if (!isPlaying) return;
-        
-        let delta = (currentTime - lastTime) / 16.67; // 计算增量时间，保证不同帧率下速度一致
+        let delta = (currentTime - lastTime) / 16.67; 
         lastTime = currentTime;
+
+        let defenseWallX = playArea.clientWidth; 
 
         for (let i = activeVehicles.length - 1; i >= 0; i--) {
             let v = activeVehicles[i];
             
-            // 🌟 核心速度计算：当前速度 = 初始速度 × (剩余轮子 / 总部件数)
-            // 完美实现：打爆一个轮子，速度降低一挡。
-            v.currentSpeed = v.baseSpeed * (v.wheelsRemaining / v.totalParts);
+            // 四挡减速逻辑：依据剩余部件计算速度
+            let partsRemaining = v.totalParts - v.hits;
+            v.currentSpeed = v.baseSpeed * (partsRemaining / v.totalParts);
             
             v.x += v.currentSpeed * delta;
             v.el.style.left = v.x + 'px';
             
-            // 如果战车撞击到最右侧的防线
-            if (v.x >= defenseWallX - 150) { 
+            // 防线碰撞检测 (右侧判定)
+            if (v.x >= defenseWallX - 120) { 
                 v.el.remove();
                 activeVehicles.splice(i, 1);
                 lives--;
                 updateUI();
-                
-                // 防线闪红提示受伤
                 playArea.classList.add('hurt');
                 setTimeout(() => playArea.classList.remove('hurt'), 150);
-
                 if (lives <= 0) gameOver();
             }
         }
-        
         gameLoopRef = requestAnimationFrame(gameLoop);
     }
 
-    // 🌟 核心交互逻辑：玩家在键盘上点击了一个偏旁
+    // 处理键盘点击
     function handleKeyPress(char, btnElement) {
         if (!isPlaying) return;
         
-        // 找到屏幕上所有战车里，目前最应该打的、最靠近防线的那辆车（寻找目标）
-        // 这里采用简单的逻辑：找出所有目标列表中开头字母与 char 匹配，且最靠右的那辆车。
         let targetVehicleIndex = -1;
         let maxX = -999;
         
+        // 寻找符合按键、且冲得最前面的战车
         for (let i = 0; i < activeVehicles.length; i++) {
             let v = activeVehicles[i];
-            // 必须是 Perfect Sequence：严格比对数组中的 nextPartIndex
-            if (v.targetParts[v.nextPartIndex] === char) {
-                if (v.x > maxX) { // 优先攻击靠右的车
+            if (v.targetParts[v.hits] === char) {
+                if (v.x > maxX) {
                     maxX = v.x;
                     targetVehicleIndex = i;
                 }
@@ -306,36 +307,29 @@
         }
         
         if (targetVehicleIndex !== -1) {
-            // ✅ 打对了！Perfect Combo!
             playSound('hit');
             let v = activeVehicles[targetVehicleIndex];
             
-            // 1. 车身冒出红光，产生Hit Stun（短暂受击停顿，通过速度降低实现）
-            v.bodyEl.classList.add('hurt');
-            setTimeout(() => v.bodyEl.classList.remove('hurt'), 100);
+            v.hits++; // 增加受击次数
+
+            // 🌟 核心：切换战损图片！
+            let newImgSrc = getImagePath(v.totalParts, v.hits);
+            v.imgEl.src = newImgSrc;
             
-            // 2. 爆掉对应的轮子
-            let wheel = v.el.querySelector('.wheels-container').querySelectorAll('.wheel')[v.nextPartIndex];
-            if (wheel) {
-                wheel.classList.add('blown'); // 播放旋转飞出动画
-            }
+            // 受击闪光动画
+            v.imgEl.classList.add('hurt');
+            setTimeout(() => v.imgEl.classList.remove('hurt'), 150);
             
-            // 3. 更新连击进度，物理引擎会在下一帧自动降低速度（即实现四挡减速逻辑）
-            v.nextPartIndex++;
-            v.wheelsRemaining--;
             score += 10;
             updateUI();
             
-            // 4. 检查是否连击全对（死亡条件）
-            if (v.nextPartIndex >= v.totalParts) {
-                // 延迟死亡，播放爆胎后慢慢爆炸消失的过程
-                setTimeout(() => killVehicle(v.id), 200);
+            // 检查是否打满
+            if (v.hits >= v.totalParts) {
+                setTimeout(() => killVehicle(v.id), 200); // 稍微延迟，展示最后爆炸形态(3l4等)
             } else {
-                // 如果还需要继续打，更新键盘，保证新的目标部件在卡池里
                 renderKeyboardPool();
             }
         } else {
-            // ❌ 打错了！
             playSound('wrong');
             btnElement.classList.add('wrong');
             setTimeout(() => btnElement.classList.remove('wrong'), 200);
@@ -343,61 +337,45 @@
     }
 
     function killVehicle(vehicleId) {
-        // 在数组中找到这辆车
         let index = activeVehicles.findIndex(v => v.id === vehicleId);
         if(index === -1) return;
         let v = activeVehicles[index];
 
         playSound('explode');
-        // 最终效果：大汉字直接炸碎
-        v.el.classList.add('exploded');
         
-        // 彻底移除出物理循环
+        // 播放整体消失特效
+        v.el.classList.add('exploded');
         activeVehicles.splice(index, 1);
         
-        // 如果消灭的是最后一块字根，得分更高
         score += 20;
         updateUI();
         
+        // 彻底移除DOM节点
         setTimeout(() => {
             v.el.remove();
-            // 检查是不是没有怪物了，刷新键盘
-            if (activeVehicles.length === 0) {
-                renderKeyboardPool();
-            }
-        }, 300);
+            if (activeVehicles.length === 0) renderKeyboardPool();
+        }, 400);
     }
 
-    // ======== 动态弹药库 (底部键盘) 管理 ========
-    
-    // 刷新底部键盘，保证场上所有战车需要的开头字母（或新字根）都在里面
+    // 动态渲染底部按键 (仅包含场上战车需要的部件 + 干扰项)
     function renderKeyboardPool() {
-        // 提取场上所有战车当前的目标部件
         let targetRadicals = [];
         activeVehicles.forEach(v => {
-            if(v.targetParts[v.nextPartIndex]) {
-                targetRadicals.push(v.targetParts[v.nextPartIndex]);
+            if(v.targetParts[v.hits]) {
+                targetRadicals.push(v.targetParts[v.hits]);
             }
         });
         
-        // 去重
         let keys = [...new Set(targetRadicals)];
-        
-        // 干扰项池打乱
         let availableDistractors = [...distractors].sort(() => 0.5 - Math.random());
         
-        // 湊够 8 个按键
+        // 填满 8 个槽位
         while (keys.length < 8) {
             let dis = availableDistractors.pop();
-            if(!keys.includes(dis)) { // 不要加重复的干扰项
-                keys.push(dis);
-            }
+            if(!keys.includes(dis)) keys.push(dis);
         }
-
-        // 打乱按键顺序，造成混乱感
         keys.sort(() => 0.5 - Math.random());
 
-        // 渲染键盘
         keyboard.innerHTML = keys.map(k => `
             <button class="key-btn" onclick="handleKeyPress('${k}', this)">${k}</button>
         `).join('');
@@ -411,6 +389,5 @@
         document.getElementById('game-over-screen').style.display = 'flex';
     }
 </script>
-
 </body>
 </html>
