@@ -3,286 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>偏旁消除战</title>
+    <title>汉字战车连击</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; font-family: 'Nunito', "Chalkboard SE", sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; padding: 0; height: 100vh; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; color: white; }
+        body { margin: 0; height: 100vh; background: #1e293b; display: flex; flex-direction: column; align-items: center; justify-content: space-between; overflow: hidden; color: white; }
         
-        #game-container { width: 100%; max-width: 500px; height: 100%; max-height: 850px; background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); position: relative; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
+        #game-area { flex: 1; width: 100%; max-width: 600px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border-bottom: 4px solid #334155; }
+
+        /* 战车怪物主体 */
+        .cart-monster { position: absolute; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; }
         
-        /* 顶部状态栏 */
-        #header { display: flex; justify-content: space-between; padding: 15px 20px; font-size: 24px; font-weight: 900; background: rgba(255,255,255,0.05); z-index: 10; border-bottom: 2px solid rgba(255,255,255,0.1); flex: none; }
-        .score-text { color: #38bdf8; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .lives-text { color: #f43f5e; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-
-        /* 游戏掉落区 */
-        #play-area { flex: 1; position: relative; overflow: hidden; }
-
-        /* 下落的怪物方块 */
-        .monster { position: absolute; width: 140px; left: 50%; margin-left: -70px; background: #fff; border-radius: 16px; padding: 10px; text-align: center; box-shadow: 0 8px 0 #cbd5e1, 0 15px 20px rgba(0,0,0,0.3); border: 4px solid #e2e8f0; transition: transform 0.1s; }
-        .monster .hint { font-size: 16px; color: #64748b; font-weight: 900; margin-bottom: 4px; }
-        .monster .equation { font-size: 26px; color: #0f172a; font-weight: 900; }
-        .monster .equation span { color: #f43f5e; } /* 问号标红 */
+        /* 怪物提示与血条区 */
+        .monster-body { background: #f8fafc; border: 4px solid #cbd5e1; border-radius: 20px; padding: 15px 20px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); position: relative; z-index: 2; width: 220px; transition: transform 0.1s; }
+        .monster-face { font-size: 40px; margin-bottom: 5px; }
+        .hint-text { color: #64748b; font-size: 20px; font-weight: 900; margin-bottom: 10px; }
         
-        /* 消除动画 */
-        .monster.explode { transform: scale(1.3); opacity: 0; transition: all 0.2s ease-out; }
+        /* 填空插槽区 */
+        .slots-container { display: flex; justify-content: center; gap: 8px; }
+        .slot { width: 40px; height: 40px; border: 3px dashed #94a3b8; border-radius: 8px; font-size: 24px; font-weight: 900; color: #0f172a; display: flex; align-items: center; justify-content: center; background: #e2e8f0; }
+        .slot.filled { background: #34d399; border-style: solid; border-color: #10b981; color: white; transform: scale(1.1); transition: 0.2s; }
 
-        /* 底部控制台 (炮台) */
-        #controls { display: flex; gap: 10px; padding: 20px 15px 30px 15px; background: #1e293b; border-top: 4px solid #334155; z-index: 10; flex: none; }
-        .btn-radical { flex: 1; aspect-ratio: 1/1; border-radius: 20px; font-size: 40px; font-weight: 900; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 0 rgba(0,0,0,0.3); transition: 0.1s; outline: none; }
-        .btn-radical:active { transform: translateY(8px); box-shadow: 0 0 0 transparent; }
-        
-        /* 四个炮台的颜色 */
-        #btn-shui { background: #38bdf8; color: white; border: 3px solid #7dd3fc; } /* 氵 */
-        #btn-shou { background: #a855f7; color: white; border: 3px solid #d8b4fe; } /* 扌 */
-        #btn-mu   { background: #10b981; color: white; border: 3px solid #6ee7b7; } /* 木 */
-        #btn-kou  { background: #f59e0b; color: white; border: 3px solid #fcd34d; } /* 口 */
+        /* 车轮区域 */
+        .wheels-container { display: flex; justify-content: space-evenly; width: 100%; margin-top: -10px; z-index: 1; }
+        .wheel { font-size: 35px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* 爆胎动画 */
+        .wheel.blown { transform: translate(50px, -50px) rotate(360deg) scale(0); opacity: 0; }
 
-        /* 开始/结束屏幕 */
-        .overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; text-align: center; padding: 20px; }
-        .overlay h1 { font-size: 46px; margin: 0 0 20px 0; color: #facc15; text-shadow: 0 4px 0 #ca8a04; }
-        .overlay p { font-size: 20px; color: #cbd5e1; margin-bottom: 40px; line-height: 1.5; }
-        .btn-start { background: #3b82f6; color: white; font-size: 26px; font-weight: 900; padding: 15px 40px; border-radius: 30px; border: 4px solid #93c5fd; box-shadow: 0 8px 0 #2563eb; cursor: pointer; transition: 0.1s; }
-        .btn-start:active { transform: translateY(8px); box-shadow: 0 0 0 transparent; }
+        /* 整体爆炸动画 */
+        .cart-monster.dead { transform: scale(1.5); opacity: 0; transition: all 0.3s ease-out; }
+
+        /* 底部动态键盘 */
+        #keyboard { width: 100%; max-width: 600px; background: #0f172a; padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .key-btn { aspect-ratio: 1/1; border-radius: 16px; background: #38bdf8; color: white; font-size: 32px; font-weight: 900; border: none; border-bottom: 6px solid #0284c7; cursor: pointer; transition: 0.1s; outline: none; display: flex; align-items: center; justify-content: center; }
+        .key-btn:active { transform: translateY(6px); border-bottom-width: 0; }
+        .key-btn.wrong { background: #ef4444; border-color: #b91c1c; transform: translateX(5px); }
+
+        /* 顶部通关提示 */
+        #status { position: absolute; top: 20px; font-size: 24px; font-weight: 900; color: #facc15; }
     </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="header">
-        <div class="score-text">⭐️ <span id="score">0</span></div>
-        <div class="lives-text">❤️ <span id="lives">3</span></div>
-    </div>
-    
-    <div id="play-area"></div>
-    
-    <div id="controls">
-        <button class="btn-radical" id="btn-shui" onclick="shoot('氵')">氵</button>
-        <button class="btn-radical" id="btn-shou" onclick="shoot('扌')">扌</button>
-        <button class="btn-radical" id="btn-mu" onclick="shoot('木')">木</button>
-        <button class="btn-radical" id="btn-kou" onclick="shoot('口')">口</button>
-    </div>
+    <div id="status">Combo Defender 🚀</div>
 
-    <div id="start-screen" class="overlay">
-        <h1>偏旁消除战</h1>
-        <p>看准掉下来的字根，<br>按下正确的偏旁大炮，合成汉字！<br><br>💡 只有20个字，但速度会越来越快哦！</p>
-        <button class="btn-start" onclick="startGame()">开始战斗 🚀</button>
-    </div>
+    <div id="game-area">
+        </div>
 
-    <div id="game-over-screen" class="overlay" style="display:none;">
-        <h1>Game Over</h1>
-        <p style="font-size:24px;">你的得分: <span id="final-score" style="color:#38bdf8; font-weight:900; font-size:36px;">0</span></p>
-        <button class="btn-start" style="background:#10b981; border-color:#6ee7b7; box-shadow: 0 8px 0 #059669;" onclick="startGame()">再玩一次 🔄</button>
-    </div>
-</div>
+    <div id="keyboard">
+        </div>
 
 <script>
-    // 💡 极简题库：仅仅 20 个围绕这四个偏旁的生字！
+    // 题库设计：包含提示、整体汉字、以及【必须按顺序输入】的部件拆解
     const dictionary = [
-        { r: "氵", b: "青", res: "清", h: "清洁" },
-        { r: "氵", b: "包", res: "泡", h: "水泡" },
-        { r: "氵", b: "主", res: "注", h: "注意" },
-        { r: "氵", b: "工", res: "江", h: "长江" },
-        { r: "氵", b: "每", res: "海", h: "海洋" },
-        
-        { r: "扌", b: "包", res: "抱", h: "拥抱" },
-        { r: "扌", b: "巴", res: "把", h: "一把" },
-        { r: "扌", b: "白", res: "拍", h: "拍手" },
-        { r: "扌", b: "丁", res: "打", h: "打球" },
-        { r: "扌", b: "立", res: "拉", h: "拉手" },
-        
-        { r: "木", b: "寸", res: "村", h: "村子" },
-        { r: "木", b: "交", res: "校", h: "学校" },
-        { r: "木", b: "几", res: "机", h: "飞机" },
-        { r: "木", b: "白", res: "柏", h: "柏树" },
-        { r: "木", b: "公", res: "松", h: "松树" },
-        
-        { r: "口", b: "巴", res: "吧", h: "好吧" },
-        { r: "口", b: "马", res: "吗", h: "好吗" },
-        { r: "口", b: "交", res: "咬", h: "咬人" },
-        { r: "口", b: "乞", res: "吃", h: "吃饭" },
-        { r: "口", b: "斤", res: "听", h: "听话" }
+        { word: "请", hint: "请客", parts: ["讠", "青"] },                 // 2轮车
+        { word: "树", hint: "树木", parts: ["木", "又", "寸"] },            // 3轮车
+        { word: "游", hint: "游泳", parts: ["氵", "方", "𠂉", "子"] },      // 4轮车 Boss
+        { word: "照", hint: "照片", parts: ["日", "刀", "口", "灬"] },      // 4轮车 Boss
+        { word: "跑", hint: "跑步", parts: ["足", "包"] }                  // 2轮车
     ];
 
-    let score = 0;
-    let lives = 3;
-    let isPlaying = false;
-    let activeMonsters = [];
-    let spawnTimer = null;
-    let animationFrame = null;
-    let baseSpeed = 1; // 初始下落速度
-    let spawnInterval = 2500; // 初始生成间隔(毫秒)
+    // 干扰项偏旁池
+    const distractors = ["扌", "亻", "心", "月", "虫", "门", "广", "走", "雨"];
 
-    const playArea = document.getElementById('play-area');
-    
-    // --- 音效生成器 (纯代码，无需下载音频文件) ---
+    let currentLevel = 0;
+    let currentMonster = null;
+    let currentPartIndex = 0; // 当前打到了第几个部件
+
+    const gameArea = document.getElementById('game-area');
+    const keyboard = document.getElementById('keyboard');
+
+    // 简单的网页合成音效
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        osc.connect(gain); gain.connect(audioCtx.destination);
 
         if (type === 'hit') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
             osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        } else if (type === 'miss' || type === 'wrong') {
+        } else if (type === 'explode') {
             osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'wrong') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
             gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
             osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         }
     }
 
-    function startGame() {
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('game-over-screen').style.display = 'none';
-        playArea.innerHTML = '';
-        activeMonsters = [];
-        score = 0;
-        lives = 3;
-        baseSpeed = 1.2;
-        spawnInterval = 2500;
-        updateUI();
-        
-        isPlaying = true;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        
-        spawnMonster(); // 立刻生成第一个
-        scheduleNextSpawn();
-        animationLoop();
+    function loadLevel() {
+        if (currentLevel >= dictionary.length) {
+            gameArea.innerHTML = `<h1 style="color:#10b981; font-size:40px;">全部消灭！🎉</h1>`;
+            keyboard.innerHTML = '';
+            return;
+        }
+
+        currentMonster = dictionary[currentLevel];
+        currentPartIndex = 0; // 重置连击进度
+
+        renderMonster();
+        renderKeyboard();
     }
 
-    function updateUI() {
-        document.getElementById('score').innerText = score;
-        document.getElementById('lives').innerText = lives;
-    }
-
-    function scheduleNextSpawn() {
-        if (!isPlaying) return;
-        spawnTimer = setTimeout(() => {
-            spawnMonster();
-            scheduleNextSpawn();
-        }, spawnInterval);
-    }
-
-    function spawnMonster() {
-        if (!isPlaying) return;
+    function renderMonster() {
+        // 生成插槽 HTML
+        let slotsHtml = currentMonster.parts.map((p, i) => `<div class="slot" id="slot-${i}"></div>`).join('');
         
-        // 随机抽取一道题
-        const word = dictionary[Math.floor(Math.random() * dictionary.length)];
-        
-        const el = document.createElement('div');
-        el.className = 'monster';
-        el.innerHTML = `
-            <div class="hint">${word.h}</div>
-            <div class="equation"><span>[?]</span> + ${word.b}</div>
+        // 生成车轮 HTML（几个部件就几个轮子）
+        let wheelsHtml = currentMonster.parts.map((p, i) => `<div class="wheel" id="wheel-${i}">🛞</div>`).join('');
+
+        gameArea.innerHTML = `
+            <div class="cart-monster" id="monster-obj">
+                <div class="monster-body" id="monster-body">
+                    <div class="monster-face">👾</div>
+                    <div class="hint-text">(　) ➡️ ${currentMonster.hint}</div>
+                    <div class="slots-container">
+                        ${slotsHtml}
+                    </div>
+                </div>
+                <div class="wheels-container">
+                    ${wheelsHtml}
+                </div>
+            </div>
         `;
-        
-        // 随机水平位置 (稍微偏移，避免都在正中间)
-        const offset = (Math.random() - 0.5) * 160; 
-        el.style.transform = `translateX(${offset}px)`;
-        
-        // 初始高度
-        let yPos = -100;
-        el.style.top = yPos + 'px';
-        
-        playArea.appendChild(el);
-        
-        activeMonsters.push({
-            el: el,
-            y: yPos,
-            radical: word.r,
-            result: word.res
-        });
-
-        // 难度递增：每生成一个，速度变快一点，间隔变短一点
-        baseSpeed += 0.02;
-        if(spawnInterval > 800) spawnInterval -= 20; 
     }
 
-    function animationLoop() {
-        if (!isPlaying) return;
+    function renderKeyboard() {
+        // 提取当前怪兽需要的正确部件
+        let neededParts = [...currentMonster.parts];
         
-        const areaHeight = playArea.clientHeight;
-        
-        for (let i = activeMonsters.length - 1; i >= 0; i--) {
-            let m = activeMonsters[i];
-            m.y += baseSpeed;
-            m.el.style.top = m.y + 'px';
-            
-            // 如果掉到底部没被消除
-            if (m.y > areaHeight - 80) {
-                playSound('miss');
-                m.el.remove();
-                activeMonsters.splice(i, 1);
-                lives--;
-                updateUI();
-                
-                // 屏幕闪红提示受伤
-                playArea.style.backgroundColor = "rgba(244, 63, 94, 0.3)";
-                setTimeout(() => playArea.style.backgroundColor = "transparent", 100);
-
-                if (lives <= 0) gameOver();
-            }
+        // 随机抽取干扰项，凑够 8 个按键
+        let keys = [...neededParts];
+        let availableDistractors = [...distractors].sort(() => 0.5 - Math.random());
+        while (keys.length < 8) {
+            keys.push(availableDistractors.pop());
         }
-        
-        animationFrame = requestAnimationFrame(animationLoop);
+
+        // 打乱按键顺序
+        keys.sort(() => 0.5 - Math.random());
+
+        // 渲染键盘
+        keyboard.innerHTML = keys.map(k => `
+            <button class="key-btn" onclick="handleKeyPress('${k}', this)">${k}</button>
+        `).join('');
     }
 
-    // 玩家点击底部炮台
-    function shoot(radicalShot) {
-        if (!isPlaying) return;
-        
-        // 寻找最下面（Y坐标最大）且匹配的怪物
-        let targetIndex = -1;
-        let maxY = -999;
-        
-        for (let i = 0; i < activeMonsters.length; i++) {
-            if (activeMonsters[i].radical === radicalShot) {
-                if (activeMonsters[i].y > maxY) {
-                    maxY = activeMonsters[i].y;
-                    targetIndex = i;
-                }
-            }
-        }
-        
-        if (targetIndex !== -1) {
-            // 命中！
+    function handleKeyPress(char, btnElement) {
+        if (!currentMonster) return;
+
+        let expectedChar = currentMonster.parts[currentPartIndex];
+
+        if (char === expectedChar) {
+            // ✅ 打对了！
             playSound('hit');
-            let target = activeMonsters[targetIndex];
-            
-            // 变成合成后的汉字并爆炸
-            target.el.innerHTML = `<div class="equation" style="font-size:40px; color:#10b981;">${target.result}</div>`;
-            target.el.classList.add('explode');
-            
-            // 从数组中移除，但保留DOM播放完动画
-            activeMonsters.splice(targetIndex, 1);
-            score += 10;
-            updateUI();
-            
-            setTimeout(() => target.el.remove(), 200);
+
+            // 1. 填满对应的插槽
+            let slot = document.getElementById(`slot-${currentPartIndex}`);
+            slot.innerText = char;
+            slot.classList.add('filled');
+
+            // 2. 爆掉一个车轮！
+            let wheel = document.getElementById(`wheel-${currentPartIndex}`);
+            wheel.classList.add('blown');
+
+            // 3. 让车子往下沉一点（模拟战损）
+            let body = document.getElementById('monster-body');
+            body.style.transform = `translateY(${(currentPartIndex + 1) * 5}px) rotate(${(currentPartIndex % 2 === 0 ? 1 : -1) * 3}deg)`;
+
+            currentPartIndex++;
+
+            // 检查是否全部打完
+            if (currentPartIndex >= currentMonster.parts.length) {
+                setTimeout(killMonster, 300);
+            }
         } else {
-            // 打错了，播放错误音效
+            // ❌ 打错了！
             playSound('wrong');
+            btnElement.classList.add('wrong');
+            setTimeout(() => btnElement.classList.remove('wrong'), 200);
+            
+            // 怪兽摇晃挑衅
+            let body = document.getElementById('monster-body');
+            body.style.transform = `translateX(10px)`;
+            setTimeout(() => body.style.transform = `translateX(-10px)`, 100);
+            setTimeout(() => body.style.transform = `translateX(0)`, 200);
         }
     }
 
-    function gameOver() {
-        isPlaying = false;
-        clearTimeout(spawnTimer);
-        cancelAnimationFrame(animationFrame);
-        document.getElementById('final-score').innerText = score;
-        document.getElementById('game-over-screen').style.display = 'flex';
+    function killMonster() {
+        playSound('explode');
+        let obj = document.getElementById('monster-obj');
+        
+        // 把所有的部件合成最终的汉字，并变大爆炸
+        obj.innerHTML = `<div style="font-size: 100px; font-weight: 900; color: #10b981; text-shadow: 0 0 30px #34d399;">${currentMonster.word}</div>`;
+        obj.classList.add('dead');
+
+        // 延迟进入下一关
+        setTimeout(() => {
+            currentLevel++;
+            loadLevel();
+        }, 1000);
     }
+
+    // 初始化游戏
+    window.onload = loadLevel;
 </script>
 
 </body>
