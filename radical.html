@@ -87,7 +87,7 @@
 </div>
 
 <script>
-    // 🌟 更新了 GID 为 573238154 (HYPY分页)
+    // 🌟 GID 573238154 (HYPY分页)
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ6wi8MMQvvVS7HukVf43huxpW1EOWZhfJpNQGi-2RAz0K37y2bYyZi2bTbbVhw2d5NlUfjxggCIvA3/pub?gid=573238154&single=true&output=csv";
 
     let dictionary = [];
@@ -109,11 +109,11 @@
             download: true, 
             header: true, 
             skipEmptyLines: 'greedy',
-            transformHeader: h => h.replace(/^\uFEFF/, '').trim().toUpperCase(), // 转大写处理
+            transformHeader: h => h.replace(/^\uFEFF/, '').trim().toUpperCase(), 
             complete: function(results) {
                 results.data.forEach(row => {
-                    // 逻辑：寻找 ANSWER 列，以及你指定的 PARTS (Parts) 列
-                    let targetWord = row['QUESTION'] || row['CORRECT ANSWER'] || ""; 
+                    // 🌟 重点修改：优先读取 'QUESTION' (即表格里的 Question 列)
+                    let targetWord = row['QUESTION'] || row['ANSWER'] || row['CORRECT ANSWER'] || ""; 
                     let partsStr = row['PARTS'] || row['部件'] || ""; 
                     
                     if (targetWord && partsStr) {
@@ -132,7 +132,7 @@
                         <button class="btn-start" onclick="startGame()">全军出击 🚀</button>
                     `;
                 } else {
-                    startScreen.innerHTML = `<h1>数据加载失败</h1><p>请检查表格 [HYPY] 中是否有 [ANSWER] 和 [Parts] 列。</p>`;
+                    startScreen.innerHTML = `<h1>数据加载失败</h1><p>请检查表格 [HYPY] 中是否有 [Question] 和 [Parts] 列。</p>`;
                 }
             }
         });
@@ -187,7 +187,6 @@
 
     function getImagePath(totalParts, currentHits) {
         let stateNum = currentHits + 1;
-        // 限制状态图最高不超过 5 档（应对某些超长部件字）
         if (stateNum > 5) stateNum = 5; 
         return `redicalfiles/${totalParts}l${stateNum}.png`;
     }
@@ -196,7 +195,6 @@
         if (dictionary.length === 0) return;
         const wordData = dictionary[Math.floor(Math.random() * dictionary.length)];
         const totalP = wordData.parts.length;
-        // 限制只处理 2, 3, 4 轮的图片资源，如果表格有 5 轮的，强制按 4 轮逻辑走图片
         const displayP = totalP > 4 ? 4 : (totalP < 2 ? 2 : totalP); 
         
         let lanePos = 20 + Math.random() * (playArea.clientHeight - 180); 
@@ -222,7 +220,7 @@
             imgEl: el.querySelector('.vehicle-img'),
             x: -200, 
             totalParts: totalP,
-            displayParts: displayP, // 实际图片的轮数
+            displayParts: displayP, 
             targetParts: [...wordData.parts], 
             hits: 0,
             baseSpeed: base_speed_on_start, 
@@ -278,7 +276,6 @@
             let v = activeVehicles[targetVehicleIndex];
             v.hits++; 
 
-            // 更新图片状态
             let newImgSrc = getImagePath(v.displayParts, v.hits);
             v.imgEl.src = newImgSrc;
             v.imgEl.classList.add('hurt');
