@@ -10,12 +10,12 @@
         * { box-sizing: border-box; font-family: 'Nunito', "Chalkboard SE", sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
         
         :root {
-            --bg-desert-top: #f59e0b; 
-            --bg-desert-bottom: #ca8a04; 
-            --key-bg: #92400e; 
-            --key-border: #713f12; 
-            --text-main: #fef3c7; 
-            --defense-line: #f43f5e; 
+            --bg-desert-top: #f9d5e5; 
+            --bg-desert-bottom: #cde7ff; 
+            --key-bg: #ffffff; 
+            --key-border: #c4b5fd; 
+            --text-main: #4c1d95; 
+            --defense-line: #fb7185; 
         }
 
         body { 
@@ -35,24 +35,24 @@
             #keyboard { padding: 10px 15px 18px 15px; }
         }
         
-        #sand-storm { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.3; background-image: radial-gradient(white 1px, transparent 1px); background-size: 50px 50px; animation: windScroll 15s linear infinite; }
+        #sand-storm { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.22; background-image: radial-gradient(white 1px, transparent 1px); background-size: 60px 60px; animation: windScroll 18s linear infinite; }
         @keyframes windScroll { from { background-position: 0 0; } to { background-position: 500px 500px; } }
 
-        #header { width: 100%; max-width: 800px; display: flex; justify-content: space-between; padding: 15px 25px; background: rgba(0,0,0,0.2); z-index: 10; border-bottom: 3px solid rgba(255,255,255,0.2); }
-        .score-box { color: #facc15; }
-        .lives-box { color: #f43f5e; font-size: 24px; letter-spacing: 2px; }
+        #header { width: 100%; display: flex; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.45); z-index: 10; border-bottom: 2px solid rgba(255,255,255,0.85); backdrop-filter: blur(4px); }
+        .score-box { color: #7c3aed; font-size: 24px; font-weight: 900; }
+        .lives-box { color: #f43f5e; font-size: 22px; letter-spacing: 2px; }
 
-        #play-area { flex: 1 1 auto; width: 100%; max-width: 800px; margin: 0 auto; position: relative; overflow: hidden; z-index: 5; border-bottom: 4px solid var(--key-border); }
-        #defense-wall { position: absolute; top: 0; right: 0; bottom: 0; width: 10px; background: var(--defense-line); box-shadow: -5px 0 15px rgba(244, 63, 94, 0.7); z-index: 6; }
+        #play-area { flex: 1 1 auto; width: 100vw; position: relative; overflow: hidden; z-index: 5; border-bottom: 3px solid #f9a8d4; background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(219,234,254,0.2)); }
+        #defense-wall { position: absolute; top: 0; right: 0; bottom: 0; width: 8px; background: var(--defense-line); box-shadow: -3px 0 10px rgba(251, 113, 133, 0.6); z-index: 6; }
         #play-area.hurt { animation: screenFlash 0.15s; }
         @keyframes screenFlash { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(244, 63, 94, 0.3); } }
 
         .tank-vehicle { position: absolute; left: -250px; transition: left 0.05s linear; z-index: 7; display: flex; flex-direction: column; align-items: center; justify-content: center;}
         .vehicle-wrapper { position: relative; display: inline-block; }
-        .vehicle-img { height: 120px; object-fit: contain; transition: transform 0.1s; }
-        .target-char { position: absolute; top: 15%; left: 0; width: 100%; text-align: center; font-size: 50px; color: #fff; font-weight: 900; text-shadow: 0px 4px 6px rgba(0,0,0,0.8), 0px 0px 10px rgba(255,0,0,0.5); }
+        .vehicle-img { height: 72px; object-fit: contain; transition: transform 0.1s; }
+        .target-char { position: absolute; top: -34px; left: 0; width: 100%; text-align: center; font-size: 26px; color: #ffffff; font-weight: 900; text-shadow: 0px 3px 6px rgba(124,58,237,0.65); }
 
-        .vehicle-img.hurt { filter: drop-shadow(0 0 15px #f43f5e) brightness(1.5); animation: shakeTank 0.2s; }
+        .vehicle-img.hurt { filter: drop-shadow(0 0 10px #fb7185) brightness(1.35); animation: shakeTank 0.2s; }
         @keyframes shakeTank { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
 
         .tank-vehicle.exploded { animation: deadBlink 0.4s forwards; }
@@ -62,17 +62,17 @@
             100% { opacity: 0; } 
         }
 
-        #keyboard { width: 100%; max-width: 800px; margin: 0 auto; background: rgba(0,0,0,0.5); padding: 15px 15px 25px 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; z-index: 5; flex: 0 0 auto; margin-top: auto; }
-        .key-btn { aspect-ratio: 1/1; border-radius: 12px; background: var(--key-bg); color: var(--text-main); font-size: 36px; font-weight: 900; border: none; border-bottom: 6px solid var(--key-border); cursor: pointer; transition: all 0.1s; }
-        .key-btn:active { transform: translateY(6px); border-bottom-width: 0; }
-        .key-btn.wrong { background: #f43f5e; border-color: #be123c; animation: shakeBtn 0.2s; }
+        #keyboard { width: 100%; background: rgba(255,255,255,0.55); padding: 10px 12px 14px 12px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; z-index: 5; flex: 0 0 auto; margin-top: auto; border-top: 2px solid rgba(255,255,255,0.85); }
+        .key-btn { height: 52px; border-radius: 14px; background: var(--key-bg); color: var(--text-main); font-size: 28px; font-weight: 900; border: 2px solid #ddd6fe; border-bottom: 4px solid var(--key-border); cursor: pointer; transition: all 0.1s; box-shadow: 0 4px 0 rgba(196,181,253,0.7); }
+        .key-btn:active { transform: translateY(3px); border-bottom-width: 1px; box-shadow: none; }
+        .key-btn.wrong { background: #ffe4e6; border-color: #fb7185; animation: shakeBtn 0.2s; }
         @keyframes shakeBtn { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
 
-        .overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; text-align: center; }
-        .overlay h1 { font-size: 50px; margin: 0 0 20px 0; color: #facc15; text-shadow: 0 6px 0 #ca8a04; }
-        .overlay p { font-size: 20px; color: #cbd5e1; margin-bottom: 40px; font-weight: 900; }
-        .btn-start { background: #3b82f6; color: white; font-size: 26px; font-weight: 900; padding: 15px 40px; border-radius: 30px; border: 4px solid #93c5fd; box-shadow: 0 8px 0 #2563eb; cursor: pointer; }
-        .btn-start:active { transform: translateY(8px); box-shadow: 0 0 0 transparent; }
+        .overlay { position: absolute; inset: 0; background: rgba(76,29,149,0.86); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; text-align: center; }
+        .overlay h1 { font-size: 46px; margin: 0 0 16px 0; color: #fef9c3; text-shadow: 0 4px 0 #7c3aed; }
+        .overlay p { font-size: 19px; color: #ede9fe; margin-bottom: 34px; font-weight: 900; }
+        .btn-start { background: #34d399; color: #064e3b; font-size: 24px; font-weight: 900; padding: 12px 30px; border-radius: 999px; border: 3px solid #a7f3d0; box-shadow: 0 6px 0 #10b981; cursor: pointer; }
+        .btn-start:active { transform: translateY(6px); box-shadow: 0 0 0 transparent; }
     </style>
 </head>
 <body>
@@ -138,9 +138,14 @@
                     let partsStr = row['PARTS'] || row['部件'] || ""; 
                     
                     if (targetWord && partsStr) {
+                        const parsedParts = partsStr
+                            .split(/[,，]/)
+                            .map(p => p.trim())
+                            .filter(p => p.length > 0);
+                        if (parsedParts.length === 0) return;
                         dictionary.push({
                             word: targetWord.trim(),
-                            parts: partsStr.split(/[,，]/).map(p => p.trim())
+                            parts: parsedParts
                         });
                     }
                 });
@@ -246,7 +251,8 @@
         // 部件数严格对应“车轮数/图片里的数字”
         const displayP = totalP;
         
-        let lanePos = 20 + Math.random() * (playArea.clientHeight - 180); 
+        const laneMax = Math.max(36, playArea.clientHeight - 120);
+        let lanePos = 12 + Math.random() * Math.max(1, laneMax - 12);
 
         const el = document.createElement('div');
         el.className = 'tank-vehicle';
@@ -268,12 +274,13 @@
             spawnOrder: spawnOrderCounter++,
             el: el,
             imgEl: el.querySelector('.vehicle-img'),
-            x: -200, 
+            x: -96,
             totalParts: totalP,
             displayParts: displayP, 
             targetParts: [...wordData.parts], 
             hits: 0,
             keyboardActive: false,
+            breached: false,
             baseSpeed: base_speed_on_start, 
             currentSpeed: base_speed_on_start 
         });
@@ -293,15 +300,22 @@
             v.currentSpeed = v.baseSpeed * (partsRemaining / v.totalParts);
             v.x += v.currentSpeed * delta;
             v.el.style.left = v.x + 'px';
-            
-            if (v.x >= defenseWallX - 120) { 
-                v.el.remove();
-                activeVehicles.splice(i, 1);
+
+            // 穿过防线时扣血一次，但让战车继续向右飞出屏幕边缘
+            if (!v.breached && v.x >= defenseWallX - 72) {
+                v.breached = true;
                 lives--;
                 updateUI();
                 playArea.classList.add('hurt');
                 setTimeout(() => playArea.classList.remove('hurt'), 150);
                 if (lives <= 0) gameOver();
+                keyboardNeedsUpdate = true;
+            }
+
+            // 完整飞出右边缘后再移除，避免被“截断”
+            if (v.x >= defenseWallX + 110) {
+                v.el.remove();
+                activeVehicles.splice(i, 1);
                 keyboardNeedsUpdate = true;
             }
         }
@@ -317,22 +331,20 @@
 
     function handleKeyPress(char, btnElement) {
         if (!isPlaying) return;
-        let targetVehicleIndex = -1;
-        let maxX = -999;
-        
+        let candidateIndices = [];
+
         for (let i = 0; i < activeVehicles.length; i++) {
             let v = activeVehicles[i];
             if (v.targetParts[v.hits] === char) {
-                if (v.x > maxX) {
-                    maxX = v.x;
-                    targetVehicleIndex = i;
-                }
+                candidateIndices.push(i);
             }
         }
-        
-        if (targetVehicleIndex !== -1) {
+
+        if (candidateIndices.length > 0) {
             playSound('hit');
-            let v = activeVehicles[targetVehicleIndex];
+            // 匹配到多个战车时随机选择一个，避免总是前面两辆被持续命中
+            const pickedIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+            let v = activeVehicles[pickedIndex];
             v.hits++; 
 
             let newImgSrc = getImagePath(v.displayParts, v.hits);
@@ -410,26 +422,27 @@
             }
         }
 
-        // 按出现顺序尝试把“新汉字”的部件插入键盘（必要时替换干扰格）
+        // 按出现顺序确保“每个在场汉字的全部未使用部件”都在键盘上
         const orderedVehicles = [...activeVehicles].sort((a, b) => (a.spawnOrder ?? 0) - (b.spawnOrder ?? 0));
 
         for (const v of orderedVehicles) {
-            if (v.keyboardActive) continue; // 已经插入过完整部件集合（尚未作废/消耗时格位保持）
-            const requiredCount = v.totalParts - v.hits; // 还没被使用掉的部件数量
-            if (requiredCount <= 0) continue;
-
-            // 可用于放置的格子：空格 or 干扰格（不会挤掉其它仍有效的部件格）
-            const availableIndices = [];
-            for (let i = 0; i < keyboardSlots.length; i++) {
-                const slot = keyboardSlots[i];
-                if (!slot || slot.kind === 'distractor') availableIndices.push(i);
-            }
-
-            if (availableIndices.length < requiredCount) continue; // 汉字过多：不增加新的汉字
-
-            let cursor = 0;
+            let allPlaced = true;
             for (let partIndex = v.hits; partIndex < v.totalParts; partIndex++) {
-                const slotIndex = availableIndices[cursor++];
+                const alreadyPlaced = keyboardSlots.some(slot =>
+                    slot &&
+                    slot.kind === 'part' &&
+                    slot.vehicleId === v.id &&
+                    slot.partIndex === partIndex
+                );
+
+                if (alreadyPlaced) continue;
+
+                // 缺失的部件，必须马上补到“空格/干扰格”中
+                const slotIndex = keyboardSlots.findIndex(slot => !slot || slot.kind === 'distractor');
+                if (slotIndex === -1) {
+                    allPlaced = false;
+                    break;
+                }
                 keyboardSlots[slotIndex] = {
                     kind: 'part',
                     char: v.targetParts[partIndex],
@@ -438,8 +451,8 @@
                 };
             }
 
-            // 一次性插入“该汉字全部剩余部件”
-            v.keyboardActive = true;
+            // 仅用于调试状态：true 代表该车当前剩余部件都已落在键盘里
+            v.keyboardActive = allPlaced;
         }
 
         // 填充空格为干扰部件
