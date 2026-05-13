@@ -46,6 +46,7 @@
         #defense-wall { position: absolute; top: 0; right: 0; bottom: 0; width: 8px; background: var(--defense-line); box-shadow: -3px 0 10px rgba(251, 113, 133, 0.6); z-index: 6; }
         #play-area.hurt { animation: screenFlash 0.15s; }
         @keyframes screenFlash { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(244, 63, 94, 0.3); } }
+        #fx-layer { position: absolute; inset: 0; pointer-events: none; z-index: 20; overflow: visible; }
 
         .tank-vehicle { position: absolute; left: -250px; transition: left 0.05s linear; z-index: 7; display: flex; flex-direction: column; align-items: center; justify-content: center;}
         .vehicle-wrapper { position: relative; display: inline-block; }
@@ -60,6 +61,38 @@
             0% { opacity: 1; transform: scale(1); filter: brightness(2); } 
             50% { opacity: 0; transform: scale(1.2); }
             100% { opacity: 0; } 
+        }
+        .float-score {
+            position: absolute;
+            font-weight: 900;
+            font-size: 26px;
+            color: #fef9c3;
+            text-shadow: 0 2px 6px rgba(76, 29, 149, 0.65);
+            animation: scoreRise 0.7s ease-out forwards;
+            white-space: nowrap;
+        }
+        @keyframes scoreRise {
+            0% { opacity: 0; transform: translate(-50%, 0px) scale(0.9); }
+            20% { opacity: 1; transform: translate(-50%, -6px) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -30px) scale(1.05); }
+        }
+        .center-msg {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: 900;
+            font-size: 36px;
+            animation: centerPulse 0.65s ease-out forwards;
+            white-space: nowrap;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+        }
+        .center-msg.bad { color: #fb7185; }
+        .center-msg.combo { color: #22c55e; }
+        @keyframes centerPulse {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -58%) scale(1.03); }
         }
 
         #keyboard { width: 100%; background: rgba(255,255,255,0.55); padding: 10px 12px 14px 12px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; z-index: 5; flex: 0 0 auto; margin-top: auto; border-top: 2px solid rgba(255,255,255,0.85); }
@@ -86,6 +119,7 @@
 
 <div id="play-area">
     <div id="defense-wall"></div>
+    <div id="fx-layer"></div>
 </div>
 
 <div id="keyboard"></div>
@@ -121,6 +155,12 @@
     // slot: { kind: 'part'|'distractor', char: string, vehicleId?: number, partIndex?: number }
     let keyboardSlots = null;
     let spawnOrderCounter = 0;
+    let wrongStreak = 0;
+    let inputLockedUntil = 0;
+    let lastInputTs = 0;
+    let comboCount = 0;
+    let bgmInterval = null;
+    let bgmGain = null;
 
     const playArea = document.getElementById('play-area');
     const keyboard = document.getElementById('keyboard');
@@ -187,15 +227,20 @@
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('game-over-screen').style.display = 'none';
-        playArea.innerHTML = '<div id="defense-wall"></div>';
+        playArea.innerHTML = '<div id="defense-wall"></div><div id="fx-layer"></div>';
         activeVehicles = [];
         spawnOrderCounter = 0;
         keyboardSlots = null;
+        wrongStreak = 0;
+        inputLockedUntil = 0;
+        lastInputTs = 0;
+        comboCount = 0;
         score = 0;
         lives = 3;
         updateUI();
         isPlaying = true;
         if (audioCtx.state === 'suspended') audioCtx.resume();
+        startBgm();
         keyboardNeedsUpdate = true;
         // 先渲染一版干扰部件，保证格子位置稳定；后续部件插入/替换只在空位/干扰位发生
         renderKeyboardPool();
@@ -212,8 +257,14 @@
 
     function spawnVehicleLoop() {
         if (!isPlaying) return;
+        // 场上最多 3 个怪兽
+        if (activeVehicles.length >= 3) {
+            spawnTimer = setTimeout(spawnVehicleLoop, 1800);
+            return;
+        }
         spawnVehicle();
-        let interval = 2500 + Math.random() * 2000; 
+        // 拉长刷新间隔
+        let interval = 4200 + Math.random() * 2800; 
         spawnTimer = setTimeout(spawnVehicleLoop, interval);
     }
 
@@ -267,7 +318,8 @@
         el.style.top = lanePos + 'px';
         playArea.appendChild(el);
         
-        const base_speed_on_start = 1.3 + Math.random() * 0.7; 
+        // 速度降到原来的约三分之一
+        const base_speed_on_start = (1.3 + Math.random() * 0.7) / 3;
 
         activeVehicles.push({
             id: Date.now(),
@@ -305,6 +357,7 @@
             if (!v.breached && v.x >= defenseWallX - 72) {
                 v.breached = true;
                 lives--;
+                comboCount = 0;
                 updateUI();
                 playArea.classList.add('hurt');
                 setTimeout(() => playArea.classList.remove('hurt'), 150);
@@ -331,6 +384,11 @@
 
     function handleKeyPress(char, btnElement) {
         if (!isPlaying) return;
+        const now = Date.now();
+        // 轻量节流，防止纯高速乱点刷概率
+        if (now - lastInputTs < 70) return;
+        lastInputTs = now;
+        if (now < inputLockedUntil) return;
         let candidateIndices = [];
 
         for (let i = 0; i < activeVehicles.length; i++) {
@@ -346,13 +404,15 @@
             const pickedIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
             let v = activeVehicles[pickedIndex];
             v.hits++; 
+            wrongStreak = 0;
 
             let newImgSrc = getImagePath(v.displayParts, v.hits);
             v.imgEl.src = newImgSrc;
             v.imgEl.classList.add('hurt');
             setTimeout(() => v.imgEl.classList.remove('hurt'), 150);
             
-            score += 10;
+            score += 100;
+            showVehicleScore(v, "+100");
             updateUI();
             
             // 无论是普通命中还是“最后一击”，都尽快刷新键盘池
@@ -365,6 +425,21 @@
             playSound('wrong');
             btnElement.classList.add('wrong');
             setTimeout(() => btnElement.classList.remove('wrong'), 200);
+            // 乱点惩罚：扣分 + 累计失误，失误过多会掉血
+            score = Math.max(0, score - 20);
+            comboCount = 0;
+            showCenterMessage("-20", "bad");
+            updateUI();
+            wrongStreak++;
+            inputLockedUntil = now + 220;
+            if (wrongStreak >= 4) {
+                wrongStreak = 0;
+                lives--;
+                updateUI();
+                playArea.classList.add('hurt');
+                setTimeout(() => playArea.classList.remove('hurt'), 150);
+                if (lives <= 0) gameOver();
+            }
         }
     }
 
@@ -377,11 +452,72 @@
         activeVehicles.splice(index, 1);
             // 击毁后立即刷新键盘池（避免还显示已不需要的部件）
             keyboardNeedsUpdate = true;
-        score += 20;
+        comboCount++;
+        score += 200;
+        showCenterMessage(`Combo ${comboCount} +200`, "combo");
         updateUI();
         setTimeout(() => {
             v.el.remove();
         }, 400);
+    }
+
+    function showVehicleScore(v, text) {
+        const fxLayer = document.getElementById('fx-layer');
+        if (!fxLayer || !v || !v.el) return;
+        const bubble = document.createElement('div');
+        bubble.className = 'float-score';
+        bubble.innerText = text;
+        bubble.style.left = `${v.x + 42}px`;
+        bubble.style.top = `${parseFloat(v.el.style.top || '0') - 18}px`;
+        fxLayer.appendChild(bubble);
+        setTimeout(() => bubble.remove(), 750);
+    }
+
+    function showCenterMessage(text, type) {
+        const fxLayer = document.getElementById('fx-layer');
+        if (!fxLayer) return;
+        const msg = document.createElement('div');
+        msg.className = `center-msg ${type || ''}`;
+        msg.innerText = text;
+        fxLayer.appendChild(msg);
+        setTimeout(() => msg.remove(), 700);
+    }
+
+    function startBgm() {
+        stopBgm();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        bgmGain = audioCtx.createGain();
+        bgmGain.gain.setValueAtTime(0.035, audioCtx.currentTime);
+        bgmGain.connect(audioCtx.destination);
+
+        const notes = [261.63, 329.63, 392.0, 523.25, 392.0, 329.63];
+        let idx = 0;
+        bgmInterval = setInterval(() => {
+            if (!isPlaying || !bgmGain) return;
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(notes[idx % notes.length], audioCtx.currentTime);
+            g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.04);
+            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
+            osc.connect(g);
+            g.connect(bgmGain);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.46);
+            idx++;
+        }, 360);
+    }
+
+    function stopBgm() {
+        if (bgmInterval) {
+            clearInterval(bgmInterval);
+            bgmInterval = null;
+        }
+        if (bgmGain) {
+            try { bgmGain.disconnect(); } catch (e) {}
+            bgmGain = null;
+        }
     }
 
     function renderKeyboardPool() {
@@ -474,6 +610,7 @@
         isPlaying = false;
         clearTimeout(spawnTimer);
         cancelAnimationFrame(gameLoopRef);
+        stopBgm();
         document.getElementById('final-score').innerText = score;
         document.getElementById('game-over-screen').style.display = 'flex';
     }
