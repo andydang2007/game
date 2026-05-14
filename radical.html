@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>PSLE 汉字连击快线 · 钢琴天空版</title>
+<title>PSLE 汉字连击快线 · 钢琴杂耍版</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -16,8 +16,8 @@
 
 :root {
   --purple: #5b21b6;
-  --pink: #fb7185;
   --green: #22c55e;
+  --pink: #fb7185;
   --yellow: #facc15;
   --glass: rgba(255,255,255,0.72);
 }
@@ -47,12 +47,12 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.38;
+  opacity: 0.35;
   background-image:
-    radial-gradient(circle at 15% 18%, rgba(255,255,255,0.95) 0 28px, transparent 29px),
+    radial-gradient(circle at 14% 18%, rgba(255,255,255,0.95) 0 28px, transparent 29px),
     radial-gradient(circle at 25% 15%, rgba(255,255,255,0.75) 0 42px, transparent 43px),
-    radial-gradient(circle at 70% 23%, rgba(255,255,255,0.85) 0 36px, transparent 37px),
-    radial-gradient(circle at 83% 20%, rgba(255,255,255,0.72) 0 48px, transparent 49px);
+    radial-gradient(circle at 70% 24%, rgba(255,255,255,0.85) 0 36px, transparent 37px),
+    radial-gradient(circle at 83% 21%, rgba(255,255,255,0.72) 0 48px, transparent 49px);
   animation: cloudMove 18s linear infinite;
 }
 
@@ -66,7 +66,7 @@ body {
   top: 10px;
   left: 12px;
   right: 12px;
-  z-index: 50;
+  z-index: 60;
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -79,7 +79,7 @@ body {
   border: 2px solid rgba(255,255,255,0.9);
   border-radius: 18px;
   padding: 8px 12px;
-  font-size: clamp(15px, 3vw, 23px);
+  font-size: clamp(14px, 3vw, 22px);
   font-weight: 900;
   color: var(--purple);
   box-shadow: 0 6px 16px rgba(76,29,149,0.14);
@@ -106,7 +106,7 @@ body {
   right: 0;
   bottom: 154px;
   height: 5px;
-  z-index: 40;
+  z-index: 50;
   background: rgba(251,113,133,0.85);
   box-shadow: 0 -4px 14px rgba(251,113,133,0.45);
 }
@@ -116,8 +116,8 @@ body {
   left: 50%;
   top: 62px;
   transform: translateX(-50%);
-  z-index: 45;
-  background: rgba(255,255,255,0.62);
+  z-index: 55;
+  background: rgba(255,255,255,0.66);
   border: 2px solid rgba(255,255,255,0.9);
   border-radius: 999px;
   padding: 7px 16px;
@@ -134,7 +134,7 @@ body {
   width: 96px;
   height: 96px;
   border-radius: 28px;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
   border: 4px solid rgba(196,181,253,0.96);
   color: #4c1d95;
   font-size: 54px;
@@ -150,7 +150,7 @@ body {
 }
 
 .falling-character.hit {
-  filter: brightness(1.1);
+  filter: brightness(1.16);
 }
 
 .falling-character.complete {
@@ -191,12 +191,12 @@ body {
   right: 0;
   bottom: 0;
   height: 154px;
-  z-index: 70;
+  z-index: 80;
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 2px;
   padding: 8px 10px 12px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(226,232,240,0.92));
+  background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(226,232,240,0.94));
   border-top: 4px solid rgba(255,255,255,0.95);
   box-shadow: 0 -8px 20px rgba(76,29,149,0.13);
 }
@@ -221,6 +221,33 @@ body {
   filter: brightness(0.96);
 }
 
+.piano-key.required {
+  border-color: #c4b5fd;
+}
+
+.piano-key.song-next {
+  border-color: #86efac;
+  box-shadow:
+    inset 0 -10px 18px rgba(15,23,42,0.06),
+    0 0 18px rgba(34,197,94,0.36);
+}
+
+.piano-key.empty-key {
+  opacity: 0.45;
+}
+
+.piano-key.wrong {
+  background: #ffe4e6;
+  border-color: #fb7185;
+  animation: wrongShake 0.2s linear;
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  75% { transform: translateX(7px); }
+}
+
 .key-radical {
   position: absolute;
   left: 50%;
@@ -240,28 +267,9 @@ body {
   color: #64748b;
 }
 
-.piano-key.song-next {
-  border-color: #86efac;
-  box-shadow:
-    inset 0 -10px 18px rgba(15,23,42,0.06),
-    0 0 18px rgba(34,197,94,0.38);
-}
-
-.piano-key.wrong {
-  background: #ffe4e6;
-  border-color: #fb7185;
-  animation: wrongShake 0.2s linear;
-}
-
-@keyframes wrongShake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-7px); }
-  75% { transform: translateX(7px); }
-}
-
 .hit-token {
   position: absolute;
-  z-index: 90;
+  z-index: 100;
   min-width: 58px;
   height: 58px;
   padding: 0 10px;
@@ -282,7 +290,7 @@ body {
 
 .particle {
   position: absolute;
-  z-index: 110;
+  z-index: 120;
   pointer-events: none;
   font-size: 18px;
   font-weight: 900;
@@ -290,7 +298,7 @@ body {
 
 .float-text {
   position: absolute;
-  z-index: 120;
+  z-index: 130;
   pointer-events: none;
   font-size: 28px;
   font-weight: 900;
@@ -307,7 +315,7 @@ body {
 
 .center-msg {
   position: absolute;
-  z-index: 130;
+  z-index: 140;
   left: 50%;
   top: 42%;
   transform: translate(-50%, -50%);
@@ -336,7 +344,7 @@ body {
 .overlay {
   position: absolute;
   inset: 0;
-  z-index: 200;
+  z-index: 220;
   background: rgba(76,29,149,0.9);
   display: flex;
   flex-direction: column;
@@ -390,7 +398,7 @@ body {
 #damage-flash {
   position: absolute;
   inset: 0;
-  z-index: 160;
+  z-index: 170;
   pointer-events: none;
   opacity: 0;
   background: rgba(251,113,133,0.3);
@@ -451,7 +459,7 @@ body {
     <div class="hud-box" id="lives">❤️❤️❤️</div>
   </div>
 
-  <div id="song-panel">按正确部件，弹出预载歌曲旋律 🎹</div>
+  <div id="song-panel">按正确部件，像弹钢琴一样把汉字顶在空中 🎹</div>
 
   <div id="arena"></div>
   <div id="danger-line"></div>
@@ -460,13 +468,13 @@ body {
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v1.2.0</div>
+    <div class="version-label" id="version-label">Version v1.3.0</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 
   <div id="game-over-screen" class="overlay" style="display:none;">
     <h1>Game Over</h1>
-    <div class="version-label">Version v1.2.0</div>
+    <div class="version-label">Version v1.3.0</div>
     <p>
       最终得分：<span id="final-score" style="color:#facc15;font-size:36px;">0</span><br>
       你弹到了第 <span id="final-song-progress" style="color:#a7f3d0;">0</span> 个音符。
@@ -476,7 +484,7 @@ body {
 </div>
 
 <script>
-const GAME_VERSION = "v1.2.0";
+const GAME_VERSION = "v1.3.0";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
@@ -623,14 +631,14 @@ function cleanCell(value) {
 }
 
 function showReadyScreen() {
-  document.getElementById("start-title").textContent = "汉字连击 · 钢琴天空版";
+  document.getElementById("start-title").textContent = "汉字连击 · 钢琴杂耍版";
   document.getElementById("start-text").innerHTML =
     `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
-    `这次是：<b>汉字从天空落下</b>。<br>` +
-    `底部是钢琴键盘，每个键是一个部件。<br>` +
-    `按正确部件，汉字会被击中、弹起、旋转。<br><br>` +
-    `预载歌曲：<b>Twinkle Twinkle Little Star</b>。<br>` +
-    `系统会把正确部件安排在歌曲下一个音符对应的琴键上。`;
+    `汉字从天空落下。<br>` +
+    `底部钢琴键显示部件。<br>` +
+    `每个汉字出现时，它的部件会尽量全部显示在键盘上。<br>` +
+    `按对部件后，汉字会像杂耍球一样在空中弹起旋转。<br><br>` +
+    `预载歌曲：<b>Twinkle Twinkle Little Star</b>。`;
 
   const oldBtn = document.getElementById("start-btn");
   if (oldBtn) oldBtn.remove();
@@ -669,12 +677,15 @@ function startGame() {
   startScreen.style.display = "none";
   gameOverScreen.style.display = "none";
 
+  initKeyboardSlots();
   updateHUD();
+  renderPianoKeyboard();
 
   spawnCharacter();
-  setTimeout(() => { if (isPlaying) spawnCharacter(); }, 900);
+  setTimeout(() => {
+    if (isPlaying) spawnCharacter();
+  }, 950);
 
-  renderPianoKeyboard();
   scheduleCharacterSpawn();
 
   animationRef = requestAnimationFrame(gameLoop);
@@ -702,6 +713,14 @@ function clearScene() {
   piano.innerHTML = "";
 }
 
+function initKeyboardSlots() {
+  keyboardSlots = Array.from({ length: KEY_COUNT }, (_, i) => ({
+    kind: "distractor",
+    char: randomDistractorAvoiding([]),
+    noteIndex: i
+  }));
+}
+
 function scheduleCharacterSpawn() {
   if (!isPlaying) return;
 
@@ -712,7 +731,6 @@ function scheduleCharacterSpawn() {
 
     if (characters.length < MAX_CHARACTERS) {
       spawnCharacter();
-      renderPianoKeyboard();
     }
 
     scheduleCharacterSpawn();
@@ -720,9 +738,9 @@ function scheduleCharacterSpawn() {
 }
 
 function getSpawnDelay() {
-  const base = 2600;
-  const difficulty = Math.min(score / 7000, 0.38);
-  return Math.max(1450, base * (1 - difficulty) + randomBetween(-350, 450));
+  const base = 2800;
+  const difficulty = Math.min(score / 8000, 0.34);
+  return Math.max(1650, base * (1 - difficulty) + randomBetween(-350, 450));
 }
 
 function spawnCharacter() {
@@ -755,21 +773,130 @@ function spawnCharacter() {
     el,
     word: data.word,
     parts: [...data.parts],
-    hitIndex: 0,
+    hitParts: new Set(),
     x: randomBetween(70, window.innerWidth - 70),
     y: -80,
-    vx: randomBetween(-0.35, 0.35),
-    vy: randomBetween(0.42, 0.68),
-    gravity: 0.0018,
+    vx: randomBetween(-0.25, 0.25),
+    vy: randomBetween(0.34, 0.52),
+    gravity: 0.0032,
     rotation: randomBetween(-8, 8),
-    rotationVelocity: randomBetween(-0.3, 0.3),
+    rotationVelocity: randomBetween(-0.25, 0.25),
     scale: 1,
     completed: false,
-    breached: false
+    breached: false,
+    dead: false,
+    juggledUntil: 0
   };
 
   characters.push(c);
   renderCharacter(c);
+
+  placeAllPartsForCharacter(c);
+  refillOpenSlots();
+  renderPianoKeyboard();
+}
+
+function placeAllPartsForCharacter(c) {
+  for (let i = 0; i < c.parts.length; i++) {
+    if (isPartAlreadyOnKeyboard(c.id, i)) continue;
+
+    const slotIndex = findFreeKeyboardSlot();
+    if (slotIndex === -1) break;
+
+    keyboardSlots[slotIndex] = {
+      kind: "part",
+      char: c.parts[i],
+      ownerId: c.id,
+      partIndex: i,
+      noteIndex: slotIndex
+    };
+  }
+}
+
+function isPartAlreadyOnKeyboard(ownerId, partIndex) {
+  return keyboardSlots.some(slot =>
+    slot &&
+    slot.kind === "part" &&
+    slot.ownerId === ownerId &&
+    slot.partIndex === partIndex
+  );
+}
+
+function findFreeKeyboardSlot() {
+  let idx = keyboardSlots.findIndex(slot => !slot || slot.kind === "empty");
+  if (idx !== -1) return idx;
+
+  idx = keyboardSlots.findIndex(slot => slot.kind === "distractor");
+  if (idx !== -1) return idx;
+
+  return -1;
+}
+
+function refillOpenSlots() {
+  for (let i = 0; i < KEY_COUNT; i++) {
+    if (!keyboardSlots[i] || keyboardSlots[i].kind === "empty") {
+      fillSingleSlot(i);
+    }
+  }
+}
+
+function fillSingleSlot(slotIndex) {
+  const pending = findPendingPartNotOnKeyboard();
+
+  if (pending) {
+    keyboardSlots[slotIndex] = {
+      kind: "part",
+      char: pending.char,
+      ownerId: pending.ownerId,
+      partIndex: pending.partIndex,
+      noteIndex: slotIndex
+    };
+    return;
+  }
+
+  keyboardSlots[slotIndex] = {
+    kind: "distractor",
+    char: randomDistractorAvoiding(getVisibleRequiredChars()),
+    noteIndex: slotIndex
+  };
+}
+
+function findPendingPartNotOnKeyboard() {
+  for (const c of characters) {
+    if (c.completed || c.dead) continue;
+
+    for (let i = 0; i < c.parts.length; i++) {
+      if (c.hitParts.has(i)) continue;
+      if (isPartAlreadyOnKeyboard(c.id, i)) continue;
+
+      return {
+        ownerId: c.id,
+        partIndex: i,
+        char: c.parts[i]
+      };
+    }
+  }
+
+  return null;
+}
+
+function getVisibleRequiredChars() {
+  return keyboardSlots
+    .filter(slot => slot && slot.kind === "part")
+    .map(slot => slot.char);
+}
+
+function removeSlotsForCharacter(characterId) {
+  for (let i = 0; i < keyboardSlots.length; i++) {
+    const slot = keyboardSlots[i];
+
+    if (slot && slot.kind === "part" && slot.ownerId === characterId) {
+      keyboardSlots[i] = { kind: "empty", char: "", noteIndex: i };
+      fillSingleSlot(i);
+    }
+  }
+
+  renderPianoKeyboard();
 }
 
 function renderCharacter(c) {
@@ -780,67 +907,31 @@ function renderCharacter(c) {
 
   const dots = c.el.querySelectorAll(".dot");
   dots.forEach((dot, i) => {
-    dot.classList.toggle("done", i < c.hitIndex);
+    dot.classList.toggle("done", c.hitParts.has(i));
   });
 }
 
 function renderPianoKeyboard() {
-  const target = getPriorityCharacter();
-  const nextPart = target ? target.parts[target.hitIndex] : null;
+  piano.innerHTML = "";
+
   const currentSongNote = getCurrentSongNote();
   const songKeyIndex = NOTE_TO_KEY_INDEX[currentSongNote] ?? 0;
 
-  const slots = new Array(KEY_COUNT).fill(null);
-
-  if (nextPart) {
-    slots[songKeyIndex] = {
-      char: nextPart,
-      isMainCorrect: true,
-      noteIndex: songKeyIndex
-    };
-  }
-
-  const otherNeeded = getNeededParts()
-    .filter(p => p !== nextPart);
-
-  for (const part of otherNeeded) {
-    const emptyIndices = getEmptyIndices(slots);
-    if (!emptyIndices.length) break;
-
-    const idx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-    slots[idx] = {
-      char: part,
-      isMainCorrect: false,
-      noteIndex: idx
-    };
-  }
-
-  for (let i = 0; i < KEY_COUNT; i++) {
-    if (!slots[i]) {
-      slots[i] = {
-        char: randomDistractorAvoiding(getNeededParts()),
-        isMainCorrect: false,
-        noteIndex: i
-      };
-    }
-  }
-
-  keyboardSlots = slots;
-  piano.innerHTML = "";
-
-  slots.forEach((slot, index) => {
+  keyboardSlots.forEach((slot, index) => {
     const keyInfo = PIANO_KEYS[index];
 
     const btn = document.createElement("button");
     btn.className = "piano-key";
-    if (slot.isMainCorrect) btn.classList.add("song-next");
 
-    btn.dataset.char = slot.char;
+    if (slot.kind === "part") btn.classList.add("required");
+    if (index === songKeyIndex && slot.kind === "part") btn.classList.add("song-next");
+    if (slot.kind === "empty") btn.classList.add("empty-key");
+
     btn.dataset.index = String(index);
 
     const radicalSpan = document.createElement("div");
     radicalSpan.className = "key-radical";
-    radicalSpan.textContent = slot.char;
+    radicalSpan.textContent = slot.char || " ";
 
     const noteSpan = document.createElement("div");
     noteSpan.className = "key-note";
@@ -851,71 +942,40 @@ function renderPianoKeyboard() {
 
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
-      handlePianoPress(slot.char, index, btn);
+      handlePianoPress(index, btn);
     });
 
     piano.appendChild(btn);
   });
 }
 
-function getEmptyIndices(slots) {
-  const indices = [];
-  for (let i = 0; i < slots.length; i++) {
-    if (!slots[i]) indices.push(i);
-  }
-  return indices;
-}
-
-function getNeededParts() {
-  const parts = [];
-
-  characters.forEach(c => {
-    if (c.completed) return;
-    const next = c.parts[c.hitIndex];
-    if (next) parts.push(next);
-  });
-
-  return parts;
-}
-
-function getPriorityCharacter() {
-  const candidates = characters.filter(c => !c.completed && c.parts[c.hitIndex]);
-
-  if (!candidates.length) return null;
-
-  candidates.sort((a, b) => b.y - a.y);
-  return candidates[0];
-}
-
 function getCurrentSongNote() {
   return PRELOADED_SONG.notes[songIndex % PRELOADED_SONG.notes.length];
 }
 
-function handlePianoPress(char, keyIndex, buttonElement) {
+function handlePianoPress(slotIndex, buttonElement) {
   if (!isPlaying) return;
 
-  pressVisual(buttonElement);
-  playPianoKey(keyIndex);
+  const slot = keyboardSlots[slotIndex];
+  if (!slot) return;
 
-  const target = findTargetForChar(char);
+  pressVisual(buttonElement);
+  playPianoKey(slotIndex);
+
+  if (slot.kind !== "part") {
+    handleWrongPress(buttonElement);
+    return;
+  }
+
+  const target = characters.find(c =>
+    c.id === slot.ownerId &&
+    !c.completed &&
+    !c.dead &&
+    !c.hitParts.has(slot.partIndex)
+  );
 
   if (!target) {
-    wrongStreak++;
-    combo = 0;
-    score = Math.max(0, score - 20);
-
-    buttonElement.classList.add("wrong");
-    setTimeout(() => buttonElement.classList.remove("wrong"), 220);
-
-    showCenterMessage("-20", "bad");
-    playBadTone();
-
-    if (wrongStreak >= 4) {
-      wrongStreak = 0;
-      loseLife();
-    }
-
-    updateHUD();
+    handleWrongPress(buttonElement);
     return;
   }
 
@@ -931,7 +991,11 @@ function handlePianoPress(char, keyIndex, buttonElement) {
   const startX = rect.left + rect.width / 2 - arenaRect.left;
   const startY = rect.top + rect.height / 2 - arenaRect.top;
 
-  launchHitToken(char, startX, startY, target);
+  launchHitToken(slot.char, startX, startY, target, slot.partIndex);
+
+  keyboardSlots[slotIndex] = { kind: "empty", char: "", noteIndex: slotIndex };
+  fillSingleSlot(slotIndex);
+  renderPianoKeyboard();
 
   showFloatingText(`+${gain}`, startX, startY - 24);
   showCenterMessage(`Combo ${combo}`, "good");
@@ -942,19 +1006,26 @@ function handlePianoPress(char, keyIndex, buttonElement) {
   updateHUD();
 }
 
-function findTargetForChar(char) {
-  const candidates = characters.filter(c => {
-    if (c.completed) return false;
-    return c.parts[c.hitIndex] === char;
-  });
+function handleWrongPress(buttonElement) {
+  wrongStreak++;
+  combo = 0;
+  score = Math.max(0, score - 20);
 
-  if (!candidates.length) return null;
+  buttonElement.classList.add("wrong");
+  setTimeout(() => buttonElement.classList.remove("wrong"), 220);
 
-  candidates.sort((a, b) => b.y - a.y);
-  return candidates[0];
+  showCenterMessage("-20", "bad");
+  playBadTone();
+
+  if (wrongStreak >= 4) {
+    wrongStreak = 0;
+    loseLife();
+  }
+
+  updateHUD();
 }
 
-function launchHitToken(char, x, y, target) {
+function launchHitToken(char, x, y, target, partIndex) {
   const el = document.createElement("div");
   el.className = "hit-token";
   el.textContent = char;
@@ -963,6 +1034,7 @@ function launchHitToken(char, x, y, target) {
     id: nextId(),
     el,
     char,
+    partIndex,
     x,
     y,
     target,
@@ -991,7 +1063,7 @@ function gameLoop(now) {
   timeScale = now < slowMotionUntil ? 0.52 : 1;
   const dt = (rawDelta / 16.67) * timeScale;
 
-  updateCharacters(dt);
+  updateCharacters(dt, now);
   updateHitTokens(dt);
   updateParticles(dt);
   cleanupDeadObjects();
@@ -999,37 +1071,52 @@ function gameLoop(now) {
   animationRef = requestAnimationFrame(gameLoop);
 }
 
-function updateCharacters(dt) {
-  const dangerY = arena.clientHeight - 20;
+function updateCharacters(dt, now) {
+  const dangerY = arena.clientHeight - 22;
+  const juggleCeiling = Math.max(96, arena.clientHeight * 0.18);
+  const juggleFloor = Math.max(170, arena.clientHeight * 0.66);
 
   characters.forEach(c => {
-    if (c.completed) return;
+    if (c.completed || c.dead) return;
 
     c.x += c.vx * dt;
     c.y += c.vy * dt;
 
     c.vy += c.gravity * dt;
-    c.vx *= Math.pow(0.998, dt);
+    c.vx *= Math.pow(0.996, dt);
 
     c.rotation += c.rotationVelocity * dt;
-    c.rotationVelocity *= Math.pow(0.992, dt);
+    c.rotationVelocity *= Math.pow(0.985, dt);
 
     c.scale += (1 - c.scale) * 0.13 * dt;
 
     if (c.x < 54) {
       c.x = 54;
-      c.vx *= -0.6;
+      c.vx = Math.abs(c.vx) * 0.7;
     }
 
     if (c.x > window.innerWidth - 54) {
       c.x = window.innerWidth - 54;
-      c.vx *= -0.6;
+      c.vx = -Math.abs(c.vx) * 0.7;
+    }
+
+    if (now < c.juggledUntil) {
+      if (c.y < juggleCeiling) {
+        c.y = juggleCeiling;
+        c.vy = Math.abs(c.vy) * 0.45;
+      }
+
+      if (c.y > juggleFloor) {
+        c.y = juggleFloor;
+        c.vy = -Math.abs(c.vy) * 0.58;
+      }
     }
 
     if (!c.breached && c.y > dangerY) {
       c.breached = true;
-      loseLife();
       c.dead = true;
+      loseLife();
+      removeSlotsForCharacter(c.id);
     }
 
     renderCharacter(c);
@@ -1038,7 +1125,7 @@ function updateCharacters(dt) {
 
 function updateHitTokens(dt) {
   hitTokens.forEach(t => {
-    if (t.dead || !t.target || t.target.completed) {
+    if (t.dead || !t.target || t.target.completed || t.target.dead) {
       t.dead = true;
       return;
     }
@@ -1061,26 +1148,44 @@ function updateHitTokens(dt) {
 function tokenHitsCharacter(token, c) {
   token.dead = true;
 
-  c.hitIndex++;
+  c.hitParts.add(token.partIndex);
   c.el.classList.add("hit");
   setTimeout(() => c.el.classList.remove("hit"), 150);
 
-  c.vy = -8.5 - Math.min(combo * 0.12, 2.2);
-  c.vx += randomBetween(-1.5, 1.5);
-  c.rotationVelocity += randomBetween(-18, 18);
+  const now = performance.now();
+
+  c.juggledUntil = now + 1800;
+
+  const centerX = window.innerWidth / 2;
+  const pushToCenter = (centerX - c.x) * 0.018;
+
+  c.vy = -7.6 - Math.min(combo * 0.08, 1.6);
+  c.vx += clamp(pushToCenter + randomBetween(-0.9, 0.9), -2.4, 2.4);
+  c.rotationVelocity += randomBetween(-14, 14);
   c.scale = 1.1;
+
+  const safeTop = Math.max(100, arena.clientHeight * 0.2);
+  const safeBottom = Math.max(180, arena.clientHeight * 0.62);
+
+  if (c.y < safeTop) {
+    c.y = safeTop;
+    c.vy = Math.abs(c.vy) * 0.35;
+  }
+
+  if (c.y > safeBottom) {
+    c.y = safeBottom;
+  }
 
   score += 50;
 
   showFloatingText("+50", c.x, c.y - 45);
   particleBurst(c.x, c.y, 16);
 
-  if (c.hitIndex >= c.parts.length) {
+  if (c.hitParts.size >= c.parts.length) {
     completeCharacter(c);
   }
 
   renderCharacter(c);
-  renderPianoKeyboard();
   updateHUD();
 }
 
@@ -1094,6 +1199,8 @@ function completeCharacter(c) {
   particleBurst(c.x, c.y, 30);
   playCompleteSound();
 
+  removeSlotsForCharacter(c.id);
+
   c.el.classList.add("complete");
 
   setTimeout(() => {
@@ -1103,8 +1210,6 @@ function completeCharacter(c) {
     if (isPlaying && characters.length < MAX_CHARACTERS) {
       spawnCharacter();
     }
-
-    renderPianoKeyboard();
   }, 430);
 }
 
@@ -1335,6 +1440,10 @@ function nextId() {
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 function distance(x1, y1, x2, y2) {
