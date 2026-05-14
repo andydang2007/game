@@ -3,439 +3,467 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>PSLE 汉字节奏大师 · 编曲大师版</title>
+<title>PSLE 汉字连击快线 · 编曲大师版</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <style>
-:root {
-  --neon-cyan: #00f3ff;
-  --neon-pink: #ff00ff;
-  --bg-dark: #050505;
-  --keyboard-height: 280px;
-}
-
 * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
-body, html {
+:root {
+  --vh: 1vh;
+  --keyboard-height: clamp(160px, 28vh, 220px);
+  --neon-cyan: #00f3ff;
+  --neon-pink: #ff00ff;
+  --neon-yellow: #facc15;
+  --bg-deep: #050510;
+}
+
+html, body {
   margin: 0; width: 100%; height: 100%; overflow: hidden;
-  background-color: var(--bg-dark);
   font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: radial-gradient(ellipse at 50% 30%, #1e1b4b 0%, var(--bg-deep) 100%);
+}
+body { touch-action: manipulation; }
+
+#game { position: relative; width: 100vw; height: calc(var(--vh) * 100); overflow: hidden; perspective: 1000px; }
+
+#hud { position: absolute; top: 15px; left: 15px; right: 15px; z-index: 90; display: flex; justify-content: space-between; pointer-events: none; }
+.hud-box {
+  background: rgba(15, 23, 42, 0.8); border: 2px solid rgba(0, 243, 255, 0.6);
+  backdrop-filter: blur(8px); border-radius: 12px; padding: 10px 20px;
+  font-size: clamp(16px, 2.5vw, 24px); font-weight: 900; color: #fff;
+  text-shadow: 0 0 10px var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+}
+.timer-box { border-color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 255, 0.3); }
+
+#arena { position: absolute; left: 0; right: 0; top: 0; bottom: var(--keyboard-height); overflow: hidden; z-index: 5; }
+
+/* 霓虹网格背景 */
+#depth-fog {
+  position: absolute; inset: 0; pointer-events: none; z-index: 6;
+  background-image: linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px; transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+  opacity: 0.6;
 }
 
-/* 3D 舞台容器 */
-#stage {
-  position: relative;
-  width: 100vw;
-  height: calc(100vh - var(--keyboard-height));
-  perspective: 800px;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #050505 100%);
+#track-svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 8; pointer-events: none; filter: drop-shadow(0 0 12px rgba(0,243,255,0.3)); }
+.track-fill { fill: rgba(0, 243, 255, 0.02); stroke: rgba(0, 243, 255, 0.1); stroke-width: 1; }
+.track-line { stroke: var(--neon-cyan); stroke-width: 2; opacity: 0.5; }
+
+#miss-line {
+  position: absolute; left: 0; right: 0; bottom: var(--keyboard-height); height: 8px; z-index: 70;
+  background: linear-gradient(90deg, transparent, var(--neon-pink), transparent); box-shadow: 0 0 25px var(--neon-pink); pointer-events: none;
 }
 
-/* 霓虹网格地板 */
-#grid {
-  position: absolute;
-  width: 200%; height: 200%;
-  top: -50%; left: -50%;
-  background-image: 
-    linear-gradient(rgba(0, 243, 255, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 243, 255, 0.1) 1px, transparent 1px);
-  background-size: 80px 80px;
-  transform: rotateX(60deg);
-  z-index: 1;
+.depth-character {
+  position: absolute; z-index: 40; background: transparent; color: #fff; font-weight: 900; line-height: 1;
+  text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--neon-cyan);
+  transform-origin: center center; will-change: left, top, transform, opacity, font-size; transition: transform 0.05s ease-out;
 }
+.depth-character.correct { animation: hitPunch 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e; }
+@keyframes hitPunch { 0% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); } 40% { transform: translate(-50%, -50%) scale(1.3) translateY(-10px); filter: brightness(2); } 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); } }
+.depth-character.complete { animation: completeExplosion 0.4s ease-out forwards; }
+@keyframes completeExplosion { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(2); filter: brightness(3) drop-shadow(0 0 40px #facc15); color: #fef08a; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(3); filter: brightness(4) blur(4px); } }
 
-/* HUD 信息 */
-#hud {
-  position: absolute; top: 20px; left: 20px; z-index: 100; color: white;
-  text-shadow: 0 0 10px var(--neon-cyan); font-weight: bold; font-size: 24px;
-}
+.progress { position: absolute; left: 50%; bottom: -25px; transform: translateX(-50%); display: flex; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(0,0,0,0.8); border: 2px solid var(--neon-cyan); box-shadow: 0 0 5px var(--neon-cyan); transition: all 0.2s; }
+.dot.done { background: #10b981; border-color: #a7f3d0; box-shadow: 0 0 10px #10b981; }
+.dot.next { background: #fef08a; border-color: #facc15; box-shadow: 0 0 15px #facc15; animation: pulseDot 0.6s alternate infinite; }
+@keyframes pulseDot { from { transform: scale(1); } to { transform: scale(1.4); } }
 
-/* 掉落的汉字样式 */
-.neon-char {
-  position: absolute;
-  color: white;
-  font-weight: 900;
-  text-align: center;
-  transform-origin: center center;
-  z-index: 10;
-  pointer-events: none;
-  text-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-cyan);
-  will-change: transform, opacity;
-}
-
-/* 辅助进度点 */
-.dot-container {
-  display: flex; justify-content: center; gap: 4px; margin-top: 5px;
-}
-.dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 1px solid var(--neon-cyan); }
-.dot.active { background: var(--neon-pink); box-shadow: 0 0 10px var(--neon-pink); }
-
-/* iPad 键盘 */
+/* iPad 专属 12 键布局 */
 #piano-wrap {
-  height: var(--keyboard-height);
-  background: #111;
-  display: flex;
-  padding: 10px 5px;
-  gap: 5px;
-  border-top: 2px solid var(--neon-cyan);
-  box-shadow: 0 -10px 30px rgba(0, 243, 255, 0.2);
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--keyboard-height); z-index: 100;
+  padding: 10px; background: #0a0a0a; border-top: 3px solid var(--neon-cyan); box-shadow: 0 -10px 40px rgba(0,243,255,0.15);
 }
+#piano { display: flex; width: 100%; height: 100%; gap: 6px; }
 
-.key {
-  flex: 1;
-  background: linear-gradient(180deg, #eee 0%, #fff 100%);
-  border-radius: 0 0 10px 12px;
-  position: relative;
-  display: flex; align-items: flex-end; justify-content: center;
-  padding-bottom: 20px;
-  cursor: pointer;
-  transition: all 0.05s;
+.white-key {
+  flex: 1; position: relative; border-radius: 0 0 12px 12px; border: 1px solid #333; border-bottom: 12px solid #222;
+  background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%); cursor: pointer; transform-origin: top center;
+  transition: transform 0.05s, background 0.05s, border-bottom-width 0.05s; box-shadow: inset 0 -5px 10px rgba(0,0,0,0.2); overflow: hidden;
 }
+.white-key.pressed {
+  transform: rotateX(10deg); border-bottom-width: 2px; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%);
+  box-shadow: inset 0 20px 20px rgba(0,0,0,0.3);
+}
+.white-key.wrong { background: #ffe4e6; border-color: #e11d48; border-bottom-color: #9f1239; animation: wrongShake 0.2s both; }
+.white-key.hint { background: linear-gradient(180deg, #ecfdf5 0%, #a7f3d0 100%); box-shadow: inset 0 0 20px #6ee7b7; }
 
-.key.pressed {
-  background: linear-gradient(180deg, #888 0%, #aaa 100%);
-  transform: translateY(10px);
-  box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
-}
+.key-radical { position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%); font-size: clamp(24px, 4vw, 48px); font-weight: 900; color: #0f172a; pointer-events: none; }
+.key-note { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); font-size: 14px; font-weight: bold; color: #64748b; pointer-events: none; }
 
-.key .radical {
-  position: absolute; top: 30%;
-  font-size: 40px; font-weight: bold; color: #333;
-}
+.hit-token { position: absolute; z-index: 95; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 3px solid var(--neon-cyan); color: #000; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--neon-cyan); pointer-events: none; }
 
-.key .note-label {
-  font-size: 14px; color: #999; font-weight: bold;
-}
-
-/* 遮罩层 */
-.overlay {
-  position: absolute; inset: 0; z-index: 2000;
-  background: rgba(0,0,0,0.9);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  color: white; text-align: center;
-}
-
-.btn {
-  padding: 15px 40px; font-size: 24px; border-radius: 50px;
-  background: var(--neon-cyan); color: #000; border: none; cursor: pointer;
-  font-weight: bold; margin-top: 20px; box-shadow: 0 0 20px var(--neon-cyan);
-}
+.overlay { position: absolute; inset: 0; z-index: 300; background: rgba(5, 5, 16, 0.9); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+.overlay h1 { margin: 0 0 10px; color: #fff; font-size: clamp(36px, 6vw, 68px); text-shadow: 0 0 20px var(--neon-cyan); }
+.overlay p { margin: 0 0 30px; color: #e2e8f0; font-size: 20px; font-weight: 800; }
+.btn { border: none; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; padding: 16px 40px; font-size: 26px; font-weight: 900; border-radius: 999px; cursor: pointer; box-shadow: 0 0 20px rgba(99, 102, 241, 0.6); transition: transform 0.1s; margin: 10px; }
+.btn:active { transform: scale(0.95); }
+.btn-pink { background: linear-gradient(135deg, #d946ef, #f43f5e); box-shadow: 0 0 20px rgba(244, 63, 94, 0.6); }
 
 #replay-screen { display: none; }
 </style>
 </head>
 <body>
-
-<div id="hud">
-  <div>Combo: <span id="combo">0</span></div>
-  <div>Time: <span id="timer">180</span>s</div>
-</div>
-
-<div id="stage">
-  <div id="grid"></div>
-</div>
-
-<div id="piano-wrap">
+<div id="game">
+  <div id="hud">
+    <div class="hud-box">⭐ 得分: <span id="score">0</span></div>
+    <div class="hud-box timer-box">⏳ 时间: <span id="timer">180</span>s</div>
+  </div>
+  <div id="arena"><div id="depth-fog"></div><svg id="track-svg"></svg></div>
+  <div id="miss-line"></div>
+  <div id="piano-wrap"><div id="piano"></div></div>
+  
+  <div id="start-screen" class="overlay">
+    <h1 id="start-title">题库加载中...</h1>
+    <p id="start-text">请稍候，正在获取云端题库</p>
   </div>
 
-<div id="start-screen" class="overlay">
-  <h1 style="font-size: 60px; color: var(--neon-cyan);">汉字节奏大师</h1>
-  <p style="font-size: 20px;">iPad 专用 · 12键编曲版</p>
-  <p>同屏多字挑战，击中即刻作曲！</p>
-  <button class="btn" onclick="initGame()">🚀 进入舞台</button>
-</div>
-
-<div id="replay-screen" class="overlay">
-  <h1 style="font-size: 40px;">Valerie 的原创单曲</h1>
-  <p>点击下方开始欣赏你的汉字乐章</p>
-  <button class="btn" style="background: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink);" onclick="playRecording()">🎹 开始回放</button>
-  <button class="btn" onclick="location.reload()">🔄 再玩一次</button>
+  <div id="replay-screen" class="overlay">
+    <h1>编曲完成！</h1>
+    <p>Valerie 的专属五声调式电子单曲已生成</p>
+    <button class="btn btn-pink" id="btn-replay">🎹 回放我的音乐</button>
+    <button class="btn" onclick="location.reload()">🔄 再来一局</button>
+  </div>
 </div>
 
 <script>
-// --- 配置区 ---
+// --- 系统配置 ---
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
+const KEY_COUNT = 12; // iPad 宽屏 12 键
+const MAX_ACTIVE_CHARS = 4; // 同屏最多 4 个字
+const GAME_TIME = 180; // 3 分钟
 
-// C大调五声音阶 (12个白键 iPad 专用)
-const PENTATONIC_FREQS = ["G3", "A3", "C4", "D4", "E4", "G4", "A4", "C5", "D5", "E5", "G5", "A5"];
-const KEY_LABELS = ["低5", "低6", "1", "2", "3", "5", "6", "高1", "高2", "高3", "高5", "高6"];
-
-const GAME_DURATION = 180; // 3分钟
-const MAX_ACTIVE_CHARS = 4; // 同屏最多4个字
-const SPAWN_INTERVAL = 1200; // 字出现的间隔
-
+// 12 键五声音阶：G3 到 A5，无论怎么乱弹都很空灵好听
+const PENTA_KEYS = [
+  { label: "低5", freq: 196.00 }, { label: "低6", freq: 220.00 }, { label: "1", freq: 261.63 },
+  { label: "2", freq: 293.66 }, { label: "3", freq: 329.63 }, { label: "5", freq: 392.00 },
+  { label: "6", freq: 440.00 }, { label: "高1", freq: 523.25 }, { label: "高2", freq: 587.33 },
+  { label: "高3", freq: 659.25 }, { label: "高5", freq: 783.99 }, { label: "高6", freq: 880.00 }
+];
 const distractors = ["扌", "亻", "心", "忄", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日", "木", "女", "讠", "辶", "土", "火", "宀", "贝", "王", "纟", "石", "禾", "目", "竹", "页", "刂"];
 
-// --- 变量区 ---
-let dictionary = [];
-let activeChars = [];
-let recordedNotes = [];
-let startTime = 0;
-let isPlaying = false;
-let synth;
-let gameTimer;
-let currentCombo = 0;
+// --- 游戏变量 ---
+let dictionary = []; let activeChars = []; let keyboardSlots = Array(KEY_COUNT).fill(null);
+let score = 0; let timeLeft = GAME_TIME; let isPlaying = false; 
+let lastFrameTime = 0; let lastSpawnTime = 0; let animationRef = null; let clockTimer = null;
+let idCounter = 1; let hitTokens = []; let trackGeometry = [];
+let audioCtx = null; let activeNotes = new Map();
+let recordedNotes = []; let gameStartTime = 0;
 
-// --- 音频初始化 ---
-function setupSynth() {
-  // 使用 Tone.PolySynth 模拟高级电子钢琴/铃铛
-  synth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: "fatcustom", partials: [2, 1, 8, 5, 12], spread: 40, count: 3 },
-    envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 }
-  }).toDestination();
-}
+const arena = document.getElementById("arena");
+const trackSvg = document.getElementById("track-svg");
+const piano = document.getElementById("piano");
 
-// --- 游戏逻辑 ---
-async function initGame() {
-  document.getElementById('start-screen').style.display = 'none';
-  await Tone.start();
-  setupSynth();
-  loadData();
+window.addEventListener("load", () => {
+  setViewportHeight();
+  initPianoDOM(); // 提前画好琴键
   
-  startTime = Date.now();
-  isPlaying = true;
-  
-  createKeyboard();
-  startGameLoop();
-  startTimer();
-}
-
-function loadData() {
+  // 第一步：严格等待题库下载完毕
   Papa.parse(SHEET_URL + "&t=" + Date.now(), {
-    download: true, header: true, complete: results => {
-      dictionary = results.data.map(row => {
-        const word = (row["QUESTION"] || row["ANSWER"] || "").trim();
-        const pStr = (row["PARTS"] || row["部件"] || "").trim();
-        return word && pStr ? { word, parts: pStr.split(/[,，、|/]/).map(p => p.trim()) } : null;
+    download: true, header: true, skipEmptyLines: "greedy",
+    transformHeader: h => String(h || "").trim().toUpperCase(),
+    complete: results => {
+      dictionary = results.data.filter(row => row["QUESTION"] || row["ANSWER"]).map(row => {
+        const word = (row["QUESTION"] || row["ANSWER"]).trim();
+        const parts = (row["PARTS"] || row["部件"] || "").split(/[,，、|/]/).map(p => p.trim()).filter(Boolean);
+        return parts.length ? { word, parts } : null;
       }).filter(Boolean);
+
+      if (dictionary.length) {
+        document.getElementById("start-title").textContent = "汉字节奏大师";
+        document.getElementById("start-text").innerHTML = `已加载 ${dictionary.length} 个汉字<br>12键五声音阶 · 3分钟编曲挑战`;
+        const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "🚀 启动";
+        btn.addEventListener("click", startGame); document.getElementById("start-screen").appendChild(btn);
+      }
     }
   });
-}
+});
 
-function createKeyboard() {
-  const wrap = document.getElementById('piano-wrap');
-  wrap.innerHTML = '';
-  for(let i=0; i<12; i++) {
-    const key = document.createElement('div');
-    key.className = 'key';
-    key.dataset.index = i;
-    key.innerHTML = `<div class="radical"></div><div class="note-label">${KEY_LABELS[i]}</div>`;
-    key.onpointerdown = (e) => handleKeyPress(i, key);
-    key.onpointerup = () => key.classList.remove('pressed');
-    wrap.appendChild(key);
-  }
-}
+window.addEventListener("resize", () => { setViewportHeight(); calculateTrack(); });
 
-function startGameLoop() {
-  setInterval(() => {
-    if (isPlaying && activeChars.length < MAX_ACTIVE_CHARS) {
-      spawnChar();
-    }
-  }, SPAWN_INTERVAL);
+function setViewportHeight() { document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`); }
 
-  function animate() {
-    if (!isPlaying) return;
-    updateChars();
-    requestAnimationFrame(animate);
-  }
-  animate();
-}
-
-function spawnChar() {
-  if (dictionary.length === 0) return;
-  const data = dictionary[Math.floor(Math.random() * dictionary.length)];
-  
-  const el = document.createElement('div');
-  el.className = 'neon-char';
-  el.innerHTML = `<span>${data.word}</span><div class="dot-container"></div>`;
-  
-  const dotWrap = el.querySelector('.dot-container');
-  data.parts.forEach(() => {
-    const d = document.createElement('div');
-    d.className = 'dot';
-    dotWrap.appendChild(d);
-  });
-  
-  document.getElementById('stage').appendChild(el);
-  
-  const charObj = {
-    el,
-    word: data.word,
-    parts: data.parts,
-    nextPartIndex: 0,
-    z: 0, // 0 = 极远, 1 = 消失点/底部
-    speed: 0.0015 + (Math.random() * 0.001),
-    lane: Math.random() * 80 - 40, // 左右分布
-    isSlowed: false
-  };
-  
-  activeChars.push(charObj);
-  refreshKeyMapping();
-}
-
-function updateChars() {
-  const stage = document.getElementById('stage');
-  const h = stage.clientHeight;
-  const w = stage.clientWidth;
-
-  for (let i = activeChars.length - 1; i >= 0; i--) {
-    const c = activeChars[i];
+function initPianoDOM() {
+  piano.innerHTML = "";
+  for (let i = 0; i < KEY_COUNT; i++) {
+    const btn = document.createElement("div"); btn.className = "white-key";
+    btn.innerHTML = `<div class="key-radical"></div><div class="key-note">${PENTA_KEYS[i].label}</div>`;
     
-    // 如果击中过，速度降低
-    const currentSpeed = c.isSlowed ? c.speed * 0.2 : c.speed;
-    c.z += currentSpeed;
+    // 兼容 iPad 多点触控
+    btn.addEventListener("pointerdown", e => { e.preventDefault(); handleKeyPress(i, btn); });
+    btn.addEventListener("pointerup", e => { e.preventDefault(); btn.classList.remove("pressed"); stopSustainNote(`key-${i}`); });
+    btn.addEventListener("pointercancel", e => { e.preventDefault(); btn.classList.remove("pressed"); stopSustainNote(`key-${i}`); });
+    btn.addEventListener("pointerleave", e => { e.preventDefault(); btn.classList.remove("pressed"); stopSustainNote(`key-${i}`); });
+    piano.appendChild(btn);
+  }
+}
 
-    if (c.z >= 1) {
-      // 没按出来，漏掉了
-      c.el.remove();
-      activeChars.splice(i, 1);
-      currentCombo = 0;
-      updateHUD();
-      refreshKeyMapping();
-      continue;
+function startGame() {
+  ensureAudio(); // 解锁苹果音频
+  document.getElementById("start-screen").style.display = "none";
+  score = 0; timeLeft = GAME_TIME; isPlaying = true; activeChars = []; recordedNotes = []; hitTokens = [];
+  gameStartTime = Date.now(); lastFrameTime = performance.now(); lastSpawnTime = 0;
+  
+  document.getElementById("score").textContent = score;
+  document.getElementById("timer").textContent = timeLeft;
+  
+  calculateTrack();
+  clockTimer = setInterval(() => {
+    timeLeft--; document.getElementById("timer").textContent = timeLeft;
+    if (timeLeft <= 0) endGame();
+  }, 1000);
+  
+  animationRef = requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+  isPlaying = false; clearInterval(clockTimer); cancelAnimationFrame(animationRef);
+  activeChars.forEach(c => c.el.remove()); activeChars = [];
+  document.getElementById("replay-screen").style.display = "flex";
+  document.getElementById("btn-replay").onclick = () => playRecording();
+}
+
+function gameLoop(now) {
+  if (!isPlaying) return;
+  const dt = Math.min(32, now - lastFrameTime) / 16.67; lastFrameTime = now;
+
+  // 控制出字频率
+  if (activeChars.length < MAX_ACTIVE_CHARS && now - lastSpawnTime > 1500) {
+    spawnCharacter(); lastSpawnTime = now;
+  }
+
+  updateCharacters(dt, now);
+  updateHitTokens(dt);
+  animationRef = requestAnimationFrame(gameLoop);
+}
+
+function spawnCharacter() {
+  const data = dictionary[Math.floor(Math.random() * dictionary.length)];
+  const el = document.createElement("div"); el.className = "depth-character";
+  const wordSpan = document.createElement("span"); wordSpan.textContent = data.word; el.appendChild(wordSpan);
+  const progress = document.createElement("div"); progress.className = "progress";
+  data.parts.forEach(() => { const dot = document.createElement("div"); dot.className = "dot"; progress.appendChild(dot); });
+  el.appendChild(progress); arena.appendChild(el);
+
+  const c = {
+    id: idCounter++, el, word: data.word, parts: [...data.parts],
+    expectedIndex: 0, // 玩家需要按的下一个
+    visualIndex: 0,   // 子弹打中后变绿的下一个
+    laneIndex: Math.floor(Math.random() * KEY_COUNT), // 在哪个轨道上方
+    z: 0.05, baseSpeed: 0.0012 + Math.random() * 0.0005, slowUntil: 0, dead: false
+  };
+  activeChars.push(c);
+  refreshKeyboardSlots();
+}
+
+// 核心逻辑：计算并更新轨道，制造 3D 纵深感
+function calculateTrack() {
+  const rect = arena.getBoundingClientRect(); trackSvg.innerHTML = ""; trackGeometry = [];
+  const farY = -rect.height * 0.5; // 消失点在屏幕上方很远
+  const centerX = rect.width / 2;
+  const laneW = rect.width / KEY_COUNT;
+
+  for (let i = 0; i < KEY_COUNT; i++) {
+    const nearLeft = i * laneW; const nearRight = (i + 1) * laneW; const nearCenterX = nearLeft + laneW / 2;
+    const farCenterX = centerX + (i - (KEY_COUNT - 1) / 2) * 5; // 消失点极度聚拢
+    
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", `M ${nearLeft} ${rect.height} L ${farCenterX - 2} ${farY} L ${farCenterX + 2} ${farY} L ${nearRight} ${rect.height} Z`);
+    path.setAttribute("class", "track-fill"); trackSvg.appendChild(path);
+    
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", nearCenterX); line.setAttribute("y1", rect.height); line.setAttribute("x2", farCenterX); line.setAttribute("y2", farY);
+    line.setAttribute("class", "track-line"); trackSvg.appendChild(line);
+
+    trackGeometry.push({ nearX: nearCenterX, nearY: rect.height, farX: farCenterX, farY: farY });
+  }
+}
+
+function getPointOnLane(laneIndex, z) {
+  const lane = trackGeometry[laneIndex]; const t = 1 - z;
+  return { x: lane.farX + (lane.nearX - lane.farX) * t, y: lane.farY + (lane.nearY - lane.farY) * t };
+}
+
+function updateCharacters(dt, now) {
+  for (let i = activeChars.length - 1; i >= 0; i--) {
+    const c = activeChars[i]; if (c.dead) continue;
+    
+    const speed = now < c.slowUntil ? c.baseSpeed * 0.2 : c.baseSpeed;
+    c.z += speed * dt;
+
+    if (c.z >= 1) { // 漏掉了
+      c.dead = true; c.el.remove(); activeChars.splice(i, 1);
+      refreshKeyboardSlots(); continue;
     }
 
-    // 3D 坐标计算：远小近大
-    const scale = 0.1 + (c.z * 1.5); // 出来的瞬间很小，到面前很大
-    const y = c.z * h;
-    const x = (w / 2) + (c.lane * c.z * 10);
-    const opacity = c.z < 0.2 ? c.z * 5 : 1;
+    const pt = getPointOnLane(c.laneIndex, c.z);
+    c.el.style.left = `${pt.x}px`; c.el.style.top = `${pt.y}px`;
+    c.el.style.fontSize = `${20 + c.z * 80}px`; // 近大远小
+    c.el.style.opacity = c.z < 0.2 ? c.z * 5 : 1;
 
-    c.el.style.transform = `translate(-50%, -50%) translate3d(${x - (w/2)}px, ${y - (h/2)}px, 0) scale(${scale})`;
-    c.el.style.opacity = opacity;
-
-    // 更新进度小点
-    const dots = c.el.querySelectorAll('.dot');
-    dots.forEach((d, idx) => {
-      d.className = idx < c.nextPartIndex ? 'dot active' : 'dot';
+    c.el.querySelectorAll(".dot").forEach((dot, idx) => {
+      dot.className = idx < c.visualIndex ? "dot done" : (idx === c.visualIndex ? "dot next" : "dot");
     });
   }
 }
 
-// 刷新按键上的偏旁显示：优先显示最靠近玩家的字的下一个部首
-function refreshKeyMapping() {
-  const keys = document.querySelectorAll('.key .radical');
-  keys.forEach(k => k.innerText = '');
+// 刷新键盘上的字：只更新文字，不重建按钮，防止卡顿
+function refreshKeyboardSlots() {
+  keyboardSlots.fill(null);
+  const needed = [];
+  activeChars.forEach(c => { if (!c.dead && c.expectedIndex < c.parts.length) needed.push({ char: c.parts[c.expectedIndex], target: c }); });
 
-  // 对活跃的字按进度排序，最接近底部的优先占领按键
-  const sorted = [...activeChars].sort((a, b) => b.z - a.z);
+  const indices = Array.from({length: KEY_COUNT}, (_, i) => i); shuffle(indices);
   
-  const occupiedLanes = new Set();
-  
-  sorted.forEach(c => {
-    const targetPart = c.parts[c.nextPartIndex];
-    // 为这个部首随机分配一个没被占用的按键
-    let lane = Math.floor(Math.random() * 12);
-    while (occupiedLanes.has(lane)) { lane = (lane + 1) % 12; }
-    
-    const key = document.querySelector(`.key[data-index="${lane}"] .radical`);
-    key.innerText = targetPart;
-    key.dataset.charId = activeChars.indexOf(c);
-    occupiedLanes.add(lane);
+  needed.forEach(n => {
+    if (indices.length > 0) keyboardSlots[indices.pop()] = { kind: "part", char: n.char, target: n.target };
   });
 
-  // 填充干扰项
-  for(let i=0; i<12; i++) {
-    if (!occupiedLanes.has(i)) {
-      const key = document.querySelector(`.key[data-index="${i}"] .radical`);
-      key.innerText = distractors[Math.floor(Math.random() * distractors.length)];
-      key.dataset.charId = -1;
-    }
+  const allParts = activeChars.flatMap(c => c.parts);
+  indices.forEach(idx => { keyboardSlots[idx] = { kind: "distractor", char: randomDistractorAvoiding(allParts) }; });
+
+  const keys = piano.children;
+  for (let i = 0; i < KEY_COUNT; i++) {
+    const slot = keyboardSlots[i];
+    keys[i].querySelector(".key-radical").textContent = slot ? slot.char : "";
   }
 }
 
-function handleKeyPress(index, el) {
+function handleKeyPress(index, btnElement) {
   if (!isPlaying) return;
+  const slot = keyboardSlots[index]; if (!slot) return;
   
-  el.classList.add('pressed');
-  const freq = PENTATONIC_FREQS[index];
-  synth.triggerAttackRelease(freq, "8n");
+  btnElement.classList.add("pressed");
+  startSustainNote(`key-${index}`, PENTA_KEYS[index].freq);
+  recordedNotes.push({ time: Date.now() - gameStartTime, index: index, freq: PENTA_KEYS[index].freq });
 
-  // 记录音符
-  recordedNotes.push({
-    time: Date.now() - startTime,
-    freq: freq,
-    index: index
-  });
-
-  const radicalEl = el.querySelector('.radical');
-  const charId = radicalEl.dataset.charId;
-
-  if (charId !== "-1" && activeChars[charId]) {
-    const c = activeChars[charId];
-    c.nextPartIndex++;
-    c.isSlowed = true; // 击中减速
-    setTimeout(() => c.isSlowed = false, 1000);
-
-    currentCombo++;
+  if (slot.kind === "part") {
+    score += 50; document.getElementById("score").textContent = score;
+    const c = slot.target;
+    c.expectedIndex++; // 立即更新内部期待进度
     
-    // 如果这个字所有部件按完了
-    if (c.nextPartIndex >= c.parts.length) {
-      c.el.style.filter = 'brightness(5) blur(10px)';
-      c.el.style.opacity = '0';
-      setTimeout(() => {
-        if(c.el.parentNode) c.el.remove();
-        activeChars = activeChars.filter(item => item !== c);
-        refreshKeyMapping();
-      }, 200);
-    } else {
-      refreshKeyMapping();
-    }
+    // 发射追踪子弹
+    const rect = btnElement.getBoundingClientRect(); const arenaRect = arena.getBoundingClientRect();
+    launchHitToken(slot.char, rect.left + rect.width/2 - arenaRect.left, arenaRect.height, c);
+    refreshKeyboardSlots(); // 立即刷新键盘出下一个字
   } else {
-    currentCombo = 0;
+    btnElement.classList.remove("wrong"); void btnElement.offsetWidth; btnElement.classList.add("wrong");
+    playBadTone();
   }
-  updateHUD();
 }
 
-function updateHUD() {
-  document.getElementById('combo').innerText = currentCombo;
+function launchHitToken(char, x, y, targetChar) {
+  const el = document.createElement("div"); el.className = "hit-token"; el.textContent = char;
+  arena.appendChild(el);
+  hitTokens.push({ el, x, y, z: 0.98, target: targetChar, dead: false, arrived: false });
 }
 
-function startTimer() {
-  let timeLeft = GAME_DURATION;
-  gameTimer = setInterval(() => {
-    timeLeft--;
-    document.getElementById('timer').innerText = timeLeft;
-    if (timeLeft <= 0) endGame();
-  }, 1000);
+function updateHitTokens(dt) {
+  hitTokens.forEach(t => {
+    if (t.dead || t.target.dead) { t.dead = true; t.el.remove(); return; }
+    t.z -= 0.08 * dt; // 子弹往远处飞
+    if (t.z < t.target.z) t.z = t.target.z;
+
+    const targetPt = getPointOnLane(t.target.laneIndex, t.target.z);
+    const blend = (0.98 - t.z) / (0.98 - t.target.z + 0.001);
+    t.x = t.x + (targetPt.x - t.x) * blend * 0.2; // 抛物线追踪
+    t.y = t.y + (targetPt.y - t.y) * blend * 0.5;
+    
+    t.el.style.left = `${t.x}px`; t.el.style.top = `${t.y}px`; t.el.style.transform = `translate(-50%, -50%) scale(${0.5 + t.z * 0.5})`;
+
+    if (!t.arrived && t.z <= t.target.z + 0.02) {
+      t.arrived = true; t.dead = true; t.el.remove();
+      hitTarget(t.target);
+    }
+  });
+  hitTokens = hitTokens.filter(t => !t.dead);
 }
 
-function endGame() {
-  isPlaying = false;
-  clearInterval(gameTimer);
-  document.getElementById('replay-screen').style.display = 'flex';
+function hitTarget(c) {
+  c.visualIndex++; c.slowUntil = performance.now() + 1000;
+  c.el.classList.remove("correct"); void c.el.offsetWidth; c.el.classList.add("correct");
+  
+  if (c.visualIndex >= c.parts.length) {
+    score += 200; document.getElementById("score").textContent = score;
+    c.dead = true; c.el.classList.add("complete"); playCompleteSound();
+    setTimeout(() => c.el.remove(), 400);
+  } else {
+    playBounceTone();
+  }
 }
 
-// --- 回放编曲 ---
+// --- 音频系统 (纯原生 Web Audio API，绝不外挂) ---
+function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume(); }
+
+function startSustainNote(noteId, freq) {
+  ensureAudio(); if (activeNotes.has(noteId)) stopSustainNote(noteId);
+  const now = audioCtx.currentTime; const output = audioCtx.createGain();
+  output.gain.setValueAtTime(0, now); output.gain.linearRampToValueAtTime(0.4, now + 0.02); output.gain.exponentialRampToValueAtTime(0.1, now + 0.3);
+  output.connect(audioCtx.destination);
+
+  const oscs = [];
+  [{r:1, a:1, t:'sine'}, {r:2, a:0.5, t:'triangle'}, {r:3, a:0.2, t:'sine'}].forEach(h => {
+    const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+    osc.type = h.t; osc.frequency.value = freq * h.r;
+    g.gain.setValueAtTime(h.a, now); g.gain.exponentialRampToValueAtTime(0.01, now + (h.r===1 ? 1 : 0.3));
+    osc.connect(g); g.connect(output); osc.start(now); oscs.push({osc, g});
+  });
+  activeNotes.set(noteId, { output, oscs });
+}
+
+function stopSustainNote(noteId) {
+  if (!audioCtx) return; const note = activeNotes.get(noteId); if (!note) return;
+  const now = audioCtx.currentTime;
+  note.output.gain.cancelScheduledValues(now); note.output.gain.setValueAtTime(note.output.gain.value, now); note.output.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  note.oscs.forEach(o => o.osc.stop(now + 0.2));
+  setTimeout(() => note.output.disconnect(), 300);
+  activeNotes.delete(noteId);
+}
+
+function playBadTone() { playSimpleTone(150, 0.15, 0.1, "sawtooth"); }
+function playBounceTone() { playSimpleTone(800, 0.1, 0.05, "sine"); }
+function playCompleteSound() { [523.25, 659.25, 1046.50].forEach((f, i) => setTimeout(() => playSimpleTone(f, 0.3, 0.1, "sine"), i*50)); }
+function playSimpleTone(freq, duration, vol, type) {
+  ensureAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const now = audioCtx.currentTime;
+  osc.type = type; osc.frequency.value = freq; gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(vol, now + 0.02); gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + duration + 0.1);
+}
+
+// 梦幻背景氛围音 (给回放增加高级感)
+function playBackgroundPad(durationMs) {
+  ensureAudio(); const now = audioCtx.currentTime; const dur = durationMs / 1000;
+  [261.63, 329.63, 392.00].forEach(f => {
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = 'triangle'; osc.frequency.value = f / 2;
+    gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.1, now + 2); gain.gain.setValueAtTime(0.1, now + dur - 2); gain.gain.linearRampToValueAtTime(0, now + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + dur + 0.1);
+  });
+}
+
 function playRecording() {
-  if (recordedNotes.length === 0) return alert("没有记录到音符哦！");
+  if (recordedNotes.length === 0) return alert("刚刚没有按对任何字哦，再来一把！");
+  document.getElementById("replay-screen").style.display = "none";
   
-  const now = Tone.now();
-  
-  // 增加一段简单的 Lo-Fi 节奏（模拟编曲大师）
-  const player = new Tone.Player("https://tonejs.github.io/audio/drum-samples/loops/amen_break.mp3").toDestination();
-  player.loop = true;
-  player.volume.value = -15;
-  player.start(now);
+  const totalMs = recordedNotes[recordedNotes.length - 1].time + 2000;
+  playBackgroundPad(totalMs); // 铺垫梦幻背景音
 
   recordedNotes.forEach(note => {
-    synth.triggerAttackRelease(note.freq, "8n", now + (note.time / 1000));
-    
-    // 视觉同步回放
     setTimeout(() => {
-      const key = document.querySelector(`.key[data-index="${note.index}"]`);
-      if(key) {
-        key.classList.add('pressed');
-        setTimeout(() => key.classList.remove('pressed'), 100);
-      }
+      startSustainNote(`replay-${note.index}`, note.freq);
+      const btn = piano.children[note.index]; btn.classList.add("pressed");
+      setTimeout(() => { btn.classList.remove("pressed"); stopSustainNote(`replay-${note.index}`); }, 200);
     }, note.time);
   });
 
-  setTimeout(() => player.stop(), recordedNotes[recordedNotes.length-1].time + 2000);
+  setTimeout(() => document.getElementById("replay-screen").style.display = "flex", totalMs);
 }
+
+// --- 辅助工具 ---
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
+function randomDistractorAvoiding(avoid) { const safe = distractors.filter(d => !avoid.includes(d)); return safe.length ? safe[Math.floor(Math.random() * safe.length)] : distractors[0]; }
 </script>
 </body>
 </html>
