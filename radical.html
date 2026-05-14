@@ -35,19 +35,17 @@ html, body {
   background:
     radial-gradient(ellipse at 50% 14%, rgba(255,255,255,0.4), transparent 34%),
     radial-gradient(ellipse at 50% 5%, rgba(56,189,248,0.2), transparent 42%),
-    linear-gradient(180deg, #1e1b4b 0%, #312e81 48%, #0f172a 100%); /* 调深背景更显光效 */
+    linear-gradient(180deg, #1e1b4b 0%, #312e81 48%, #0f172a 100%);
 }
 
-body {
-  touch-action: manipulation;
-}
+body { touch-action: manipulation; }
 
 #game {
   position: relative;
   width: 100vw;
   height: calc(var(--vh) * 100);
   overflow: hidden;
-  perspective: 1000px; /* 增加整体空间感 */
+  perspective: 1000px;
 }
 
 #hud {
@@ -73,504 +71,220 @@ body {
 
 #arena {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
+  left: 0; right: 0; top: 0;
   bottom: var(--keyboard-height);
   overflow: hidden;
   z-index: 5;
 }
 
 #depth-fog {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 6;
+  position: absolute; inset: 0; pointer-events: none; z-index: 6;
   background:
     radial-gradient(ellipse at 50% 2%, rgba(22, 193, 206, 0.3), transparent 50%),
     linear-gradient(180deg, rgba(255,255,255,0.05), transparent 62%);
 }
 
 #track-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 8;
-  pointer-events: none;
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  z-index: 8; pointer-events: none;
   filter: drop-shadow(0 0 12px rgba(34,211,238,0.2));
 }
 
-.track-fill {
-  fill: rgba(34, 211, 238, 0.03);
-  stroke: rgba(34, 211, 238, 0.1);
-  stroke-width: 1;
-}
-
-.track-fill.hint-fill {
-  fill: rgba(34,197,94,0.15);
-  stroke: rgba(34,197,94,0.4);
-}
-
+.track-fill { fill: rgba(34, 211, 238, 0.03); stroke: rgba(34, 211, 238, 0.1); stroke-width: 1; }
+.track-fill.hint-fill { fill: rgba(34,197,94,0.15); stroke: rgba(34,197,94,0.4); }
 .track-line {
-  stroke: var(--neon-cyan);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 12 18;
-  animation: trackDash 0.8s linear infinite; /* 加速流动 */
-  opacity: 0.7;
+  stroke: var(--neon-cyan); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 12 18;
+  animation: trackDash 0.8s linear infinite; opacity: 0.7;
 }
-
 .track-line.hint {
-  stroke: #4ade80;
-  stroke-width: 6;
-  filter: drop-shadow(0 0 12px #4ade80);
-  animation: trackDash 0.4s linear infinite; /* 提示时极速流动 */
+  stroke: #4ade80; stroke-width: 6; filter: drop-shadow(0 0 12px #4ade80);
+  animation: trackDash 0.4s linear infinite;
 }
+.track-rung { stroke: rgba(34, 211, 238, 0.4); stroke-width: 2; animation: rungPulse 1s ease-in-out infinite; }
+.track-rung.hint { stroke: rgba(74, 222, 128, 0.8); filter: drop-shadow(0 0 8px #4ade80); }
 
-.track-rung {
-  stroke: rgba(34, 211, 238, 0.4);
-  stroke-width: 2;
-  animation: rungPulse 1s ease-in-out infinite;
-}
-
-.track-rung.hint {
-  stroke: rgba(74, 222, 128, 0.8);
-  filter: drop-shadow(0 0 8px #4ade80);
-}
-
-@keyframes trackDash {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: -30; }
-}
-
+@keyframes trackDash { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -30; } }
 @keyframes rungPulse {
   0%, 100% { opacity: 0.2; filter: brightness(1); }
   50% { opacity: 0.9; filter: brightness(1.5) drop-shadow(0 0 5px var(--neon-cyan)); }
 }
 
 #miss-line {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: var(--keyboard-height);
-  height: 6px;
-  z-index: 70;
+  position: absolute; left: 0; right: 0; bottom: var(--keyboard-height);
+  height: 6px; z-index: 70;
   background: linear-gradient(90deg, transparent, rgba(244, 114, 182, 0.8), transparent);
-  box-shadow: 0 0 20px rgba(244, 114, 182, 0.6);
-  pointer-events: none;
+  box-shadow: 0 0 20px rgba(244, 114, 182, 0.6); pointer-events: none;
 }
 
 .depth-character {
-  position: absolute;
-  z-index: 40;
-  background: transparent;
-  color: #fff;
-  font-weight: 900;
-  line-height: 1;
-  text-shadow:
-    0 0 10px rgba(255,255,255,0.8),
-    0 0 20px var(--neon-cyan),
-    0 10px 20px rgba(0,0,0,0.5);
-  transform-origin: center center;
-  will-change: left, top, transform, opacity, font-size;
-  transition: transform 0.05s ease-out; /* 让击打缩放更平滑 */
+  position: absolute; z-index: 40; background: transparent; color: #fff;
+  font-weight: 900; line-height: 1;
+  text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--neon-cyan), 0 10px 20px rgba(0,0,0,0.5);
+  transform-origin: center center; will-change: left, top, transform, opacity, font-size;
+  transition: transform 0.05s ease-out;
 }
-
 .depth-character.correct {
   animation: hitPunch 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  color: #a7f3d0;
-  text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e;
+  color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e;
 }
-
 @keyframes hitPunch {
   0% { transform: translate(-50%, -50%) scale(1) translateY(0); filter: brightness(1); }
   40% { transform: translate(-50%, -50%) scale(1.3) translateY(-30px); filter: brightness(1.8); }
   100% { transform: translate(-50%, -50%) scale(1) translateY(0); filter: brightness(1); }
 }
-
-.depth-character.complete {
-  animation: completeExplosion 0.5s ease-out forwards;
-}
-
-/* 核心：3D 旋转与大爆点 */
+.depth-character.complete { animation: completeExplosion 0.4s ease-out forwards; }
 @keyframes completeExplosion {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1) rotateY(0deg) rotateZ(0deg);
-    filter: brightness(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(2) rotateY(180deg) rotateZ(10deg);
-    filter: brightness(2.5) drop-shadow(0 0 40px #facc15);
-    color: #fef08a;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(3) rotateY(360deg) rotateZ(20deg);
-    filter: brightness(3) blur(4px);
-  }
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotateY(0deg) rotateZ(0deg); filter: brightness(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(2) rotateY(180deg) rotateZ(10deg); filter: brightness(2.5) drop-shadow(0 0 40px #facc15); color: #fef08a; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(3) rotateY(360deg) rotateZ(20deg); filter: brightness(3) blur(4px); }
 }
 
-.progress {
-  position: absolute;
-  left: 50%;
-  bottom: -28px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: rgba(15,23,42,0.8);
-  border: 2px solid var(--neon-cyan);
-  box-shadow: 0 0 5px var(--neon-cyan);
-  transition: all 0.2s;
-}
-
-.dot.done {
-  background: #10b981;
-  border-color: #a7f3d0;
-  box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
-}
-
-.dot.next {
-  background: #fef08a;
-  border-color: #facc15;
-  box-shadow: 0 0 15px #facc15;
-  animation: pulseDot 0.6s alternate infinite;
-}
-
-@keyframes pulseDot {
-  from { transform: scale(1); }
-  to { transform: scale(1.4); }
-}
+.progress { position: absolute; left: 50%; bottom: -28px; transform: translateX(-50%); display: flex; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(15,23,42,0.8); border: 2px solid var(--neon-cyan); box-shadow: 0 0 5px var(--neon-cyan); transition: all 0.2s; }
+.dot.done { background: #10b981; border-color: #a7f3d0; box-shadow: 0 0 10px #10b981, 0 0 20px #10b981; }
+.dot.next { background: #fef08a; border-color: #facc15; box-shadow: 0 0 15px #facc15; animation: pulseDot 0.6s alternate infinite; }
+@keyframes pulseDot { from { transform: scale(1); } to { transform: scale(1.4); } }
 
 #piano-wrap {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--keyboard-height);
-  z-index: 100;
-  padding:
-    clamp(8px, 1.5vh, 12px)
-    max(8px, env(safe-area-inset-left))
-    max(10px, env(safe-area-inset-bottom));
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--keyboard-height); z-index: 100;
+  padding: clamp(8px, 1.5vh, 12px) max(8px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-bottom));
   background: linear-gradient(180deg, rgba(2,6,23,0.8), rgba(15,23,42,0.95));
-  border-top: 2px solid var(--neon-cyan);
-  box-shadow: 0 -10px 30px rgba(34,211,238,0.2);
+  border-top: 2px solid var(--neon-cyan); box-shadow: 0 -10px 30px rgba(34,211,238,0.2);
 }
 
 #piano {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
-  border-radius: 14px;
-  background: #020617;
-  padding: 4px;
-  box-shadow: inset 0 0 20px rgba(34,211,238,0.1);
+  position: relative; width: 100%; height: 100%; max-width: 1180px; margin: 0 auto;
+  border-radius: 14px; background: #020617; padding: 4px; box-shadow: inset 0 0 20px rgba(34,211,238,0.1);
+  perspective: 800px; /* 开启 3D 透视 */
 }
 
+/* 核心动画修改：模拟真实钢琴铰链下压效果 */
 .white-key {
-  position: absolute;
-  bottom: 4px;
-  height: calc(100% - 8px);
-  border: 1px solid #334155;
-  border-bottom: 12px solid #1e293b;
-  border-radius: 0 0 12px 12px;
-  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
-  color: #0f172a;
-  cursor: pointer;
-  overflow: hidden;
+  position: absolute; bottom: 4px; height: calc(100% - 8px);
+  border: 1px solid #334155; border-bottom: 12px solid #1e293b; border-radius: 0 0 12px 12px;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; cursor: pointer; overflow: hidden;
   box-shadow: inset 0 -10px 10px rgba(0,0,0,0.1);
-  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-bottom-width 0.1s, filter 0.1s;
-}
-
-.white-key.hint {
-  background: linear-gradient(180deg, #ecfdf5 0%, #a7f3d0 100%);
-  border-color: #10b981;
-  border-bottom-color: #059669;
-  box-shadow: inset 0 0 20px #6ee7b7, 0 0 15px rgba(16,185,129,0.5);
-}
-
-.white-key.used {
-  background: linear-gradient(180deg, #64748b 0%, #475569 100%);
-  color: #94a3b8;
-  border-bottom-color: #334155;
+  transform-origin: top center; /* 从顶部铰链处旋转 */
+  transition: transform 0.05s ease, border-bottom-width 0.05s ease, filter 0.05s, box-shadow 0.05s, background 0.05s;
 }
 
 .white-key.pressed {
-  transform: translateY(8px) rotateX(10deg);
-  border-bottom-width: 4px;
-  filter: brightness(1.2);
-  box-shadow: inset 0 0 30px var(--neon-cyan);
+  transform: rotateX(8deg); /* 按下时沿X轴向内翻转 */
+  border-bottom-width: 2px;
+  background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%); /* 变暗 */
+  box-shadow: inset 0 20px 20px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.3);
 }
+
+.white-key.hint {
+  background: linear-gradient(180deg, #ecfdf5 0%, #a7f3d0 100%); border-color: #10b981; border-bottom-color: #059669;
+  box-shadow: inset 0 0 20px #6ee7b7, 0 0 15px rgba(16,185,129,0.5);
+}
+.white-key.used { background: linear-gradient(180deg, #64748b 0%, #475569 100%); color: #94a3b8; border-bottom-color: #334155; }
 
 .white-key.wrong {
-  background: #ffe4e6;
-  border-color: #e11d48;
-  border-bottom-color: #9f1239;
-  box-shadow: inset 0 0 30px #f43f5e;
+  background: #ffe4e6; border-color: #e11d48; border-bottom-color: #9f1239; box-shadow: inset 0 0 30px #f43f5e;
   animation: wrongShake 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
-
 @keyframes wrongShake {
-  0%, 100% { transform: translateX(0) translateY(8px); }
-  20%, 60% { transform: translateX(-8px) translateY(8px) rotateZ(-2deg); }
-  40%, 80% { transform: translateX(8px) translateY(8px) rotateZ(2deg); }
+  0%, 100% { transform: rotateX(8deg) translateX(0); }
+  20%, 60% { transform: rotateX(8deg) translateX(-6px); }
+  40%, 80% { transform: rotateX(8deg) translateX(6px); }
 }
 
 .black-key {
-  position: absolute;
-  top: 4px;
-  height: 52%;
-  width: 7.2%;
-  border: 1px solid #000;
-  border-bottom: 10px solid #000;
-  border-radius: 0 0 8px 8px;
-  background: linear-gradient(180deg, #334155 0%, #0f172a 100%);
-  color: #cbd5e1;
-  z-index: 8;
-  cursor: pointer;
+  position: absolute; top: 4px; height: 52%; width: 7.2%;
+  border: 1px solid #000; border-bottom: 10px solid #000; border-radius: 0 0 8px 8px;
+  background: linear-gradient(180deg, #334155 0%, #0f172a 100%); color: #cbd5e1; z-index: 8; cursor: pointer;
   box-shadow: 0 8px 15px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.2);
-  transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-bottom-width 0.1s, filter 0.1s;
+  transform-origin: top center;
+  transition: transform 0.05s ease, border-bottom-width 0.05s ease, filter 0.05s, box-shadow 0.05s, background 0.05s;
 }
 
 .black-key.pressed {
-  transform: translateY(8px) rotateX(10deg);
+  transform: rotateX(12deg);
   border-bottom-width: 2px;
-  filter: brightness(1.5);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.6), inset 0 0 20px var(--neon-cyan);
+  background: linear-gradient(180deg, #1e293b 0%, #020617 100%);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.6), inset 0 10px 10px rgba(0,0,0,0.8);
 }
 
 .key-radical {
-  position: absolute;
-  left: 50%;
-  top: 65%;
-  transform: translate(-50%, -50%);
-  font-size: clamp(32px, 6vw, 60px);
-  font-weight: 900;
-  z-index: 12;
-  line-height: 1;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  position: absolute; left: 50%; top: 65%; transform: translate(-50%, -50%);
+  font-size: clamp(32px, 6vw, 60px); font-weight: 900; z-index: 12; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-
-.white-key.pressed .key-radical {
-  text-shadow: 0 0 15px var(--neon-cyan);
-  color: #020617;
-}
-
+.white-key.pressed .key-radical { color: #020617; }
 .key-note {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(6px, 1.2vh, 10px);
-  transform: translateX(-50%);
-  font-size: clamp(10px, 2vw, 14px);
-  font-weight: 900;
-  color: #94a3b8;
-  z-index: 12;
+  position: absolute; left: 50%; bottom: clamp(6px, 1.2vh, 10px); transform: translateX(-50%);
+  font-size: clamp(10px, 2vw, 14px); font-weight: 900; color: #94a3b8; z-index: 12;
 }
 
-/* 飞行击打 Token：旋转并带拖尾发光 */
 .hit-token {
-  position: absolute;
-  z-index: 95;
-  min-width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff, #a7f3d0);
-  border: 4px solid #10b981;
-  color: #064e3b;
-  font-size: 30px;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 0 20px #4ade80,
-    0 0 40px #22c55e,
-    inset 0 0 10px #fff;
-  pointer-events: none;
-  /* 旋转在 JS 中动态计算 */
+  position: absolute; z-index: 95; min-width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle, #fff, #a7f3d0);
+  border: 4px solid #10b981; color: #064e3b; font-size: 30px; font-weight: 900; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 20px #4ade80, 0 0 40px #22c55e, inset 0 0 10px #fff; pointer-events: none;
 }
-
-/* 爆炸波纹：双层叠加更炫酷 */
 .impact-ring {
-  position: absolute;
-  z-index: 120;
-  width: 50px;
-  height: 50px;
-  border: 4px solid #4ade80;
-  border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0.1);
-  pointer-events: none;
-  box-shadow: 0 0 20px #22c55e, inset 0 0 20px #4ade80;
+  position: absolute; z-index: 120; width: 50px; height: 50px; border: 4px solid #4ade80; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.1); pointer-events: none; box-shadow: 0 0 20px #22c55e, inset 0 0 20px #4ade80;
   animation: impactRingAnim 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
 }
-
 .impact-core {
-  position: absolute;
-  z-index: 121;
-  width: 30px;
-  height: 30px;
-  background: #fff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  box-shadow: 0 0 30px #fff, 0 0 50px #facc15;
+  position: absolute; z-index: 121; width: 30px; height: 30px; background: #fff; border-radius: 50%;
+  transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 30px #fff, 0 0 50px #facc15;
   animation: impactCoreAnim 0.3s ease-out forwards;
 }
-
-@keyframes impactRingAnim {
-  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.1); border-width: 10px; }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(3.5); border-width: 0px; }
-}
-
-@keyframes impactCoreAnim {
-  0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(4); }
-}
+@keyframes impactRingAnim { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.1); border-width: 10px; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(3.5); border-width: 0px; } }
+@keyframes impactCoreAnim { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(4); } }
 
 .overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 300;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(10px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px;
+  position: absolute; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px;
 }
-
-.overlay h1 {
-  margin: 0 0 10px;
-  color: #fff;
-  font-size: clamp(36px, 9vw, 68px);
-  line-height: 1.1;
-  text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
-}
-
-.version-label {
-  margin: 0 0 20px;
-  color: var(--neon-pink);
-  font-size: 20px;
-  font-weight: 900;
-  text-shadow: 0 0 10px var(--neon-pink);
-  letter-spacing: 2px;
-}
-
-.overlay p {
-  margin: 0 0 30px;
-  max-width: 760px;
-  color: #e2e8f0;
-  font-size: clamp(18px, 3.5vw, 24px);
-  font-weight: 800;
-  line-height: 1.5;
-}
-
+.overlay h1 { margin: 0 0 10px; color: #fff; font-size: clamp(36px, 9vw, 68px); line-height: 1.1; text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan); }
+.version-label { margin: 0 0 20px; color: var(--neon-pink); font-size: 20px; font-weight: 900; text-shadow: 0 0 10px var(--neon-pink); letter-spacing: 2px; }
+.overlay p { margin: 0 0 30px; max-width: 760px; color: #e2e8f0; font-size: clamp(18px, 3.5vw, 24px); font-weight: 800; line-height: 1.5; }
 .btn {
-  border: none;
-  background: linear-gradient(135deg, #0ea5e9, #6366f1);
-  color: #fff;
-  padding: 16px 40px;
-  font-size: 28px;
-  font-weight: 900;
-  border-radius: 999px;
-  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4);
-  cursor: pointer;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  transition: transform 0.1s, box-shadow 0.1s;
+  border: none; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; padding: 16px 40px; font-size: 28px; font-weight: 900;
+  border-radius: 999px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4); cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.1s, box-shadow 0.1s;
 }
-
-.btn:active {
-  transform: translateY(6px) scale(0.95);
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4);
-}
+.btn:active { transform: translateY(6px) scale(0.95); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4); }
 
 @media (orientation: landscape) and (max-height: 760px) {
-  :root { --keyboard-height: clamp(158px, 36vh, 230px); }
-  .black-key { height: 48%; }
-  .key-radical { top: 68%; font-size: clamp(30px, 6vh, 48px); }
-  .progress { bottom: -20px; }
-  .dot { width: 10px; height: 10px; }
+  :root { --keyboard-height: clamp(158px, 36vh, 230px); } .black-key { height: 48%; } .key-radical { top: 68%; font-size: clamp(30px, 6vh, 48px); } .progress { bottom: -20px; } .dot { width: 10px; height: 10px; }
 }
-
 @media (max-width: 700px) {
-  :root { --keyboard-height: clamp(168px, 34vh, 240px); }
-  .hit-token { min-width: 42px; height: 42px; font-size: 26px; }
-  .key-radical { font-size: clamp(34px, 8vw, 54px); }
+  :root { --keyboard-height: clamp(168px, 34vh, 240px); } .hit-token { min-width: 42px; height: 42px; font-size: 26px; } .key-radical { font-size: clamp(34px, 8vw, 54px); }
 }
 </style>
 </head>
-
 <body>
 <div id="game">
-  <div id="hud">
-    <div class="hud-box">⭐ <span id="score">0</span></div>
-  </div>
-
-  <div id="arena">
-    <div id="depth-fog"></div>
-    <svg id="track-svg"></svg>
-  </div>
-
+  <div id="hud"><div class="hud-box">⭐ <span id="score">0</span></div></div>
+  <div id="arena"><div id="depth-fog"></div><svg id="track-svg"></svg></div>
   <div id="miss-line"></div>
-
-  <div id="piano-wrap">
-    <div id="piano"></div>
-  </div>
-
+  <div id="piano-wrap"><div id="piano"></div></div>
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v2.0.0 炫酷重制版</div>
+    <div class="version-label" id="version-label">Version v2.1.0 电子琴超速版</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v2.0.0 炫酷重制版";
-
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
+const GAME_VERSION = "v2.1.0 电子琴超速版";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
 const KEY_COUNT = 8;
 const HINT_AFTER_PROGRESS = 0.5;
 
 const WHITE_KEYS = [
-  { label: "C", freq: 261.63 },
-  { label: "D", freq: 293.66 },
-  { label: "E", freq: 329.63 },
-  { label: "F", freq: 349.23 },
-  { label: "G", freq: 392.00 },
-  { label: "A", freq: 440.00 },
-  { label: "B", freq: 493.88 },
-  { label: "C", freq: 523.25 }
+  { label: "C", freq: 261.63 }, { label: "D", freq: 293.66 }, { label: "E", freq: 329.63 }, { label: "F", freq: 349.23 },
+  { label: "G", freq: 392.00 }, { label: "A", freq: 440.00 }, { label: "B", freq: 493.88 }, { label: "C", freq: 523.25 }
 ];
-
 const BLACK_KEYS = [
-  { afterWhite: 0, label: "C#", freq: 277.18 },
-  { afterWhite: 1, label: "D#", freq: 311.13 },
-  { afterWhite: 3, label: "F#", freq: 369.99 },
-  { afterWhite: 4, label: "G#", freq: 415.30 },
-  { afterWhite: 5, label: "A#", freq: 466.16 }
+  { afterWhite: 0, label: "C#", freq: 277.18 }, { afterWhite: 1, label: "D#", freq: 311.13 },
+  { afterWhite: 3, label: "F#", freq: 369.99 }, { afterWhite: 4, label: "G#", freq: 415.30 }, { afterWhite: 5, label: "A#", freq: 466.16 }
 ];
-
-const distractors = [
-  "扌", "亻", "心", "忄", "月", "虫", "门", "广",
-  "走", "雨", "艹", "口", "氵", "日", "木", "女",
-  "讠", "辶", "土", "火", "宀", "贝", "王", "纟",
-  "石", "禾", "目", "竹", "页", "刂"
-];
+const distractors = [ "扌", "亻", "心", "忄", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日", "木", "女", "讠", "辶", "土", "火", "宀", "贝", "王", "纟", "石", "禾", "目", "竹", "页", "刂" ];
 
 const arena = document.getElementById("arena");
 const trackSvg = document.getElementById("track-svg");
@@ -578,690 +292,285 @@ const piano = document.getElementById("piano");
 const startScreen = document.getElementById("start-screen");
 const scoreEl = document.getElementById("score");
 
-let dictionary = [];
-let score = 0;
+let dictionary = []; let score = 0; let isPlaying = false; let character = null; let hitTokens = []; let keyboardSlots = [];
+let keyCenters = []; let trackGeometry = []; let animationRef = null; let spawnTimer = null; let lastFrameTime = 0; let idCounter = 1;
+let audioCtx = null; let activeNotes = new Map();
 
-let isPlaying = false;
-let character = null;
-let hitTokens = [];
-let keyboardSlots = [];
+window.addEventListener("load", () => { setViewportHeight(); loadDictionary(); });
+window.addEventListener("resize", () => { setViewportHeight(); handleResize(); });
+window.addEventListener("orientationchange", () => { setTimeout(() => { setViewportHeight(); handleResize(); }, 300); });
 
-let keyCenters = [];
-let trackGeometry = [];
-
-let animationRef = null;
-let spawnTimer = null;
-let lastFrameTime = 0;
-let idCounter = 1;
-
-let audioCtx = null;
-let activeNotes = new Map();
-
-window.addEventListener("load", () => {
-  setViewportHeight();
-  loadDictionary();
-});
-
-window.addEventListener("resize", () => {
-  setViewportHeight();
-  handleResize();
-});
-
-window.addEventListener("orientationchange", () => {
-  setTimeout(() => {
-    setViewportHeight();
-    handleResize();
-  }, 300);
-});
-
-function setViewportHeight() {
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty("--vh", `${vh}px`);
-}
+function setViewportHeight() { document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`); }
 
 function loadDictionary() {
   document.getElementById("version-label").textContent = GAME_VERSION;
-
   Papa.parse(SHEET_URL + "&t=" + Date.now(), {
-    download: true,
-    header: true,
-    skipEmptyLines: "greedy",
-    transformHeader: h => normalizeHeader(h),
+    download: true, header: true, skipEmptyLines: "greedy",
+    transformHeader: h => String(h || "").replace(/^\uFEFF/, "").trim().toUpperCase(),
     complete: results => {
       dictionary = [];
       results.data.forEach(row => {
-        const word = cleanCell(row["QUESTION"]) || cleanCell(row["ANSWER"]) || cleanCell(row["CORRECT ANSWER"]);
-        const partsStr = cleanCell(row["PARTS"]) || cleanCell(row["部件"]);
+        const word = String(row["QUESTION"] || row["ANSWER"] || row["CORRECT ANSWER"] || "").trim();
+        const partsStr = String(row["PARTS"] || row["部件"] || "").trim();
         if (!word || !partsStr) return;
         const parts = partsStr.split(/[,，、|/]/).map(p => p.trim()).filter(Boolean);
         if (!parts.length) return;
         dictionary.push({ word, parts });
       });
-
       if (dictionary.length) {
-        showReadyScreen();
+        document.getElementById("start-title").textContent = "汉字连击 · 超速版";
+        document.getElementById("start-text").innerHTML = `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>全新 GarageBand 电子琴音色 & 下压回弹物理效果，节奏调快！`;
+        const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "🚀 启动";
+        btn.addEventListener("click", startGame); startScreen.appendChild(btn);
       } else {
-        showLoadError("没有找到有效题目。请检查 Question / Parts 列。");
+        document.getElementById("start-title").textContent = "数据加载失败"; document.getElementById("start-text").textContent = "没有找到有效题目。";
       }
-    },
-    error: err => {
-      console.error(err);
-      showLoadError("Google Sheet 加载失败，请检查网络或表格权限。");
     }
   });
-}
-
-function normalizeHeader(h) {
-  return String(h || "").replace(/^\uFEFF/, "").trim().toUpperCase();
-}
-
-function cleanCell(value) {
-  return String(value || "").trim();
-}
-
-function showReadyScreen() {
-  document.getElementById("start-title").textContent = "汉字连击 · 炫酷重制版";
-  document.getElementById("start-text").innerHTML =
-    `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
-    `全面升级 3D 暴击特效、动感轨道与物理弹跳！`;
-
-  const oldBtn = document.getElementById("start-btn");
-  if (oldBtn) oldBtn.remove();
-
-  const btn = document.createElement("button");
-  btn.id = "start-btn";
-  btn.className = "btn";
-  btn.textContent = "🚀 启动";
-  btn.addEventListener("click", startGame);
-  startScreen.appendChild(btn);
-}
-
-function showLoadError(message) {
-  document.getElementById("start-title").textContent = "数据加载失败";
-  document.getElementById("start-text").textContent = message;
 }
 
 function startGame() {
   if (!dictionary.length) return;
-  ensureAudio();
-  clearTimers();
-  clearScene();
-  score = 0;
-  isPlaying = true;
-  lastFrameTime = performance.now();
-  startScreen.style.display = "none";
-  initKeyboardSlots();
-  renderPiano();
-
-  requestAnimationFrame(() => {
-    calculateKeyCenters();
-    renderTracks();
-    spawnCharacter();
-    updateHUD();
-    animationRef = requestAnimationFrame(gameLoop);
-  });
+  ensureAudio(); clearTimers(); clearScene();
+  score = 0; isPlaying = true; lastFrameTime = performance.now(); startScreen.style.display = "none";
+  initKeyboardSlots(); renderPiano();
+  requestAnimationFrame(() => { calculateKeyCenters(); renderTracks(); spawnCharacter(); updateHUD(); animationRef = requestAnimationFrame(gameLoop); });
 }
 
-function clearTimers() {
-  if (spawnTimer) clearTimeout(spawnTimer);
-  if (animationRef) cancelAnimationFrame(animationRef);
-  spawnTimer = null;
-  animationRef = null;
-}
-
-function clearScene() {
-  if (character?.el) character.el.remove();
-  hitTokens.forEach(t => t.el.remove());
-  character = null;
-  hitTokens = [];
-  keyboardSlots = [];
-  keyCenters = [];
-  trackGeometry = [];
-  stopAllNotes();
-  piano.innerHTML = "";
-  trackSvg.innerHTML = "";
-}
-
-function initKeyboardSlots() {
-  keyboardSlots = Array.from({ length: KEY_COUNT }, (_, i) => ({
-    kind: "distractor",
-    char: randomDistractorAvoiding([]),
-    noteIndex: i
-  }));
-}
+function clearTimers() { if (spawnTimer) clearTimeout(spawnTimer); if (animationRef) cancelAnimationFrame(animationRef); spawnTimer = null; animationRef = null; }
+function clearScene() { if (character?.el) character.el.remove(); hitTokens.forEach(t => t.el.remove()); character = null; hitTokens = []; keyboardSlots = []; keyCenters = []; trackGeometry = []; stopAllNotes(); piano.innerHTML = ""; trackSvg.innerHTML = ""; }
+function initKeyboardSlots() { keyboardSlots = Array.from({ length: KEY_COUNT }, (_, i) => ({ kind: "distractor", char: randomDistractorAvoiding([]), noteIndex: i })); }
 
 function spawnCharacter() {
   if (!isPlaying || character) return;
   const data = dictionary[Math.floor(Math.random() * dictionary.length)];
-  if (!data) { scheduleNextCharacter(80); return; }
+  if (!data) { scheduleNextCharacter(20); return; } // 调快
 
-  const el = document.createElement("div");
-  el.className = "depth-character";
-
-  const wordSpan = document.createElement("span");
-  wordSpan.textContent = data.word;
-  el.appendChild(wordSpan);
-
-  const progress = document.createElement("div");
-  progress.className = "progress";
-  data.parts.forEach(() => {
-    const dot = document.createElement("div");
-    dot.className = "dot";
-    progress.appendChild(dot);
-  });
-
-  el.appendChild(progress);
-  arena.appendChild(el);
+  const el = document.createElement("div"); el.className = "depth-character";
+  const wordSpan = document.createElement("span"); wordSpan.textContent = data.word; el.appendChild(wordSpan);
+  const progress = document.createElement("div"); progress.className = "progress";
+  data.parts.forEach(() => { const dot = document.createElement("div"); dot.className = "dot"; progress.appendChild(dot); });
+  el.appendChild(progress); arena.appendChild(el);
 
   character = {
     id: nextId(), el, word: data.word, parts: [...data.parts], nextPartIndex: 0,
     laneIndex: Math.floor(Math.random() * KEY_COUNT), laneOffset: randomBetween(-0.04, 0.04),
-    z: 0.985, baseSpeed: -0.00040, zVelocity: -0.00040,
+    z: 0.985, baseSpeed: -0.00075, zVelocity: -0.00075, // 大幅提升掉落速度
     slowUntil: 0, scaleKick: 0, dead: false, completed: false
   };
 
-  placePartsForCharacter();
-  renderPiano();
-  renderTracks();
-  renderCharacter();
+  placePartsForCharacter(); renderPiano(); renderTracks(); renderCharacter();
 }
 
 function placePartsForCharacter() {
-  if (!character) return;
-  initKeyboardSlots();
+  if (!character) return; initKeyboardSlots();
   const parts = character.parts.slice(0, KEY_COUNT);
-  const indices = Array.from({ length: KEY_COUNT }, (_, i) => i);
-  shuffle(indices);
-
-  for (let i = 0; i < parts.length; i++) {
-    const slotIndex = indices[i];
-    keyboardSlots[slotIndex] = { kind: "part", char: parts[i], partIndex: i, noteIndex: slotIndex };
-  }
-  for (let i = 0; i < KEY_COUNT; i++) {
-    if (!keyboardSlots[i] || keyboardSlots[i].kind !== "part") {
-      keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding(parts), noteIndex: i };
-    }
-  }
+  const indices = Array.from({ length: KEY_COUNT }, (_, i) => i); shuffle(indices);
+  for (let i = 0; i < parts.length; i++) { keyboardSlots[indices[i]] = { kind: "part", char: parts[i], partIndex: i, noteIndex: indices[i] }; }
+  for (let i = 0; i < KEY_COUNT; i++) { if (!keyboardSlots[i] || keyboardSlots[i].kind !== "part") { keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding(parts), noteIndex: i }; } }
 }
 
-function getTravelProgress() {
-  if (!character) return 0;
-  return clamp((0.985 - character.z) / 0.965, 0, 1);
-}
-
-function shouldShowHint() {
-  return getTravelProgress() >= HINT_AFTER_PROGRESS;
-}
-
+function getTravelProgress() { return !character ? 0 : clamp((0.985 - character.z) / 0.965, 0, 1); }
+function shouldShowHint() { return getTravelProgress() >= HINT_AFTER_PROGRESS; }
 function getHintSlotIndices() {
   if (!character || !shouldShowHint()) return new Set();
   const remaining = new Set();
-  keyboardSlots.forEach((slot, index) => {
-    if (slot.kind === "part" && slot.partIndex >= character.nextPartIndex) { remaining.add(index); }
-  });
+  keyboardSlots.forEach((slot, index) => { if (slot.kind === "part" && slot.partIndex >= character.nextPartIndex) remaining.add(index); });
   return remaining;
 }
 
 function renderPiano() {
-  piano.innerHTML = "";
-  const whiteWidth = 100 / KEY_COUNT;
-  const hintSlots = getHintSlotIndices();
-
+  piano.innerHTML = ""; const whiteWidth = 100 / KEY_COUNT; const hintSlots = getHintSlotIndices();
   keyboardSlots.forEach((slot, index) => {
-    const keyInfo = WHITE_KEYS[index];
-    const btn = document.createElement("button");
-    btn.className = "white-key";
-
-    if (slot.kind === "part") btn.classList.add("required");
-    if (hintSlots.has(index)) btn.classList.add("hint");
-    if (slot.kind === "used") btn.classList.add("used");
-
-    btn.style.left = `${index * whiteWidth}%`;
-    btn.style.width = `${whiteWidth}%`;
-
-    const radicalSpan = document.createElement("div");
-    radicalSpan.className = "key-radical";
-    radicalSpan.textContent = slot.char || "";
-
-    const noteSpan = document.createElement("div");
-    noteSpan.className = "key-note";
-    noteSpan.textContent = keyInfo.label;
-
-    btn.appendChild(radicalSpan);
-    btn.appendChild(noteSpan);
-
+    const keyInfo = WHITE_KEYS[index]; const btn = document.createElement("button"); btn.className = "white-key";
+    if (slot.kind === "part") btn.classList.add("required"); if (hintSlots.has(index)) btn.classList.add("hint"); if (slot.kind === "used") btn.classList.add("used");
+    btn.style.left = `${index * whiteWidth}%`; btn.style.width = `${whiteWidth}%`;
+    const radicalSpan = document.createElement("div"); radicalSpan.className = "key-radical"; radicalSpan.textContent = slot.char || "";
+    const noteSpan = document.createElement("div"); noteSpan.className = "key-note"; noteSpan.textContent = keyInfo.label;
+    btn.appendChild(radicalSpan); btn.appendChild(noteSpan);
     btn.addEventListener("pointerdown", e => { e.preventDefault(); handleWhiteKeyDown(index, btn); });
     btn.addEventListener("pointerup", e => { e.preventDefault(); handleKeyRelease(`white-${index}`, btn); });
     btn.addEventListener("pointercancel", e => { e.preventDefault(); handleKeyRelease(`white-${index}`, btn); });
     btn.addEventListener("pointerleave", e => { e.preventDefault(); handleKeyRelease(`white-${index}`, btn); });
-
     piano.appendChild(btn);
   });
-
   BLACK_KEYS.forEach((black, blackIndex) => {
-    const btn = document.createElement("button");
-    btn.className = "black-key";
-    const leftPercent = ((black.afterWhite + 1) * whiteWidth) - 3.6;
-    btn.style.left = `${leftPercent}%`;
-
-    const noteSpan = document.createElement("div");
-    noteSpan.className = "key-note";
-    noteSpan.textContent = black.label;
-    btn.appendChild(noteSpan);
-
+    const btn = document.createElement("button"); btn.className = "black-key";
+    btn.style.left = `${((black.afterWhite + 1) * whiteWidth) - 3.6}%`;
+    const noteSpan = document.createElement("div"); noteSpan.className = "key-note"; noteSpan.textContent = black.label; btn.appendChild(noteSpan);
     btn.addEventListener("pointerdown", e => { e.preventDefault(); pressVisual(btn); startSustainNote(`black-${blackIndex}`, black.freq); });
     btn.addEventListener("pointerup", e => { e.preventDefault(); handleKeyRelease(`black-${blackIndex}`, btn); });
     btn.addEventListener("pointercancel", e => { e.preventDefault(); handleKeyRelease(`black-${blackIndex}`, btn); });
     btn.addEventListener("pointerleave", e => { e.preventDefault(); handleKeyRelease(`black-${blackIndex}`, btn); });
-
     piano.appendChild(btn);
   });
-
   requestAnimationFrame(() => { calculateKeyCenters(); renderTracks(); });
 }
 
 function handleWhiteKeyDown(slotIndex, buttonElement) {
-  if (!isPlaying || !character) return;
-  const slot = keyboardSlots[slotIndex];
-  if (!slot) return;
-
-  pressVisual(buttonElement);
-  startSustainNote(`white-${slotIndex}`, WHITE_KEYS[slotIndex].freq);
-
+  if (!isPlaying || !character) return; const slot = keyboardSlots[slotIndex]; if (!slot) return;
+  pressVisual(buttonElement); startSustainNote(`white-${slotIndex}`, WHITE_KEYS[slotIndex].freq);
   if (slot.kind !== "part" || slot.partIndex !== character.nextPartIndex) {
-    buttonElement.classList.remove("wrong");
-    void buttonElement.offsetWidth; // trigger reflow
-    buttonElement.classList.add("wrong");
-    playBadTone();
-    return;
+    buttonElement.classList.remove("wrong"); void buttonElement.offsetWidth; buttonElement.classList.add("wrong"); playBadTone(); return;
   }
-
-  score += 100;
-  const arenaRect = arena.getBoundingClientRect();
-  const keyRect = buttonElement.getBoundingClientRect();
-  const startX = keyRect.left + keyRect.width / 2 - arenaRect.left;
-  const startY = arena.clientHeight + 4;
-
-  launchHitToken(slot.char, startX, startY, character, slot.partIndex, slotIndex);
-
-  keyboardSlots[slotIndex] = { kind: "used", char: "", noteIndex: slotIndex };
-  updateHUD();
-  renderPiano();
+  score += 100; const arenaRect = arena.getBoundingClientRect(); const keyRect = buttonElement.getBoundingClientRect();
+  launchHitToken(slot.char, keyRect.left + keyRect.width / 2 - arenaRect.left, arena.clientHeight + 4, character, slot.partIndex, slotIndex);
+  keyboardSlots[slotIndex] = { kind: "used", char: "", noteIndex: slotIndex }; updateHUD(); renderPiano();
 }
 
-function handleKeyRelease(noteId, buttonElement) {
-  stopSustainNote(noteId);
-  buttonElement.classList.remove("pressed");
-}
-
-function calculateKeyCenters() {
-  keyCenters = [];
-  const arenaRect = arena.getBoundingClientRect();
-  const whiteKeys = piano.querySelectorAll(".white-key");
-  whiteKeys.forEach(key => {
-    const rect = key.getBoundingClientRect();
-    keyCenters.push({ x: rect.left + rect.width / 2 - arenaRect.left, y: arenaRect.height + 8 });
-  });
-}
-
-function getFarPoint() {
-  return { x: arena.clientWidth / 2, y: Math.max(-arena.clientHeight * 0.62, -320) };
-}
+function handleKeyRelease(noteId, buttonElement) { stopSustainNote(noteId); buttonElement.classList.remove("pressed"); }
+function calculateKeyCenters() { keyCenters = []; const arenaRect = arena.getBoundingClientRect(); piano.querySelectorAll(".white-key").forEach(key => { const rect = key.getBoundingClientRect(); keyCenters.push({ x: rect.left + rect.width / 2 - arenaRect.left, y: arenaRect.height + 8 }); }); }
 
 function renderTracks() {
-  if (!keyCenters.length) return;
-  const far = getFarPoint();
-  const hintSlots = getHintSlotIndices();
-  trackSvg.innerHTML = "";
-  trackSvg.setAttribute("viewBox", `0 0 ${arena.clientWidth} ${arena.clientHeight}`);
-  trackGeometry = [];
-
+  if (!keyCenters.length) return; const far = { x: arena.clientWidth / 2, y: Math.max(-arena.clientHeight * 0.62, -320) }; const hintSlots = getHintSlotIndices();
+  trackSvg.innerHTML = ""; trackSvg.setAttribute("viewBox", `0 0 ${arena.clientWidth} ${arena.clientHeight}`); trackGeometry = [];
   for (let i = 0; i < KEY_COUNT; i++) {
-    const base = keyCenters[i];
-    const isHint = hintSlots.has(i);
-    const laneWidthNear = Math.min(96, arena.clientWidth / KEY_COUNT * 0.82);
-    const nearLeft = base.x - laneWidthNear / 2;
-    const nearRight = base.x + laneWidthNear / 2;
-    const farOffset = (i - (KEY_COUNT - 1) / 2) * 3.2;
-    const farX = far.x + farOffset;
-    const farY = far.y;
-
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("d", `M ${nearLeft} ${arena.clientHeight} L ${farX - 12} ${farY} L ${farX + 12} ${farY} L ${nearRight} ${arena.clientHeight} Z`);
-    path.setAttribute("class", isHint ? "track-fill hint-fill" : "track-fill");
-    trackSvg.appendChild(path);
-
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", base.x); line.setAttribute("y1", arena.clientHeight);
-    line.setAttribute("x2", farX); line.setAttribute("y2", farY);
-    line.setAttribute("class", isHint ? "track-line hint" : "track-line");
-    trackSvg.appendChild(line);
-
-    for (let r = 1; r <= 9; r++) {
-      const t = r / 10;
-      const y = farY + (arena.clientHeight - farY) * t;
-      const width = 12 + t * laneWidthNear;
-      const x = farX + (base.x - farX) * t;
-      const rung = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      rung.setAttribute("x1", x - width / 2); rung.setAttribute("y1", y);
-      rung.setAttribute("x2", x + width / 2); rung.setAttribute("y2", y);
-      rung.setAttribute("class", isHint ? "track-rung hint" : "track-rung");
-      rung.style.animationDelay = `${r * -0.14}s`;
-      trackSvg.appendChild(rung);
-    }
-    trackGeometry[i] = { nearX: base.x, nearY: arena.clientHeight, farX, farY };
+    const base = keyCenters[i]; const isHint = hintSlots.has(i); const laneWidthNear = Math.min(96, arena.clientWidth / KEY_COUNT * 0.82);
+    const nearLeft = base.x - laneWidthNear / 2; const nearRight = base.x + laneWidthNear / 2; const farX = far.x + (i - (KEY_COUNT - 1) / 2) * 3.2;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path"); path.setAttribute("d", `M ${nearLeft} ${arena.clientHeight} L ${farX - 12} ${far.y} L ${farX + 12} ${far.y} L ${nearRight} ${arena.clientHeight} Z`); path.setAttribute("class", isHint ? "track-fill hint-fill" : "track-fill"); trackSvg.appendChild(path);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line"); line.setAttribute("x1", base.x); line.setAttribute("y1", arena.clientHeight); line.setAttribute("x2", farX); line.setAttribute("y2", far.y); line.setAttribute("class", isHint ? "track-line hint" : "track-line"); trackSvg.appendChild(line);
+    for (let r = 1; r <= 9; r++) { const t = r / 10; const y = far.y + (arena.clientHeight - far.y) * t; const x = farX + (base.x - farX) * t; const rung = document.createElementNS("http://www.w3.org/2000/svg", "line"); rung.setAttribute("x1", x - (12 + t * laneWidthNear) / 2); rung.setAttribute("y1", y); rung.setAttribute("x2", x + (12 + t * laneWidthNear) / 2); rung.setAttribute("y2", y); rung.setAttribute("class", isHint ? "track-rung hint" : "track-rung"); rung.style.animationDelay = `${r * -0.14}s`; trackSvg.appendChild(rung); }
+    trackGeometry[i] = { nearX: base.x, nearY: arena.clientHeight, farX, farY: far.y };
   }
 }
 
-function getPointOnLane(laneIndex, z, offset = 0) {
-  const lane = trackGeometry[laneIndex] || trackGeometry[0];
-  if (!lane) return { x: arena.clientWidth / 2, y: arena.clientHeight / 2 };
-  const t = 1 - z;
-  const x = lane.farX + (lane.nearX - lane.farX) * t;
-  const y = lane.farY + (lane.nearY - lane.farY) * t;
-  const laneWidth = 12 + t * 72;
-  return { x: x + offset * laneWidth, y };
-}
+function getPointOnLane(laneIndex, z, offset = 0) { const lane = trackGeometry[laneIndex] || trackGeometry[0]; if (!lane) return { x: arena.clientWidth / 2, y: arena.clientHeight / 2 }; const t = 1 - z; return { x: lane.farX + (lane.nearX - lane.farX) * t + offset * (12 + t * 72), y: lane.farY + (lane.nearY - lane.farY) * t }; }
 
 function renderCharacter() {
-  if (!character || character.dead) return;
-  const point = getPointOnLane(character.laneIndex, character.z, character.laneOffset);
-  const closeness = 1 - character.z;
-  const scale = 0.24 + closeness * 1.38 + character.scaleKick;
-  const opacity = 0.28 + closeness * 0.72;
-  const fontSize = clamp(54 + closeness * 64, 42, 118);
-
-  character.el.style.left = `${point.x}px`;
-  character.el.style.top = `${point.y}px`;
-  character.el.style.opacity = opacity;
-  character.el.style.fontSize = `${fontSize}px`;
-  character.el.style.transform = `translate(-50%, -50%) scale(${scale})`;
-  character.el.style.zIndex = String(35 + Math.floor(closeness * 45));
-
-  const dots = character.el.querySelectorAll(".dot");
-  dots.forEach((dot, i) => {
-    dot.classList.toggle("done", i < character.nextPartIndex);
-    dot.classList.toggle("next", i === character.nextPartIndex);
-  });
+  if (!character || character.dead) return; const point = getPointOnLane(character.laneIndex, character.z, character.laneOffset); const closeness = 1 - character.z;
+  character.el.style.left = `${point.x}px`; character.el.style.top = `${point.y}px`; character.el.style.opacity = 0.28 + closeness * 0.72; character.el.style.fontSize = `${clamp(54 + closeness * 64, 42, 118)}px`; character.el.style.transform = `translate(-50%, -50%) scale(${0.24 + closeness * 1.38 + character.scaleKick})`; character.el.style.zIndex = String(35 + Math.floor(closeness * 45));
+  character.el.querySelectorAll(".dot").forEach((dot, i) => { dot.classList.toggle("done", i < character.nextPartIndex); dot.classList.toggle("next", i === character.nextPartIndex); });
 }
 
 function launchHitToken(char, x, y, target, partIndex, laneIndex) {
-  const el = document.createElement("div");
-  el.className = "hit-token";
-  el.textContent = char;
-  const token = { id: nextId(), el, char, partIndex, laneIndex, target, z: 0.02, x, y, dead: false, arrived: false };
-  arena.appendChild(el);
-  hitTokens.push(token);
-  renderHitToken(token);
+  const el = document.createElement("div"); el.className = "hit-token"; el.textContent = char;
+  const token = { id: nextId(), el, char, partIndex, laneIndex, target, z: 0.02, x, y, dead: false, arrived: false }; arena.appendChild(el); hitTokens.push(token); renderHitToken(token);
 }
 
-function renderHitToken(t) {
-  t.el.style.left = `${t.x}px`;
-  t.el.style.top = `${t.y}px`;
-  const scale = 1.02 - t.z * 0.45;
-  // 加入 3D 旋转飞行动效
-  t.el.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${t.z * 1500}deg)`;
-}
+function renderHitToken(t) { t.el.style.left = `${t.x}px`; t.el.style.top = `${t.y}px`; t.el.style.transform = `translate(-50%, -50%) scale(${1.02 - t.z * 0.45}) rotate(${t.z * 1500}deg)`; }
 
 function gameLoop(now) {
-  if (!isPlaying) return;
-  const rawDelta = Math.min(32, now - lastFrameTime);
-  lastFrameTime = now;
-  const dt = rawDelta / 16.67;
-  updateCharacter(dt, now);
-  updateHitTokens(dt);
-  cleanupDeadObjects();
-  animationRef = requestAnimationFrame(gameLoop);
+  if (!isPlaying) return; const dt = Math.min(32, now - lastFrameTime) / 16.67; lastFrameTime = now;
+  updateCharacter(dt, now); updateHitTokens(dt); cleanupDeadObjects(); animationRef = requestAnimationFrame(gameLoop);
 }
 
 function updateCharacter(dt, now) {
-  if (!character || character.dead || character.completed) return;
-  const oldShouldHint = shouldShowHint();
-  const slowed = now < character.slowUntil;
-  const speed = slowed ? character.baseSpeed * 0.28 : character.baseSpeed;
-
-  character.z += speed * dt;
-  character.scaleKick *= Math.pow(0.9, dt);
-
-  if (character.z <= 0.02) { missCharacter(); return; }
-  renderCharacter();
-
-  if (oldShouldHint !== shouldShowHint()) { renderPiano(); renderTracks(); }
+  if (!character || character.dead || character.completed) return; const oldShouldHint = shouldShowHint();
+  character.z += (now < character.slowUntil ? character.baseSpeed * 0.2 : character.baseSpeed) * dt; character.scaleKick *= Math.pow(0.9, dt);
+  if (character.z <= 0.02) { missCharacter(); return; } renderCharacter(); if (oldShouldHint !== shouldShowHint()) { renderPiano(); renderTracks(); }
 }
 
 function updateHitTokens(dt) {
   hitTokens.forEach(t => {
-    if (t.dead || !t.target || t.target.dead) { t.dead = true; return; }
-    t.z += 0.05 * dt; // 稍微调快子弹速度
-    if (t.z > t.target.z) t.z = t.target.z;
-
-    const targetPoint = getPointOnLane(t.target.laneIndex, t.target.z, t.target.laneOffset);
-    const lanePoint = getPointOnLane(t.laneIndex, t.z, 0);
-
-    const blend = Math.min(1, t.z / Math.max(0.001, t.target.z));
-    t.x = lanePoint.x + (targetPoint.x - lanePoint.x) * blend;
-    t.y = lanePoint.y + (targetPoint.y - lanePoint.y) * blend;
-
-    if (!t.arrived && (distance(t.x, t.y, targetPoint.x, targetPoint.y) < 35 || t.z >= t.target.z - 0.01)) {
-      t.arrived = true;
-      tokenHitsCharacter(t, t.target);
-    }
-    renderHitToken(t);
+    if (t.dead || !t.target || t.target.dead) { t.dead = true; return; } t.z += 0.06 * dt; if (t.z > t.target.z) t.z = t.target.z;
+    const targetPoint = getPointOnLane(t.target.laneIndex, t.target.z, t.target.laneOffset); const lanePoint = getPointOnLane(t.laneIndex, t.z, 0); const blend = Math.min(1, t.z / Math.max(0.001, t.target.z));
+    t.x = lanePoint.x + (targetPoint.x - lanePoint.x) * blend; t.y = lanePoint.y + (targetPoint.y - lanePoint.y) * blend;
+    if (!t.arrived && (distance(t.x, t.y, targetPoint.x, targetPoint.y) < 35 || t.z >= t.target.z - 0.01)) { t.arrived = true; tokenHitsCharacter(t, t.target); } renderHitToken(t);
   });
 }
 
 function tokenHitsCharacter(token, c) {
-  token.dead = true;
-  c.nextPartIndex++;
-  c.slowUntil = performance.now() + 3200;
-  c.scaleKick = 0.25; // 增强物理暴击感
-
-  c.el.classList.remove("correct");
-  void c.el.offsetWidth;
-  c.el.classList.add("correct");
-
-  const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
-  createImpactRing(point.x, point.y);
-  playBounceTone();
-
-  if (c.nextPartIndex >= c.parts.length) {
-    completeCharacter(c);
-  } else {
-    refillUsedSlot(token.laneIndex);
-    renderPiano();
-    renderTracks();
-  }
-  renderCharacter();
-  updateHUD();
+  token.dead = true; c.nextPartIndex++; c.slowUntil = performance.now() + 1000; c.scaleKick = 0.25;
+  c.el.classList.remove("correct"); void c.el.offsetWidth; c.el.classList.add("correct");
+  const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset); createImpactRing(point.x, point.y); playBounceTone();
+  if (c.nextPartIndex >= c.parts.length) { completeCharacter(c); } else { refillUsedSlot(token.laneIndex); renderPiano(); renderTracks(); } renderCharacter(); updateHUD();
 }
 
 function refillUsedSlot(slotIndex) {
-  const pending = findPendingPartNotVisible();
-  if (pending) {
-    keyboardSlots[slotIndex] = { kind: "part", char: pending.char, partIndex: pending.partIndex, noteIndex: slotIndex };
-  } else {
-    keyboardSlots[slotIndex] = { kind: "distractor", char: randomDistractorAvoiding(getVisibleParts()), noteIndex: slotIndex };
-  }
-}
-
-function findPendingPartNotVisible() {
-  if (!character) return null;
-  for (let i = character.nextPartIndex; i < character.parts.length; i++) {
-    const visible = keyboardSlots.some(slot => slot.kind === "part" && slot.partIndex === i);
-    if (!visible) return { partIndex: i, char: character.parts[i] };
-  }
-  return null;
-}
-
-function getVisibleParts() {
-  return keyboardSlots.filter(slot => slot.kind === "part").map(slot => slot.char);
+  let pending = null; for (let i = character.nextPartIndex; i < character.parts.length; i++) { if (!keyboardSlots.some(s => s.kind === "part" && s.partIndex === i)) { pending = { partIndex: i, char: character.parts[i] }; break; } }
+  keyboardSlots[slotIndex] = pending ? { kind: "part", char: pending.char, partIndex: pending.partIndex, noteIndex: slotIndex } : { kind: "distractor", char: randomDistractorAvoiding(keyboardSlots.filter(s => s.kind === "part").map(s => s.char)), noteIndex: slotIndex };
 }
 
 function createImpactRing(x, y) {
-  const ring = document.createElement("div");
-  ring.className = "impact-ring";
-  ring.style.left = `${x}px`; ring.style.top = `${y}px`;
-  arena.appendChild(ring);
-
-  const core = document.createElement("div");
-  core.className = "impact-core";
-  core.style.left = `${x}px`; core.style.top = `${y}px`;
-  arena.appendChild(core);
-
+  const ring = document.createElement("div"); ring.className = "impact-ring"; ring.style.left = `${x}px`; ring.style.top = `${y}px`; arena.appendChild(ring);
+  const core = document.createElement("div"); core.className = "impact-core"; core.style.left = `${x}px`; core.style.top = `${y}px`; arena.appendChild(core);
   setTimeout(() => { ring.remove(); core.remove(); }, 400);
 }
 
 function completeCharacter(c) {
-  c.completed = true;
-  score += 300;
-  clearKeyboardParts();
-  renderPiano();
-  renderTracks();
-
-  c.el.classList.add("complete");
-  playCompleteSound();
-
-  setTimeout(() => {
-    if (character?.el) character.el.remove();
-    character = null;
-    scheduleNextCharacter(80);
-  }, 500); // 等待大爆炸动画播完
-
-  updateHUD();
+  c.completed = true; score += 300; clearKeyboardParts(); renderPiano(); renderTracks(); c.el.classList.add("complete"); playCompleteSound();
+  setTimeout(() => { if (character?.el) character.el.remove(); character = null; scheduleNextCharacter(30); }, 300); updateHUD();
 }
 
 function missCharacter() {
-  if (!character) return;
-  character.dead = true;
-  clearKeyboardParts();
-  renderPiano();
-  renderTracks();
-
-  character.el.style.transition = "opacity 0.18s, transform 0.18s";
-  character.el.style.opacity = "0";
-
-  setTimeout(() => {
-    if (character?.el) character.el.remove();
-    character = null;
-    scheduleNextCharacter(80);
-  }, 180);
+  if (!character) return; character.dead = true; clearKeyboardParts(); renderPiano(); renderTracks(); character.el.style.transition = "opacity 0.18s, transform 0.18s"; character.el.style.opacity = "0";
+  setTimeout(() => { if (character?.el) character.el.remove(); character = null; scheduleNextCharacter(30); }, 180);
 }
 
-function clearKeyboardParts() {
-  for (let i = 0; i < KEY_COUNT; i++) {
-    keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding([]), noteIndex: i };
-  }
-}
-
-function scheduleNextCharacter(delay) {
-  clearTimeout(spawnTimer);
-  spawnTimer = setTimeout(() => { if (isPlaying && !character) spawnCharacter(); }, delay);
-}
-
-function cleanupDeadObjects() {
-  hitTokens = hitTokens.filter(t => { if (!t.dead) return true; t.el.remove(); return false; });
-}
-
+function clearKeyboardParts() { for (let i = 0; i < KEY_COUNT; i++) keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding([]), noteIndex: i }; }
+function scheduleNextCharacter(delay) { clearTimeout(spawnTimer); spawnTimer = setTimeout(() => { if (isPlaying && !character) spawnCharacter(); }, delay); }
+function cleanupDeadObjects() { hitTokens = hitTokens.filter(t => { if (!t.dead) return true; t.el.remove(); return false; }); }
 function updateHUD() { scoreEl.textContent = score; }
-
 function pressVisual(el) { el.classList.add("pressed"); }
 
-function ensureAudio() {
-  if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-  if (audioCtx.state === "suspended") { audioCtx.resume().catch(() => {}); }
-}
+function ensureAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if (audioCtx.state === "suspended") { audioCtx.resume().catch(() => {}); } }
 
+// 核心音色重制：合成清脆的电子钢琴声音 (FM-style EPiano)
 function startSustainNote(noteId, freq) {
-  ensureAudio();
-  if (activeNotes.has(noteId)) return;
-  const now = audioCtx.currentTime;
-  const output = audioCtx.createGain();
+  ensureAudio(); if (activeNotes.has(noteId)) return;
+  const now = audioCtx.currentTime; const output = audioCtx.createGain();
+
+  // 电子琴主包络线：极快起音，中等衰减至稳定延音
   output.gain.setValueAtTime(0.001, now);
-  output.gain.linearRampToValueAtTime(0.12, now + 0.025);
+  output.gain.linearRampToValueAtTime(0.35, now + 0.015);
+  output.gain.exponentialRampToValueAtTime(0.12, now + 0.2);
   output.connect(audioCtx.destination);
 
   const oscillators = [];
-  const harmonics = [ { ratio: 1, amp: 1.0 }, { ratio: 2, amp: 0.35 }, { ratio: 3, amp: 0.16 } ];
+  // 混合波形：基础正弦波提供厚度，三角/正弦混合高频提供打击感（叮声）
+  const harmonics = [
+    { ratio: 1, amp: 1.0, type: "sine" },
+    { ratio: 2, amp: 0.6, type: "triangle" },
+    { ratio: 3, amp: 0.3, type: "sine" },
+    { ratio: 5, amp: 0.1, type: "triangle" }
+  ];
 
   harmonics.forEach(h => {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(freq * h.ratio, now);
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.type = h.type; osc.frequency.setValueAtTime(freq * h.ratio, now);
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.18 * h.amp, now + 0.03);
-    osc.connect(gain);
-    gain.connect(output);
-    osc.start(now);
-    oscillators.push({ osc, gain });
-  });
 
+    if (h.ratio > 1) { // 泛音提供敲击感，衰减极快
+      gain.gain.linearRampToValueAtTime(h.amp, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    } else { // 基频持续
+      gain.gain.linearRampToValueAtTime(h.amp, now + 0.015);
+      gain.gain.exponentialRampToValueAtTime(h.amp * 0.7, now + 0.5);
+    }
+
+    osc.connect(gain); gain.connect(output); osc.start(now); oscillators.push({ osc, gain });
+  });
   activeNotes.set(noteId, { output, oscillators });
 }
 
 function stopSustainNote(noteId) {
-  if (!audioCtx) return;
-  const note = activeNotes.get(noteId);
-  if (!note) return;
+  if (!audioCtx) return; const note = activeNotes.get(noteId); if (!note) return;
   const now = audioCtx.currentTime;
   try {
     note.output.gain.cancelScheduledValues(now);
-    note.output.gain.setValueAtTime(note.output.gain.value || 0.08, now);
-    note.output.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-    note.oscillators.forEach(({ osc }) => { osc.stop(now + 0.24); });
-    setTimeout(() => { try { note.output.disconnect(); } catch (e) {} }, 280);
+    note.output.gain.setValueAtTime(note.output.gain.value || 0.1, now);
+    note.output.gain.exponentialRampToValueAtTime(0.001, now + 0.15); // 快速释放
+    note.oscillators.forEach(({ osc }) => { osc.stop(now + 0.2); });
+    setTimeout(() => { try { note.output.disconnect(); } catch (e) {} }, 250);
   } catch (e) {}
   activeNotes.delete(noteId);
 }
 
 function stopAllNotes() { Array.from(activeNotes.keys()).forEach(key => stopSustainNote(key)); }
-
 function playBadTone() { playSimpleTone(180, 0.15, 0.07, "sawtooth"); }
-function playBounceTone() { playSimpleTone(392, 0.1, 0.07, "triangle"); }
-
-function playCompleteSound() {
-  [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-    setTimeout(() => playSimpleTone(freq, 0.15, 0.1, "sine"), i * 60); // 增加结束和弦的华丽感
-  });
-}
+function playBounceTone() { playSimpleTone(880, 0.08, 0.1, "triangle"); }
+function playCompleteSound() { [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => { setTimeout(() => playSimpleTone(freq, 0.2, 0.1, "sine"), i * 40); }); }
 
 function playSimpleTone(freq, duration, volume, wave) {
-  ensureAudio();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  const now = audioCtx.currentTime;
-  osc.type = wave || "sine";
-  osc.frequency.setValueAtTime(freq, now);
-  gain.gain.setValueAtTime(0.001, now);
-  gain.gain.exponentialRampToValueAtTime(volume, now + 0.018);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start(now);
-  osc.stop(now + duration + 0.03);
+  ensureAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const now = audioCtx.currentTime;
+  osc.type = wave || "sine"; osc.frequency.setValueAtTime(freq, now);
+  gain.gain.setValueAtTime(0.001, now); gain.gain.exponentialRampToValueAtTime(volume, now + 0.018); gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+  osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + duration + 0.03);
 }
 
-function handleResize() {
-  if (!isPlaying) return;
-  calculateKeyCenters(); renderTracks(); renderCharacter();
-}
-
-function randomDistractorAvoiding(avoidList) {
-  const safe = distractors.filter(d => !avoidList.includes(d));
-  const pool = safe.length ? safe : distractors;
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-function nextId() { return idCounter++; }
-function randomBetween(min, max) { return min + Math.random() * (max - min); }
-function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
-function distance(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); }
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
+function handleResize() { if (!isPlaying) return; calculateKeyCenters(); renderTracks(); renderCharacter(); }
+function randomDistractorAvoiding(avoidList) { const safe = distractors.filter(d => !avoidList.includes(d)); const pool = safe.length ? safe : distractors; return pool[Math.floor(Math.random() * pool.length)]; }
+function nextId() { return idCounter++; } function randomBetween(min, max) { return min + Math.random() * (max - min); } function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); } function distance(x1, y1, x2, y2) { return Math.hypot(x2 - x1, y2 - y1); } function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
 </script>
 </body>
 </html>
