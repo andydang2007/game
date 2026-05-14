@@ -16,12 +16,13 @@
 
 :root {
   --purple: #5b21b6;
-  --deep-purple: #3b0764;
+  --deep-purple: #2e1065;
   --green: #22c55e;
   --pink: #fb7185;
   --yellow: #facc15;
+  --cyan: #67e8f9;
   --glass: rgba(255,255,255,0.72);
-  --keyboard-height: 176px;
+  --keyboard-height: 184px;
 }
 
 html, body {
@@ -31,8 +32,8 @@ html, body {
   overflow: hidden;
   font-family: "Microsoft YaHei", "PingFang SC", "Nunito", sans-serif;
   background:
-    radial-gradient(circle at 50% 24%, rgba(255,255,255,0.45), transparent 24%),
-    linear-gradient(180deg, #7dd3fc 0%, #bfdbfe 42%, #fef3c7 100%);
+    radial-gradient(circle at 50% 26%, rgba(255,255,255,0.55), transparent 22%),
+    linear-gradient(180deg, #60a5fa 0%, #93c5fd 38%, #fef3c7 100%);
 }
 
 body {
@@ -51,18 +52,18 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.32;
+  opacity: 0.28;
   background-image:
-    radial-gradient(circle at 14% 18%, rgba(255,255,255,0.95) 0 28px, transparent 29px),
-    radial-gradient(circle at 25% 15%, rgba(255,255,255,0.75) 0 42px, transparent 43px),
-    radial-gradient(circle at 70% 24%, rgba(255,255,255,0.85) 0 36px, transparent 37px),
-    radial-gradient(circle at 83% 21%, rgba(255,255,255,0.72) 0 48px, transparent 49px);
-  animation: cloudMove 18s linear infinite;
+    radial-gradient(circle at 12% 16%, rgba(255,255,255,0.96) 0 28px, transparent 29px),
+    radial-gradient(circle at 24% 13%, rgba(255,255,255,0.75) 0 44px, transparent 45px),
+    radial-gradient(circle at 72% 22%, rgba(255,255,255,0.86) 0 38px, transparent 39px),
+    radial-gradient(circle at 84% 19%, rgba(255,255,255,0.72) 0 50px, transparent 51px);
+  animation: cloudMove 20s linear infinite;
 }
 
 @keyframes cloudMove {
   from { background-position: 0 0; }
-  to { background-position: 260px 0; }
+  to { background-position: 280px 0; }
 }
 
 #hud {
@@ -70,7 +71,7 @@ body {
   top: 10px;
   left: 12px;
   right: 12px;
-  z-index: 80;
+  z-index: 90;
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -78,9 +79,9 @@ body {
 }
 
 .hud-box {
-  background: var(--glass);
-  backdrop-filter: blur(6px);
-  border: 2px solid rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  border: 2px solid rgba(255,255,255,0.92);
   border-radius: 18px;
   padding: 8px 12px;
   font-size: clamp(14px, 3vw, 22px);
@@ -97,8 +98,18 @@ body {
   bottom: var(--keyboard-height);
   z-index: 5;
   overflow: hidden;
-  perspective: 850px;
-  perspective-origin: 50% 36%;
+  perspective: 900px;
+  perspective-origin: 50% 34%;
+}
+
+#depth-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 24%, rgba(46,16,101,0.42) 0%, rgba(91,33,182,0.20) 28%, transparent 56%),
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.0) 60%);
 }
 
 #track-svg {
@@ -110,33 +121,49 @@ body {
   pointer-events: none;
 }
 
+.track-fill {
+  fill: rgba(255,255,255,0.07);
+  stroke: rgba(255,255,255,0.22);
+  stroke-width: 1;
+}
+
+.track-fill.active-fill {
+  fill: rgba(34,197,94,0.14);
+  stroke: rgba(34,197,94,0.42);
+}
+
 .track-line {
-  stroke: rgba(91, 33, 182, 0.22);
+  stroke: rgba(76,29,149,0.28);
   stroke-width: 3;
   fill: none;
 }
 
-.track-line.required-track {
-  stroke: rgba(34, 197, 94, 0.68);
-  stroke-width: 5;
-  filter: drop-shadow(0 0 8px rgba(34,197,94,0.45));
+.track-line.active-track {
+  stroke: rgba(34,197,94,0.9);
+  stroke-width: 6;
+  filter: drop-shadow(0 0 10px rgba(34,197,94,0.65));
 }
 
-.track-fill {
-  fill: rgba(255,255,255,0.08);
+.track-rung {
   stroke: rgba(255,255,255,0.24);
-  stroke-width: 1;
+  stroke-width: 2;
+}
+
+.track-rung.active-rung {
+  stroke: rgba(167,243,208,0.55);
 }
 
 #horizon-dot {
   position: absolute;
   z-index: 10;
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.88);
-  border: 3px solid rgba(91,33,182,0.36);
-  box-shadow: 0 0 18px rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.96);
+  border: 3px solid rgba(91,33,182,0.48);
+  box-shadow:
+    0 0 22px rgba(255,255,255,0.95),
+    0 0 32px rgba(103,232,249,0.55);
   transform: translate(-50%, -50%);
   pointer-events: none;
 }
@@ -146,26 +173,29 @@ body {
   left: 0;
   right: 0;
   bottom: var(--keyboard-height);
-  height: 6px;
-  z-index: 60;
-  background: rgba(251,113,133,0.9);
-  box-shadow: 0 -4px 16px rgba(251,113,133,0.5);
+  height: 7px;
+  z-index: 70;
+  background: linear-gradient(90deg, transparent, rgba(251,113,133,0.95), transparent);
+  box-shadow:
+    0 -4px 18px rgba(251,113,133,0.58),
+    0 4px 16px rgba(251,113,133,0.32);
   pointer-events: none;
 }
 
 #miss-label {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--keyboard-height) + 9px);
+  bottom: calc(var(--keyboard-height) + 10px);
   transform: translateX(-50%);
-  z-index: 61;
-  background: rgba(251,113,133,0.92);
+  z-index: 71;
+  background: rgba(251,113,133,0.94);
   color: white;
   font-size: 13px;
   font-weight: 900;
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 999px;
   pointer-events: none;
+  box-shadow: 0 5px 14px rgba(251,113,133,0.4);
 }
 
 #guide-panel {
@@ -173,8 +203,8 @@ body {
   left: 50%;
   top: 62px;
   transform: translateX(-50%);
-  z-index: 70;
-  background: rgba(255,255,255,0.68);
+  z-index: 80;
+  background: rgba(255,255,255,0.72);
   border: 2px solid rgba(255,255,255,0.92);
   border-radius: 999px;
   padding: 7px 16px;
@@ -187,9 +217,9 @@ body {
 
 .depth-character {
   position: absolute;
-  z-index: 30;
-  min-width: 86px;
-  min-height: 86px;
+  z-index: 35;
+  min-width: 90px;
+  min-height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -200,49 +230,85 @@ body {
   font-weight: 900;
   line-height: 1;
   text-shadow:
-    0 4px 0 rgba(255,255,255,0.88),
-    0 10px 20px rgba(76,29,149,0.36);
+    0 4px 0 rgba(255,255,255,0.9),
+    0 11px 22px rgba(46,16,101,0.42);
   transform-style: preserve-3d;
   will-change: left, top, transform, opacity, filter;
 }
 
 .depth-character.hit {
-  filter: brightness(1.22) drop-shadow(0 0 16px rgba(34,197,94,0.8));
+  filter:
+    brightness(1.25)
+    drop-shadow(0 0 18px rgba(34,197,94,0.88))
+    drop-shadow(0 0 28px rgba(103,232,249,0.45));
 }
 
 .depth-character.complete {
-  animation: completePop 0.42s ease-out forwards;
+  animation: completePop 0.48s ease-out forwards;
 }
 
 @keyframes completePop {
   0% { opacity: 1; }
-  55% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 20px rgba(250,204,21,0.9)); }
+  48% {
+    opacity: 1;
+    filter: brightness(1.55) drop-shadow(0 0 24px rgba(250,204,21,0.95));
+  }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) rotateX(420deg) rotateY(360deg) rotateZ(35deg) scale(2.2);
+    transform: translate(-50%, -50%) rotateX(460deg) rotateY(400deg) rotateZ(35deg) scale(2.35);
   }
 }
 
 .progress {
   position: absolute;
-  bottom: -24px;
+  bottom: -26px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 4px;
+  gap: 5px;
 }
 
 .dot {
   width: 11px;
   height: 11px;
   border-radius: 99px;
-  background: rgba(255,255,255,0.82);
-  border: 2px solid rgba(124,58,237,0.7);
+  background: rgba(255,255,255,0.86);
+  border: 2px solid rgba(124,58,237,0.72);
+  box-shadow: 0 2px 4px rgba(76,29,149,0.12);
 }
 
 .dot.done {
   background: var(--green);
   border-color: #16a34a;
+}
+
+.dot.next {
+  background: #fef9c3;
+  border-color: #facc15;
+  box-shadow: 0 0 10px rgba(250,204,21,0.8);
+}
+
+.impact-ring {
+  position: absolute;
+  z-index: 125;
+  width: 34px;
+  height: 34px;
+  border: 4px solid rgba(34,197,94,0.86);
+  border-radius: 999px;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.3);
+  animation: impactRing 0.42s ease-out forwards;
+}
+
+@keyframes impactRing {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(3.2);
+  }
 }
 
 #piano-wrap {
@@ -253,36 +319,45 @@ body {
   height: var(--keyboard-height);
   z-index: 100;
   background:
-    linear-gradient(180deg, rgba(15,23,42,0.22), rgba(15,23,42,0) 20%),
-    linear-gradient(180deg, rgba(255,255,255,0.88), rgba(226,232,240,0.96));
-  border-top: 4px solid rgba(255,255,255,0.95);
-  box-shadow: 0 -8px 24px rgba(76,29,149,0.18);
-  padding: 12px 12px 14px;
+    linear-gradient(180deg, rgba(15,23,42,0.32), rgba(15,23,42,0) 22%),
+    linear-gradient(180deg, rgba(248,250,252,0.96), rgba(203,213,225,0.98));
+  border-top: 5px solid rgba(255,255,255,0.95);
+  box-shadow:
+    0 -10px 28px rgba(46,16,101,0.22),
+    inset 0 10px 16px rgba(255,255,255,0.45);
+  padding: 14px 14px 16px;
 }
 
 #piano {
   position: relative;
   width: 100%;
   height: 100%;
-  max-width: 1100px;
+  max-width: 1120px;
   margin: 0 auto;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #1e293b, #020617);
+  padding: 4px;
+  box-shadow:
+    0 12px 24px rgba(15,23,42,0.25),
+    inset 0 2px 8px rgba(255,255,255,0.12);
 }
 
 .white-key {
   position: absolute;
-  bottom: 0;
-  height: 100%;
+  bottom: 4px;
+  height: calc(100% - 8px);
   border: 2px solid #cbd5e1;
-  border-bottom: 9px solid #94a3b8;
+  border-bottom: 10px solid #94a3b8;
   border-radius: 0 0 18px 18px;
   background:
-    linear-gradient(180deg, #ffffff 0%, #f8fafc 70%, #e2e8f0 100%);
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 58%, #dbeafe 100%);
   color: #4c1d95;
   cursor: pointer;
   overflow: hidden;
   box-shadow:
-    inset 0 -12px 18px rgba(15,23,42,0.06),
-    0 2px 2px rgba(15,23,42,0.08);
+    inset 0 -14px 22px rgba(15,23,42,0.08),
+    inset 0 7px 10px rgba(255,255,255,0.8),
+    0 2px 2px rgba(15,23,42,0.12);
   transition: transform 0.07s, border-bottom-width 0.07s, filter 0.07s;
 }
 
@@ -290,17 +365,31 @@ body {
   border-color: #a78bfa;
 }
 
-.white-key.required::after {
+.white-key.next-required {
+  border-color: #22c55e;
+  box-shadow:
+    inset 0 -14px 22px rgba(15,23,42,0.08),
+    inset 0 7px 10px rgba(255,255,255,0.8),
+    0 0 18px rgba(34,197,94,0.62),
+    0 2px 2px rgba(15,23,42,0.12);
+}
+
+.white-key.next-required::after {
   content: "";
   position: absolute;
-  inset: 5px;
+  inset: 7px;
   border-radius: 0 0 14px 14px;
-  border: 3px solid rgba(34,197,94,0.24);
+  border: 3px solid rgba(34,197,94,0.34);
   pointer-events: none;
 }
 
+.white-key.used-key {
+  opacity: 0.56;
+  filter: grayscale(0.18);
+}
+
 .white-key.pressed {
-  transform: translateY(6px);
+  transform: translateY(7px);
   border-bottom-width: 2px;
   filter: brightness(0.96);
 }
@@ -308,7 +397,7 @@ body {
 .white-key.wrong {
   background: #ffe4e6;
   border-color: #fb7185;
-  animation: wrongShake 0.2s linear;
+  animation: wrongShake 0.22s linear;
 }
 
 @keyframes wrongShake {
@@ -319,27 +408,28 @@ body {
 
 .black-key {
   position: absolute;
-  top: 0;
+  top: 4px;
   height: 60%;
-  width: 7.5%;
+  width: 7.4%;
   border: 2px solid #020617;
-  border-bottom: 7px solid #020617;
+  border-bottom: 8px solid #020617;
   border-radius: 0 0 12px 12px;
   background:
-    linear-gradient(180deg, #334155 0%, #0f172a 70%, #020617 100%);
+    linear-gradient(180deg, #475569 0%, #111827 58%, #020617 100%);
   color: #f8fafc;
-  z-index: 5;
+  z-index: 8;
   cursor: pointer;
   box-shadow:
-    0 6px 10px rgba(15,23,42,0.35),
-    inset 0 -8px 12px rgba(0,0,0,0.38);
+    0 7px 12px rgba(15,23,42,0.45),
+    inset 0 -9px 14px rgba(0,0,0,0.42),
+    inset 0 4px 5px rgba(255,255,255,0.13);
   transition: transform 0.07s, border-bottom-width 0.07s, filter 0.07s;
 }
 
 .black-key.pressed {
-  transform: translateY(5px);
+  transform: translateY(6px);
   border-bottom-width: 2px;
-  filter: brightness(1.2);
+  filter: brightness(1.22);
 }
 
 .key-radical {
@@ -369,14 +459,27 @@ body {
   font-size: 11px;
 }
 
+.next-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #22c55e;
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(34,197,94,0.4);
+}
+
 .hit-token {
   position: absolute;
-  z-index: 90;
+  z-index: 95;
   min-width: 56px;
   height: 56px;
   padding: 0 10px;
   border-radius: 18px;
-  background: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.97);
   border: 3px solid #4ade80;
   color: #5b21b6;
   font-size: 32px;
@@ -385,10 +488,15 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 0 22px rgba(34,197,94,0.65),
-    0 8px 20px rgba(76,29,149,0.22);
+    0 0 22px rgba(34,197,94,0.72),
+    0 8px 20px rgba(76,29,149,0.24);
   pointer-events: none;
   transform-style: preserve-3d;
+  will-change: left, top, transform;
+}
+
+.hit-token.fast {
+  filter: brightness(1.15) drop-shadow(0 0 12px rgba(34,197,94,0.7));
 }
 
 .particle {
@@ -474,7 +582,7 @@ body {
 
 .overlay p {
   margin: 0 0 28px;
-  max-width: 820px;
+  max-width: 840px;
   color: #ede9fe;
   font-size: clamp(17px, 3vw, 22px);
   font-weight: 800;
@@ -500,11 +608,11 @@ body {
 
 @media (max-width: 700px) {
   :root {
-    --keyboard-height: 156px;
+    --keyboard-height: 162px;
   }
 
   #piano-wrap {
-    padding: 8px 8px 10px;
+    padding: 9px 8px 11px;
   }
 
   .depth-character {
@@ -525,6 +633,13 @@ body {
   .black-key .key-note {
     font-size: 9px;
   }
+
+  .next-badge {
+    top: 6px;
+    right: 5px;
+    font-size: 9px;
+    padding: 2px 5px;
+  }
 }
 </style>
 </head>
@@ -536,13 +651,14 @@ body {
   <div id="hud">
     <div class="hud-box">⭐ <span id="score">0</span></div>
     <div class="hud-box">🔥 Combo <span id="combo">0</span></div>
+    <div class="hud-box">➡️ Next: <span id="next-part">-</span></div>
     <div class="hud-box">🎹 Free Play</div>
-    <div class="hud-box">🧪 Testing Mode</div>
   </div>
 
-  <div id="guide-panel">汉字从轨道深处靠近。按正确部件，把它推回去！</div>
+  <div id="guide-panel">按顺序击中部件：只按发光的下一个部件，把汉字推回轨道深处！</div>
 
   <div id="arena">
+    <div id="depth-stage"></div>
     <svg id="track-svg"></svg>
     <div id="horizon-dot"></div>
   </div>
@@ -556,19 +672,18 @@ body {
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v1.5.0</div>
+    <div class="version-label" id="version-label">Version v1.6.0</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v1.5.0";
+const GAME_VERSION = "v1.6.0";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
 const KEY_COUNT = 8;
-const MAX_ACTIVE_CHARACTERS = 1;
 
 const WHITE_KEYS = [
   { note: "C4", label: "C", freq: 261.63 },
@@ -604,6 +719,7 @@ const startScreen = document.getElementById("start-screen");
 
 const scoreEl = document.getElementById("score");
 const comboEl = document.getElementById("combo");
+const nextPartEl = document.getElementById("next-part");
 
 let dictionary = [];
 let score = 0;
@@ -692,10 +808,10 @@ function showReadyScreen() {
   document.getElementById("start-title").textContent = "汉字连击 · 3D轨道钢琴版";
   document.getElementById("start-text").innerHTML =
     `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
-    `Free Play Mode：已移除歌曲系统。<br>` +
-    `汉字会从轨道深处向玩家靠近。<br>` +
-    `每个钢琴白键对应一条轨道和一个部件。<br>` +
-    `按正确部件，部件会沿轨道飞出并把汉字推回深处。<br><br>` +
+    `v1.6.0 改进：<br>` +
+    `1. 部件必须按顺序使用。<br>` +
+    `2. 打击效果升级：冲击波、发光、3D旋转和推回深处。<br>` +
+    `3. 钢琴和轨道视觉升级。<br><br>` +
     `测试模式：没有生命、没有 Game Over。`;
 
   const oldBtn = document.getElementById("start-btn");
@@ -810,14 +926,14 @@ function spawnCharacter() {
     el,
     word: data.word,
     parts: [...data.parts],
-    hitParts: new Set(),
+    nextPartIndex: 0,
 
     laneIndex: Math.floor(Math.random() * KEY_COUNT),
 
     z: 0.96,
-    zVelocity: -0.0024,
+    zVelocity: -0.00225,
 
-    laneOffset: randomBetween(-0.08, 0.08),
+    laneOffset: randomBetween(-0.06, 0.06),
     sideWobble: randomBetween(0, Math.PI * 2),
 
     rotX: randomBetween(-18, 18),
@@ -829,14 +945,14 @@ function spawnCharacter() {
 
     scaleKick: 0,
     completed: false,
-    dead: false,
-    pushedBackUntil: 0
+    dead: false
   };
 
   placePartsForCurrentCharacter();
   renderPiano();
   renderTracks();
   renderCharacter();
+  updateHUD();
 }
 
 function scheduleNextCharacter(delay) {
@@ -854,15 +970,15 @@ function placePartsForCurrentCharacter() {
 
   initKeyboardSlots();
 
-  const parts = character.parts.slice(0, KEY_COUNT);
+  const visibleParts = character.parts.slice(0, KEY_COUNT);
   const indices = Array.from({ length: KEY_COUNT }, (_, i) => i);
   shuffle(indices);
 
-  for (let i = 0; i < parts.length; i++) {
+  for (let i = 0; i < visibleParts.length; i++) {
     const slotIndex = indices[i];
     keyboardSlots[slotIndex] = {
       kind: "part",
-      char: parts[i],
+      char: visibleParts[i],
       partIndex: i,
       noteIndex: slotIndex
     };
@@ -872,7 +988,7 @@ function placePartsForCurrentCharacter() {
     if (!keyboardSlots[i] || keyboardSlots[i].kind !== "part") {
       keyboardSlots[i] = {
         kind: "distractor",
-        char: randomDistractorAvoiding(parts),
+        char: randomDistractorAvoiding(visibleParts),
         noteIndex: i
       };
     }
@@ -902,7 +1018,7 @@ function findPendingPartNotOnKeyboard() {
   if (!character || character.completed || character.dead) return null;
 
   for (let i = 0; i < character.parts.length; i++) {
-    if (character.hitParts.has(i)) continue;
+    if (i < character.nextPartIndex) continue;
 
     const alreadyVisible = keyboardSlots.some(slot =>
       slot &&
@@ -927,10 +1043,26 @@ function getRequiredCharsOnKeyboard() {
     .map(slot => slot.char);
 }
 
+function getNextRequiredPart() {
+  if (!character || character.completed || character.dead) return null;
+  return character.parts[character.nextPartIndex] || null;
+}
+
+function getNextRequiredSlotIndex() {
+  if (!character) return -1;
+
+  return keyboardSlots.findIndex(slot =>
+    slot &&
+    slot.kind === "part" &&
+    slot.partIndex === character.nextPartIndex
+  );
+}
+
 function renderPiano() {
   piano.innerHTML = "";
 
   const whiteWidth = 100 / KEY_COUNT;
+  const nextSlotIndex = getNextRequiredSlotIndex();
 
   keyboardSlots.forEach((slot, index) => {
     const keyInfo = WHITE_KEYS[index];
@@ -939,6 +1071,8 @@ function renderPiano() {
     btn.className = "white-key";
 
     if (slot.kind === "part") btn.classList.add("required");
+    if (index === nextSlotIndex) btn.classList.add("next-required");
+    if (slot.kind === "used") btn.classList.add("used-key");
 
     btn.style.left = `${index * whiteWidth}%`;
     btn.style.width = `${whiteWidth}%`;
@@ -956,6 +1090,13 @@ function renderPiano() {
     btn.appendChild(radicalSpan);
     btn.appendChild(noteSpan);
 
+    if (index === nextSlotIndex) {
+      const badge = document.createElement("div");
+      badge.className = "next-badge";
+      badge.textContent = "NEXT";
+      btn.appendChild(badge);
+    }
+
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
       handleWhiteKeyPress(index, btn);
@@ -964,11 +1105,11 @@ function renderPiano() {
     piano.appendChild(btn);
   });
 
-  BLACK_KEYS.forEach((black, blackIndex) => {
+  BLACK_KEYS.forEach(black => {
     const btn = document.createElement("button");
     btn.className = "black-key";
 
-    const leftPercent = ((black.afterWhite + 1) * whiteWidth) - 3.75;
+    const leftPercent = ((black.afterWhite + 1) * whiteWidth) - 3.7;
     btn.style.left = `${leftPercent}%`;
 
     const noteSpan = document.createElement("div");
@@ -994,7 +1135,6 @@ function renderPiano() {
 function calculateKeyCenters() {
   keyCenters = [];
 
-  const pianoRect = piano.getBoundingClientRect();
   const arenaRect = arena.getBoundingClientRect();
   const whiteKeys = piano.querySelectorAll(".white-key");
 
@@ -1013,7 +1153,7 @@ function calculateKeyCenters() {
 function getHorizon() {
   return {
     x: arena.clientWidth / 2,
-    y: Math.max(110, arena.clientHeight * 0.22)
+    y: Math.max(105, arena.clientHeight * 0.21)
   };
 }
 
@@ -1021,6 +1161,7 @@ function renderTracks() {
   if (!keyCenters.length) return;
 
   const horizon = getHorizon();
+  const nextSlotIndex = getNextRequiredSlotIndex();
 
   horizonDot.style.left = `${horizon.x}px`;
   horizonDot.style.top = `${horizon.y}px`;
@@ -1030,46 +1171,60 @@ function renderTracks() {
 
   trackGeometry = [];
 
-  const requiredLanes = new Set(
-    keyboardSlots
-      .map((slot, i) => slot && slot.kind === "part" ? i : null)
-      .filter(i => i !== null)
-  );
-
   for (let i = 0; i < KEY_COUNT; i++) {
     const base = keyCenters[i];
-    const nextBase = keyCenters[Math.min(KEY_COUNT - 1, i + 1)];
-    const prevBase = keyCenters[Math.max(0, i - 1)];
 
-    const laneWidthNear = Math.min(90, arena.clientWidth / KEY_COUNT * 0.78);
+    const isActive = i === nextSlotIndex;
+
+    const laneWidthNear = Math.min(100, arena.clientWidth / KEY_COUNT * 0.82);
     const nearLeft = base.x - laneWidthNear / 2;
     const nearRight = base.x + laneWidthNear / 2;
 
-    const farSpread = 14;
-    const farLeft = horizon.x - farSpread + (i - (KEY_COUNT - 1) / 2) * 3;
-    const farRight = horizon.x + farSpread + (i - (KEY_COUNT - 1) / 2) * 3;
+    const farSpread = 18;
+    const laneOffset = (i - (KEY_COUNT - 1) / 2) * 4;
+
+    const farLeft = horizon.x - farSpread + laneOffset;
+    const farRight = horizon.x + farSpread + laneOffset;
 
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute(
       "d",
-      `M ${nearLeft} ${arena.clientHeight} L ${farLeft} ${horizon.y} L ${farRight} ${horizon.y} L ${nearRight} ${arena.clientHeight} Z`
+      `M ${nearLeft} ${arena.clientHeight}
+       L ${farLeft} ${horizon.y}
+       L ${farRight} ${horizon.y}
+       L ${nearRight} ${arena.clientHeight}
+       Z`
     );
-    path.setAttribute("class", "track-fill");
+    path.setAttribute("class", isActive ? "track-fill active-fill" : "track-fill");
     trackSvg.appendChild(path);
 
-    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", base.x);
-    line.setAttribute("y1", arena.clientHeight);
-    line.setAttribute("x2", horizon.x + (i - (KEY_COUNT - 1) / 2) * 4);
-    line.setAttribute("y2", horizon.y);
+    const centerLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    centerLine.setAttribute("x1", base.x);
+    centerLine.setAttribute("y1", arena.clientHeight);
+    centerLine.setAttribute("x2", horizon.x + laneOffset);
+    centerLine.setAttribute("y2", horizon.y);
+    centerLine.setAttribute("class", isActive ? "track-line active-track" : "track-line");
+    trackSvg.appendChild(centerLine);
 
-    line.setAttribute("class", requiredLanes.has(i) ? "track-line required-track" : "track-line");
-    trackSvg.appendChild(line);
+    for (let r = 1; r <= 5; r++) {
+      const t = r / 6;
+      const leftX = farLeft + (nearLeft - farLeft) * t;
+      const rightX = farRight + (nearRight - farRight) * t;
+      const y = horizon.y + (arena.clientHeight - horizon.y) * t;
+
+      const rung = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      rung.setAttribute("x1", leftX);
+      rung.setAttribute("y1", y);
+      rung.setAttribute("x2", rightX);
+      rung.setAttribute("y2", y);
+      rung.setAttribute("class", isActive ? "track-rung active-rung" : "track-rung");
+      trackSvg.appendChild(rung);
+    }
 
     trackGeometry[i] = {
       nearX: base.x,
       nearY: arena.clientHeight,
-      farX: horizon.x + (i - (KEY_COUNT - 1) / 2) * 4,
+      farX: horizon.x + laneOffset,
       farY: horizon.y
     };
   }
@@ -1077,6 +1232,7 @@ function renderTracks() {
 
 function getPointOnLane(laneIndex, z, offset = 0) {
   const lane = trackGeometry[laneIndex] || trackGeometry[0];
+
   if (!lane) {
     return { x: arena.clientWidth / 2, y: arena.clientHeight / 2 };
   }
@@ -1086,7 +1242,8 @@ function getPointOnLane(laneIndex, z, offset = 0) {
   const x = lane.farX + (lane.nearX - lane.farX) * t;
   const y = lane.farY + (lane.nearY - lane.farY) * t;
 
-  const laneWidth = 18 + t * 70;
+  const laneWidth = 18 + t * 72;
+
   return {
     x: x + offset * laneWidth,
     y
@@ -1096,19 +1253,19 @@ function getPointOnLane(laneIndex, z, offset = 0) {
 function renderCharacter() {
   if (!character || character.dead) return;
 
-  const wobble = Math.sin(character.sideWobble) * 0.04;
+  const wobble = Math.sin(character.sideWobble) * 0.035;
   const point = getPointOnLane(character.laneIndex, character.z, character.laneOffset + wobble);
 
   const closeness = 1 - character.z;
-  const scale = 0.32 + closeness * 1.55 + character.scaleKick;
-  const opacity = 0.35 + closeness * 0.65;
-  const fontSize = 72 + closeness * 52;
+  const scale = 0.3 + closeness * 1.58 + character.scaleKick;
+  const opacity = 0.34 + closeness * 0.66;
+  const fontSize = 72 + closeness * 58;
 
   character.el.style.left = `${point.x}px`;
   character.el.style.top = `${point.y}px`;
   character.el.style.opacity = opacity;
   character.el.style.fontSize = `${fontSize}px`;
-  character.el.style.zIndex = String(30 + Math.floor(closeness * 45));
+  character.el.style.zIndex = String(35 + Math.floor(closeness * 45));
 
   character.el.style.transform =
     `translate(-50%, -50%) ` +
@@ -1119,7 +1276,8 @@ function renderCharacter() {
 
   const dots = character.el.querySelectorAll(".dot");
   dots.forEach((dot, i) => {
-    dot.classList.toggle("done", character.hitParts.has(i));
+    dot.classList.toggle("done", i < character.nextPartIndex);
+    dot.classList.toggle("next", i === character.nextPartIndex);
   });
 }
 
@@ -1137,7 +1295,7 @@ function handleWhiteKeyPress(slotIndex, buttonElement) {
     return;
   }
 
-  if (character.hitParts.has(slot.partIndex)) {
+  if (slot.partIndex !== character.nextPartIndex) {
     handleWrongPress(buttonElement);
     return;
   }
@@ -1157,19 +1315,17 @@ function handleWhiteKeyPress(slotIndex, buttonElement) {
   launchHitToken(slot.char, startX, startY, character, slot.partIndex, slotIndex);
 
   keyboardSlots[slotIndex] = {
-    kind: "empty",
+    kind: "used",
     char: "",
     noteIndex: slotIndex
   };
 
-  refillUsedSlot(slotIndex);
-  renderPiano();
-
-  showFloatingText(`+${gain}`, startX, arena.clientHeight - 20);
+  showFloatingText(`+${gain}`, startX, arena.clientHeight - 22);
   showCenterMessage(`Combo ${combo}`, "good");
   triggerSlowMotion(130);
 
   updateHUD();
+  renderPiano();
 }
 
 function handleWrongPress(buttonElement) {
@@ -1180,7 +1336,7 @@ function handleWrongPress(buttonElement) {
   buttonElement.classList.add("wrong");
   setTimeout(() => buttonElement.classList.remove("wrong"), 220);
 
-  showCenterMessage("-20", "bad");
+  showCenterMessage("顺序不对", "bad");
   playBadTone();
 
   updateHUD();
@@ -1188,7 +1344,7 @@ function handleWrongPress(buttonElement) {
 
 function launchHitToken(char, x, y, target, partIndex, laneIndex) {
   const el = document.createElement("div");
-  el.className = "hit-token";
+  el.className = "hit-token fast";
   el.textContent = char;
 
   const token = {
@@ -1215,10 +1371,11 @@ function renderHitToken(t) {
   t.el.style.left = `${t.x}px`;
   t.el.style.top = `${t.y}px`;
 
-  const scale = 1.05 - t.z * 0.45;
+  const scale = 1.12 - t.z * 0.48;
+  const stretch = 1 + Math.min(0.65, t.z * 0.9);
 
   t.el.style.transform =
-    `translate(-50%, -50%) rotate(${t.rotation}deg) scale(${scale})`;
+    `translate(-50%, -50%) rotate(${t.rotation}deg) scale(${scale}, ${scale / stretch})`;
 }
 
 function gameLoop(now) {
@@ -1230,7 +1387,7 @@ function gameLoop(now) {
   timeScale = now < slowMotionUntil ? 0.55 : 1;
   const dt = (rawDelta / 16.67) * timeScale;
 
-  updateCharacter(dt, now);
+  updateCharacter(dt);
   updateHitTokens(dt);
   updateParticles(dt);
   cleanupDeadObjects();
@@ -1238,11 +1395,10 @@ function gameLoop(now) {
   animationRef = requestAnimationFrame(gameLoop);
 }
 
-function updateCharacter(dt, now) {
+function updateCharacter(dt) {
   if (!character || character.dead || character.completed) return;
 
   character.z += character.zVelocity * dt;
-
   character.sideWobble += 0.018 * dt;
 
   character.rotX += character.rotVX * dt;
@@ -1253,7 +1409,7 @@ function updateCharacter(dt, now) {
   character.rotVY *= Math.pow(0.993, dt);
   character.rotVZ *= Math.pow(0.993, dt);
 
-  character.scaleKick *= Math.pow(0.88, dt);
+  character.scaleKick *= Math.pow(0.87, dt);
 
   if (character.z > 0.98) {
     character.z = 0.98;
@@ -1286,7 +1442,7 @@ function missCharacter() {
     character = null;
     renderPiano();
     renderTracks();
-    scheduleNextCharacter(500);
+    scheduleNextCharacter(520);
   }, 260);
 }
 
@@ -1307,7 +1463,7 @@ function updateHitTokens(dt) {
       return;
     }
 
-    t.z += 0.045 * dt;
+    t.z += 0.05 * dt;
 
     if (t.z > t.target.z) {
       t.z = t.target.z;
@@ -1320,11 +1476,11 @@ function updateHitTokens(dt) {
     t.x = lanePoint.x + (targetPoint.x - lanePoint.x) * blend;
     t.y = lanePoint.y + (targetPoint.y - lanePoint.y) * blend;
 
-    t.rotation += 18 * dt;
+    t.rotation += 22 * dt;
 
     const d = distance(t.x, t.y, targetPoint.x, targetPoint.y);
 
-    if ((d < 34 || t.z >= t.target.z - 0.01) && !t.arrived) {
+    if ((d < 35 || t.z >= t.target.z - 0.01) && !t.arrived) {
       t.arrived = true;
       tokenHitsCharacter(t, t.target);
     }
@@ -1336,39 +1492,56 @@ function updateHitTokens(dt) {
 function tokenHitsCharacter(token, c) {
   token.dead = true;
 
-  c.hitParts.add(token.partIndex);
+  c.nextPartIndex++;
+
   c.el.classList.add("hit");
   setTimeout(() => {
     if (c.el) c.el.classList.remove("hit");
-  }, 150);
+  }, 170);
 
-  c.z = Math.min(0.96, c.z + 0.18);
-  c.zVelocity = -0.0021;
+  c.z = Math.min(0.97, c.z + 0.2);
+  c.zVelocity = -0.00205;
 
   const centerLane = (KEY_COUNT - 1) / 2;
   const lanePush = (centerLane - c.laneIndex) * 0.002;
 
-  c.laneOffset += randomBetween(-0.05, 0.05) + lanePush;
-  c.laneOffset = clamp(c.laneOffset, -0.35, 0.35);
+  c.laneOffset += randomBetween(-0.045, 0.045) + lanePush;
+  c.laneOffset = clamp(c.laneOffset, -0.33, 0.33);
 
-  c.rotVX += randomBetween(-8, 8);
-  c.rotVY += randomBetween(-12, 12);
-  c.rotZ += randomBetween(-6, 6);
-  c.scaleKick = 0.18;
+  c.rotVX += randomBetween(-9, 9);
+  c.rotVY += randomBetween(-14, 14);
+  c.rotZ += randomBetween(-7, 7);
+  c.scaleKick = 0.2;
 
   score += 50;
 
   const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
-  showFloatingText("+50", point.x, point.y - 50);
-  particleBurst(point.x, point.y, 18);
+
+  createImpactRing(point.x, point.y);
+  showFloatingText("+50", point.x, point.y - 54);
+  particleBurst(point.x, point.y, 22);
   playBounceTone();
 
-  if (c.hitParts.size >= c.parts.length) {
+  if (c.nextPartIndex >= c.parts.length) {
     completeCharacter(c);
+  } else {
+    refillUsedSlot(token.laneIndex);
+    renderPiano();
+    renderTracks();
   }
 
   renderCharacter();
   updateHUD();
+}
+
+function createImpactRing(x, y) {
+  const ring = document.createElement("div");
+  ring.className = "impact-ring";
+  ring.style.left = `${x}px`;
+  ring.style.top = `${y}px`;
+  arena.appendChild(ring);
+
+  setTimeout(() => ring.remove(), 460);
 }
 
 function completeCharacter(c) {
@@ -1382,8 +1555,8 @@ function completeCharacter(c) {
   const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
 
   showCenterMessage("完成！", "good");
-  showFloatingText(`+${bonus}`, point.x, point.y - 70);
-  particleBurst(point.x, point.y, 32);
+  showFloatingText(`+${bonus}`, point.x, point.y - 74);
+  particleBurst(point.x, point.y, 38);
   playCompleteSound();
 
   clearKeyboardParts();
@@ -1395,8 +1568,8 @@ function completeCharacter(c) {
   setTimeout(() => {
     if (character && character.el) character.el.remove();
     character = null;
-    scheduleNextCharacter(650);
-  }, 430);
+    scheduleNextCharacter(680);
+  }, 480);
 
   updateHUD();
 }
@@ -1418,6 +1591,7 @@ function cleanupDeadObjects() {
 function updateHUD() {
   scoreEl.textContent = score;
   comboEl.textContent = combo;
+  nextPartEl.textContent = getNextRequiredPart() || "-";
 }
 
 function particleBurst(x, y, count) {
@@ -1432,13 +1606,13 @@ function particleBurst(x, y, count) {
       el,
       x,
       y,
-      vx: randomBetween(-5.5, 5.5),
-      vy: randomBetween(-7, 3),
+      vx: randomBetween(-6.2, 6.2),
+      vy: randomBetween(-8, 3),
       gravity: randomBetween(0.18, 0.34),
-      life: randomBetween(24, 42),
+      life: randomBetween(25, 44),
       age: 0,
       rotation: randomBetween(0, 360),
-      rotationVelocity: randomBetween(-14, 14),
+      rotationVelocity: randomBetween(-16, 16),
       dead: false
     };
 
@@ -1463,7 +1637,7 @@ function updateParticles(dt) {
     p.el.style.top = `${p.y}px`;
     p.el.style.opacity = opacity;
     p.el.style.transform =
-      `translate(-50%, -50%) rotate(${p.rotation}deg) scale(${0.8 + opacity * 0.6})`;
+      `translate(-50%, -50%) rotate(${p.rotation}deg) scale(${0.8 + opacity * 0.7})`;
 
     if (p.age >= p.life) p.dead = true;
   });
