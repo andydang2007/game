@@ -101,10 +101,7 @@
         .key-btn.wrong { background: #ffe4e6; border-color: #fb7185; animation: shakeBtn 0.2s; }
         @keyframes shakeBtn { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
 
-        /* 空位状态显示 */
         .key-btn.empty-slot { opacity: 0.3; cursor: not-allowed; pointer-events: none; background: #f3f4f6; }
-
-        /* 音符标签 */
         .key-note { position: absolute; top: 2px; right: 4px; font-size: 10px; color: #a78bfa; font-weight: 600; }
 
         .overlay { position: absolute; inset: 0; background: rgba(76,29,149,0.86); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; text-align: center; }
@@ -157,10 +154,16 @@
     let lastTime = 0;
     let keyboardNeedsUpdate = false;
     const KEY_POOL_SIZE = 8;
-    const PART_EMPTY_DURATION = 500; // 部件使用后的空缺时间（毫秒）
+    const PART_EMPTY_DURATION = 500;
+    const PRELOAD_QUESTIONS = 3; // 预加载前3题答案
+
+    // 预加载的问题队列
+    let preloadedQuestions = [];
+    let preloadedIndex = 0;
 
     // slot: { kind: 'part'|'distractor'|'empty', char?: string, vehicleId?: number, partIndex?: number, emptyUntil?: number }
     let keyboardSlots = null;
+    let slotToNoteIndex = null; // 记录每个slot对应的音符索引
     let spawnOrderCounter = 0;
     let wrongStreak = 0;
     let inputLockedUntil = 0;
@@ -169,8 +172,8 @@
     let bgmInterval = null;
     let bgmGain = null;
 
-    // 8个按键对应的音符（C major scale）
-    const keyNotes = [
+    // 钢琴音符频率
+    const pianoNotes = [
         { name: 'C', freq: 261.63 },
         { name: 'D', freq: 293.66 },
         { name: 'E', freq: 329.63 },
@@ -212,7 +215,7 @@
                 if (dictionary.length > 0) {
                     startScreen.innerHTML = `
                         <h1>大漠狂沙特快</h1>
-                        <p>已从 [HYPY] 加载 <b>${dictionary.length}</b> 个战车！<br><br>看准目标，按顺序打出偏旁部首。<br>爆胎会减速，守住防线！<br>按键配音符，节奏感十足！</p>
+                        <p>已从 [HYPY] 加载 <b>${dictionary.length}</b> 个战车！<br><br>看准目标，按顺序打出偏旁部首。<br>爆胎会减速，守住防线！<br>按键配钢琴音符，节奏感十足！</p>
                         <button class="btn-start" onclick="startGame()">全军出击 🚀</button>
                     `;
                 } else {
@@ -243,22 +246,55 @@
         }
     }
 
-    // 为按键播放音符
-    function playKeyNote(noteIndex) {
+    // 播放钢琴音符
+    function playPianoNote(noteIndex) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const note = keyNotes[noteIndex % keyNotes.length];
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); 
-        gain.connect(audioCtx.destination);
+        const note = pianoNotes[noteIndex % pianoNotes.length];
         
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(note.freq, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        // 使用多个谐波模拟钢琴音色
+        const frequencies = [note.freq, note.freq * 2, note.freq * 3, note.freq * 4];
+        const amplitudes = [0.5, 0.3, 0.15, 0.1];
         
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.15);
+        frequencies.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            // 钢琴特有的包络：快速上升，缓慢衰减
+            gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(amplitudes[i] * 0.08, audioCtx.currentTime + 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.8);
+        });
+    }
+
+    // 预加载题目
+    function preloadQuestions() {
+        preloadedQuestions = [];
+        preloadedIndex = 0;
+        for (let i = 0; i < PRELOAD_QUESTIONS && dictionary.length > 0; i++) {
+            const wordData = dictionary[Math.floor(Math.random() * dictionary.length)];
+            preloadedQuestions.push({
+                word: wordData.word,
+                parts: [...wordData.parts]
+            });
+        }
+    }
+
+    // 获取下一题（来自预加载队列）
+    function getNextQuestion() {
+        if (preloadedIndex >= preloadedQuestions.length) {
+            // 重新预加载
+            preloadQuestions();
+            preloadedIndex = 0;
+        }
+        return preloadedQuestions[preloadedIndex++];
     }
 
     function startGame() {
@@ -268,6 +304,7 @@
         activeVehicles = [];
         spawnOrderCounter = 0;
         keyboardSlots = null;
+        slotToNoteIndex = null;
         wrongStreak = 0;
         inputLockedUntil = 0;
         lastInputTs = 0;
@@ -278,6 +315,7 @@
         isPlaying = true;
         if (audioCtx.state === 'suspended') audioCtx.resume();
         startBgm();
+        preloadQuestions(); // 预加载题目
         keyboardNeedsUpdate = true;
         renderKeyboardPool();
         keyboardNeedsUpdate = false;
@@ -317,18 +355,12 @@
             return acc + (!slot || slot.kind === 'distractor' || slot.kind === 'empty' ? 1 : 0);
         }, 0);
 
-        let wordData = null;
-        for (let attempt = 0; attempt < 12; attempt++) {
-            const candidate = dictionary[Math.floor(Math.random() * dictionary.length)];
-            const candidatePartsCount = candidate.parts.length;
-            if (candidatePartsCount <= availableSlots) {
-                wordData = candidate;
-                break;
-            }
-        }
-        if (!wordData) return;
-
+        let wordData = getNextQuestion();
         const totalP = wordData.parts.length;
+        
+        // 如果部件过多，跳过这题
+        if (totalP > availableSlots) return;
+
         const displayP = totalP;
         
         const laneMax = Math.max(36, playArea.clientHeight - 120);
@@ -410,7 +442,6 @@
     function handleKeyPress(char, btnElement, slotIndex) {
         if (!isPlaying) return;
         
-        // 检查是否是空位状态
         if (keyboardSlots[slotIndex] && keyboardSlots[slotIndex].kind === 'empty') {
             return;
         }
@@ -431,7 +462,7 @@
 
         if (candidateIndices.length > 0) {
             playSound('hit');
-            playKeyNote(slotIndex); // 播放对应按键的音符
+            playPianoNote(slotToNoteIndex[slotIndex]); // 播放钢琴音符
             
             const pickedIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
             let v = activeVehicles[pickedIndex];
@@ -447,7 +478,6 @@
             showVehicleScore(v, "+100");
             updateUI();
             
-            // 设置该格子为空状态，500ms后再补位
             keyboardSlots[slotIndex] = {
                 kind: 'empty',
                 emptyUntil: now + PART_EMPTY_DURATION
@@ -563,11 +593,12 @@
                 kind: 'distractor',
                 char: randDistractor(),
             }));
+            // 初始化音符索引随机分配
+            slotToNoteIndex = Array.from({ length: KEY_POOL_SIZE }, (_, i) => i);
         }
 
         const vehicleById = new Map(activeVehicles.map(v => [v.id, v]));
 
-        // 清理已用完或已失效的部件格
         for (let i = 0; i < keyboardSlots.length; i++) {
             const slot = keyboardSlots[i];
             if (!slot || slot.kind !== 'part') continue;
@@ -585,7 +616,6 @@
             }
         }
 
-        // 清理已过期的空位状态，转为干扰部件
         for (let i = 0; i < keyboardSlots.length; i++) {
             const slot = keyboardSlots[i];
             if (slot && slot.kind === 'empty' && slot.emptyUntil <= now) {
@@ -593,7 +623,6 @@
             }
         }
 
-        // 按出现顺序放置部件
         const orderedVehicles = [...activeVehicles].sort((a, b) => (a.spawnOrder ?? 0) - (b.spawnOrder ?? 0));
 
         for (const v of orderedVehicles) {
@@ -608,7 +637,6 @@
 
                 if (alreadyPlaced) continue;
 
-                // 优先找到非空的可用位置（不是空位状态）
                 const slotIndex = keyboardSlots.findIndex(slot => !slot || (slot.kind === 'distractor'));
                 if (slotIndex === -1) {
                     allPlaced = false;
@@ -625,7 +653,6 @@
             v.keyboardActive = allPlaced;
         }
 
-        // 填充空格为干扰部件
         for (let i = 0; i < keyboardSlots.length; i++) {
             if (!keyboardSlots[i]) {
                 keyboardSlots[i] = { kind: 'distractor', char: randDistractor() };
@@ -635,7 +662,7 @@
         keyboard.innerHTML = keyboardSlots.map((slot, index) => {
             const char = slot.char;
             const isEmptySlot = slot.kind === 'empty';
-            const noteLabel = keyNotes[index % keyNotes.length].name;
+            const noteLabel = pianoNotes[slotToNoteIndex[index] % pianoNotes.length].name;
             
             return `
                 <button 
@@ -655,6 +682,11 @@
         clearTimeout(spawnTimer);
         cancelAnimationFrame(gameLoopRef);
         stopBgm();
+        
+        // 完全清屏：移除所有游戏元素
+        playArea.innerHTML = '<div id="defense-wall"></div><div id="fx-layer"></div>';
+        keyboard.innerHTML = '';
+        
         document.getElementById('final-score').innerText = score;
         document.getElementById('game-over-screen').style.display = 'flex';
     }
