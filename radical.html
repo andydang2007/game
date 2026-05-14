@@ -155,7 +155,7 @@
     let keyboardNeedsUpdate = false;
     const KEY_POOL_SIZE = 8;
     const PART_EMPTY_DURATION = 500;
-    const PRELOAD_QUESTIONS = 3; // 预加载前3题答案
+    const PRELOAD_QUESTIONS = 3;
 
     // 预加载的问题队列
     let preloadedQuestions = [];
@@ -163,7 +163,7 @@
 
     // slot: { kind: 'part'|'distractor'|'empty', char?: string, vehicleId?: number, partIndex?: number, emptyUntil?: number }
     let keyboardSlots = null;
-    let slotToNoteIndex = null; // 记录每个slot对应的音符索引
+    let slotToNoteIndex = null;
     let spawnOrderCounter = 0;
     let wrongStreak = 0;
     let inputLockedUntil = 0;
@@ -232,11 +232,7 @@
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.connect(gain); gain.connect(audioCtx.destination);
-        if (type === 'hit') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(500, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        } else if (type === 'explode') {
+        if (type === 'explode') {
             osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.4);
             gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
             osc.start(); osc.stop(audioCtx.currentTime + 0.4);
@@ -246,7 +242,7 @@
         }
     }
 
-    // 播放钢琴音符
+    // 播放钢琴音符（替代按键音效）
     function playPianoNote(noteIndex) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const note = pianoNotes[noteIndex % pianoNotes.length];
@@ -290,11 +286,50 @@
     // 获取下一题（来自预加载队列）
     function getNextQuestion() {
         if (preloadedIndex >= preloadedQuestions.length) {
-            // 重新预加载
             preloadQuestions();
             preloadedIndex = 0;
         }
         return preloadedQuestions[preloadedIndex++];
+    }
+
+    // 初始化键盘：将预加载的所有部件随机分配到8个按键
+    function initializeKeyboardWithPreloadedQuestions() {
+        const allParts = [];
+        
+        // 收集预加载3题的所有部件
+        for (let q of preloadedQuestions) {
+            for (let part of q.parts) {
+                allParts.push(part);
+            }
+        }
+
+        // 随机打乱顺序
+        for (let i = allParts.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [allParts[i], allParts[j]] = [allParts[j], allParts[i]];
+        }
+
+        // 将部件随机分配到8个位置
+        keyboardSlots = Array.from({ length: KEY_POOL_SIZE }, () => ({
+            kind: 'distractor',
+            char: distractors[Math.floor(Math.random() * distractors.length)],
+        }));
+
+        // 随机分配预加载部件到按键位置
+        const availableSlots = Array.from({ length: KEY_POOL_SIZE }, (_, i) => i);
+        for (let i = 0; i < Math.min(allParts.length, KEY_POOL_SIZE); i++) {
+            const slotIdx = Math.floor(Math.random() * availableSlots.length);
+            const realSlotIdx = availableSlots.splice(slotIdx, 1)[0];
+            keyboardSlots[realSlotIdx] = {
+                kind: 'part',
+                char: allParts[i],
+                vehicleId: null, // 稍后会赋值
+                partIndex: null
+            };
+        }
+
+        // 初始化音符索引
+        slotToNoteIndex = Array.from({ length: KEY_POOL_SIZE }, (_, i) => i);
     }
 
     function startGame() {
@@ -316,6 +351,7 @@
         if (audioCtx.state === 'suspended') audioCtx.resume();
         startBgm();
         preloadQuestions(); // 预加载题目
+        initializeKeyboardWithPreloadedQuestions(); // 初始化键盘
         keyboardNeedsUpdate = true;
         renderKeyboardPool();
         keyboardNeedsUpdate = false;
@@ -358,7 +394,6 @@
         let wordData = getNextQuestion();
         const totalP = wordData.parts.length;
         
-        // 如果部件过多，跳过这题
         if (totalP > availableSlots) return;
 
         const displayP = totalP;
@@ -461,8 +496,8 @@
         }
 
         if (candidateIndices.length > 0) {
-            playSound('hit');
-            playPianoNote(slotToNoteIndex[slotIndex]); // 播放钢琴音符
+            // 只播放钢琴音符，不播放原来的 'hit' 音效
+            playPianoNote(slotToNoteIndex[slotIndex]);
             
             const pickedIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
             let v = activeVehicles[pickedIndex];
@@ -593,7 +628,6 @@
                 kind: 'distractor',
                 char: randDistractor(),
             }));
-            // 初始化音符索引随机分配
             slotToNoteIndex = Array.from({ length: KEY_POOL_SIZE }, (_, i) => i);
         }
 
@@ -683,7 +717,7 @@
         cancelAnimationFrame(gameLoopRef);
         stopBgm();
         
-        // 完全清屏：移除所有游戏元素
+        // 完全清屏
         playArea.innerHTML = '<div id="defense-wall"></div><div id="fx-layer"></div>';
         keyboard.innerHTML = '';
         
