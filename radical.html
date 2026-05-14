@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>PSLE 汉字连击快线 · 3D轨道钢琴版</title>
+<title>PSLE 汉字连击快线 · 慢速轨道练习版</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -15,14 +15,11 @@
 }
 
 :root {
-  --purple: #5b21b6;
-  --deep-purple: #2e1065;
+  --keyboard-height: clamp(118px, 22vh, 168px);
+  --purple: #4c1d95;
   --green: #22c55e;
   --pink: #fb7185;
-  --yellow: #facc15;
-  --cyan: #67e8f9;
-  --glass: rgba(255,255,255,0.72);
-  --keyboard-height: 184px;
+  --glass: rgba(255, 255, 255, 0.68);
 }
 
 html, body {
@@ -32,8 +29,8 @@ html, body {
   overflow: hidden;
   font-family: "Microsoft YaHei", "PingFang SC", "Nunito", sans-serif;
   background:
-    radial-gradient(circle at 50% 26%, rgba(255,255,255,0.55), transparent 22%),
-    linear-gradient(180deg, #60a5fa 0%, #93c5fd 38%, #fef3c7 100%);
+    radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.55), transparent 35%),
+    linear-gradient(180deg, #93c5fd 0%, #bfdbfe 46%, #fef3c7 100%);
 }
 
 body {
@@ -43,34 +40,16 @@ body {
 #game {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
   overflow: hidden;
-}
-
-#cloud-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.28;
-  background-image:
-    radial-gradient(circle at 12% 16%, rgba(255,255,255,0.96) 0 28px, transparent 29px),
-    radial-gradient(circle at 24% 13%, rgba(255,255,255,0.75) 0 44px, transparent 45px),
-    radial-gradient(circle at 72% 22%, rgba(255,255,255,0.86) 0 38px, transparent 39px),
-    radial-gradient(circle at 84% 19%, rgba(255,255,255,0.72) 0 50px, transparent 51px);
-  animation: cloudMove 20s linear infinite;
-}
-
-@keyframes cloudMove {
-  from { background-position: 0 0; }
-  to { background-position: 280px 0; }
 }
 
 #hud {
   position: absolute;
-  top: 10px;
-  left: 12px;
-  right: 12px;
+  top: max(8px, env(safe-area-inset-top));
+  left: 10px;
+  right: 10px;
   z-index: 90;
   display: flex;
   justify-content: space-between;
@@ -79,15 +58,15 @@ body {
 }
 
 .hud-box {
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(8px);
-  border: 2px solid rgba(255,255,255,0.92);
-  border-radius: 18px;
-  padding: 8px 12px;
-  font-size: clamp(14px, 3vw, 22px);
+  background: var(--glass);
+  border: 2px solid rgba(255,255,255,0.9);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  padding: 7px 11px;
+  font-size: clamp(13px, 2.4vw, 20px);
   font-weight: 900;
   color: var(--purple);
-  box-shadow: 0 6px 16px rgba(76,29,149,0.14);
+  box-shadow: 0 5px 14px rgba(76,29,149,0.14);
 }
 
 #arena {
@@ -96,20 +75,18 @@ body {
   right: 0;
   top: 0;
   bottom: var(--keyboard-height);
-  z-index: 5;
   overflow: hidden;
-  perspective: 900px;
-  perspective-origin: 50% 34%;
+  z-index: 5;
 }
 
-#depth-stage {
+#depth-fog {
   position: absolute;
   inset: 0;
-  z-index: 6;
   pointer-events: none;
+  z-index: 6;
   background:
-    radial-gradient(ellipse at 50% 24%, rgba(46,16,101,0.42) 0%, rgba(91,33,182,0.20) 28%, transparent 56%),
-    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.0) 60%);
+    radial-gradient(ellipse at 50% 16%, rgba(76,29,149,0.26), transparent 36%),
+    linear-gradient(180deg, rgba(255,255,255,0.22), transparent 58%);
 }
 
 #track-svg {
@@ -122,50 +99,26 @@ body {
 }
 
 .track-fill {
-  fill: rgba(255,255,255,0.07);
+  fill: rgba(255,255,255,0.075);
   stroke: rgba(255,255,255,0.22);
   stroke-width: 1;
-}
-
-.track-fill.active-fill {
-  fill: rgba(34,197,94,0.14);
-  stroke: rgba(34,197,94,0.42);
 }
 
 .track-line {
   stroke: rgba(76,29,149,0.28);
   stroke-width: 3;
-  fill: none;
+  stroke-linecap: round;
 }
 
-.track-line.active-track {
-  stroke: rgba(34,197,94,0.9);
-  stroke-width: 6;
-  filter: drop-shadow(0 0 10px rgba(34,197,94,0.65));
+.track-line.hint {
+  stroke: rgba(34,197,94,0.52);
+  stroke-width: 5;
+  filter: drop-shadow(0 0 8px rgba(34,197,94,0.38));
 }
 
 .track-rung {
-  stroke: rgba(255,255,255,0.24);
+  stroke: rgba(255,255,255,0.22);
   stroke-width: 2;
-}
-
-.track-rung.active-rung {
-  stroke: rgba(167,243,208,0.55);
-}
-
-#horizon-dot {
-  position: absolute;
-  z-index: 10;
-  width: 18px;
-  height: 18px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.96);
-  border: 3px solid rgba(91,33,182,0.48);
-  box-shadow:
-    0 0 22px rgba(255,255,255,0.95),
-    0 0 32px rgba(103,232,249,0.55);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
 }
 
 #miss-line {
@@ -173,56 +126,16 @@ body {
   left: 0;
   right: 0;
   bottom: var(--keyboard-height);
-  height: 7px;
+  height: 5px;
   z-index: 70;
-  background: linear-gradient(90deg, transparent, rgba(251,113,133,0.95), transparent);
-  box-shadow:
-    0 -4px 18px rgba(251,113,133,0.58),
-    0 4px 16px rgba(251,113,133,0.32);
+  background: linear-gradient(90deg, transparent, rgba(251,113,133,0.62), transparent);
+  box-shadow: 0 -3px 14px rgba(251,113,133,0.28);
   pointer-events: none;
-}
-
-#miss-label {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--keyboard-height) + 10px);
-  transform: translateX(-50%);
-  z-index: 71;
-  background: rgba(251,113,133,0.94);
-  color: white;
-  font-size: 13px;
-  font-weight: 900;
-  padding: 4px 14px;
-  border-radius: 999px;
-  pointer-events: none;
-  box-shadow: 0 5px 14px rgba(251,113,133,0.4);
-}
-
-#guide-panel {
-  position: absolute;
-  left: 50%;
-  top: 62px;
-  transform: translateX(-50%);
-  z-index: 80;
-  background: rgba(255,255,255,0.72);
-  border: 2px solid rgba(255,255,255,0.92);
-  border-radius: 999px;
-  padding: 7px 16px;
-  color: #4c1d95;
-  font-weight: 900;
-  font-size: clamp(13px, 2.5vw, 18px);
-  pointer-events: none;
-  box-shadow: 0 6px 16px rgba(76,29,149,0.12);
 }
 
 .depth-character {
   position: absolute;
-  z-index: 35;
-  min-width: 90px;
-  min-height: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 40;
   background: transparent;
   border: none;
   box-shadow: none;
@@ -230,51 +143,51 @@ body {
   font-weight: 900;
   line-height: 1;
   text-shadow:
-    0 4px 0 rgba(255,255,255,0.9),
-    0 11px 22px rgba(46,16,101,0.42);
-  transform-style: preserve-3d;
-  will-change: left, top, transform, opacity, filter;
+    0 4px 0 rgba(255,255,255,0.88),
+    0 10px 20px rgba(76,29,149,0.30);
+  transform-origin: center center;
+  will-change: left, top, transform, opacity, font-size;
 }
 
-.depth-character.hit {
-  filter:
-    brightness(1.25)
-    drop-shadow(0 0 18px rgba(34,197,94,0.88))
-    drop-shadow(0 0 28px rgba(103,232,249,0.45));
+.depth-character.correct {
+  filter: brightness(1.18) drop-shadow(0 0 12px rgba(34,197,94,0.55));
 }
 
 .depth-character.complete {
-  animation: completePop 0.48s ease-out forwards;
+  animation: completeFade 0.45s ease-out forwards;
 }
 
-@keyframes completePop {
-  0% { opacity: 1; }
-  48% {
+@keyframes completeFade {
+  0% {
     opacity: 1;
-    filter: brightness(1.55) drop-shadow(0 0 24px rgba(250,204,21,0.95));
+    transform: translate(-50%, -50%) scale(1);
+  }
+  45% {
+    opacity: 1;
+    filter: brightness(1.35);
+    transform: translate(-50%, -50%) scale(1.12);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) rotateX(460deg) rotateY(400deg) rotateZ(35deg) scale(2.35);
+    transform: translate(-50%, -50%) scale(1.35);
   }
 }
 
 .progress {
   position: absolute;
-  bottom: -26px;
   left: 50%;
+  bottom: -24px;
   transform: translateX(-50%);
   display: flex;
   gap: 5px;
 }
 
 .dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 99px;
-  background: rgba(255,255,255,0.86);
-  border: 2px solid rgba(124,58,237,0.72);
-  box-shadow: 0 2px 4px rgba(76,29,149,0.12);
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.82);
+  border: 2px solid rgba(124,58,237,0.68);
 }
 
 .dot.done {
@@ -285,30 +198,6 @@ body {
 .dot.next {
   background: #fef9c3;
   border-color: #facc15;
-  box-shadow: 0 0 10px rgba(250,204,21,0.8);
-}
-
-.impact-ring {
-  position: absolute;
-  z-index: 125;
-  width: 34px;
-  height: 34px;
-  border: 4px solid rgba(34,197,94,0.86);
-  border-radius: 999px;
-  pointer-events: none;
-  transform: translate(-50%, -50%) scale(0.3);
-  animation: impactRing 0.42s ease-out forwards;
-}
-
-@keyframes impactRing {
-  0% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(0.35);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(3.2);
-  }
 }
 
 #piano-wrap {
@@ -318,46 +207,46 @@ body {
   bottom: 0;
   height: var(--keyboard-height);
   z-index: 100;
+  padding:
+    clamp(7px, 1.5vh, 12px)
+    max(8px, env(safe-area-inset-left))
+    max(9px, env(safe-area-inset-bottom));
   background:
-    linear-gradient(180deg, rgba(15,23,42,0.32), rgba(15,23,42,0) 22%),
-    linear-gradient(180deg, rgba(248,250,252,0.96), rgba(203,213,225,0.98));
-  border-top: 5px solid rgba(255,255,255,0.95);
-  box-shadow:
-    0 -10px 28px rgba(46,16,101,0.22),
-    inset 0 10px 16px rgba(255,255,255,0.45);
-  padding: 14px 14px 16px;
+    linear-gradient(180deg, rgba(15,23,42,0.22), rgba(15,23,42,0) 22%),
+    linear-gradient(180deg, rgba(248,250,252,0.95), rgba(203,213,225,0.96));
+  border-top: 4px solid rgba(255,255,255,0.92);
+  box-shadow: 0 -8px 24px rgba(76,29,149,0.18);
 }
 
 #piano {
   position: relative;
   width: 100%;
   height: 100%;
-  max-width: 1120px;
+  max-width: 1160px;
   margin: 0 auto;
-  border-radius: 16px;
+  border-radius: 14px;
   background: linear-gradient(180deg, #1e293b, #020617);
-  padding: 4px;
+  padding: 3px;
   box-shadow:
-    0 12px 24px rgba(15,23,42,0.25),
+    0 10px 20px rgba(15,23,42,0.22),
     inset 0 2px 8px rgba(255,255,255,0.12);
 }
 
 .white-key {
   position: absolute;
-  bottom: 4px;
-  height: calc(100% - 8px);
-  border: 2px solid #cbd5e1;
-  border-bottom: 10px solid #94a3b8;
-  border-radius: 0 0 18px 18px;
+  bottom: 3px;
+  height: calc(100% - 6px);
+  border: 1.5px solid #cbd5e1;
+  border-bottom: 8px solid #94a3b8;
+  border-radius: 0 0 15px 15px;
   background:
     linear-gradient(180deg, #ffffff 0%, #f8fafc 58%, #dbeafe 100%);
   color: #4c1d95;
   cursor: pointer;
   overflow: hidden;
   box-shadow:
-    inset 0 -14px 22px rgba(15,23,42,0.08),
-    inset 0 7px 10px rgba(255,255,255,0.8),
-    0 2px 2px rgba(15,23,42,0.12);
+    inset 0 -12px 18px rgba(15,23,42,0.07),
+    inset 0 6px 9px rgba(255,255,255,0.82);
   transition: transform 0.07s, border-bottom-width 0.07s, filter 0.07s;
 }
 
@@ -365,31 +254,20 @@ body {
   border-color: #a78bfa;
 }
 
-.white-key.next-required {
+.white-key.hint {
   border-color: #22c55e;
   box-shadow:
-    inset 0 -14px 22px rgba(15,23,42,0.08),
-    inset 0 7px 10px rgba(255,255,255,0.8),
-    0 0 18px rgba(34,197,94,0.62),
-    0 2px 2px rgba(15,23,42,0.12);
+    inset 0 -12px 18px rgba(15,23,42,0.07),
+    inset 0 6px 9px rgba(255,255,255,0.82),
+    0 0 14px rgba(34,197,94,0.42);
 }
 
-.white-key.next-required::after {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border-radius: 0 0 14px 14px;
-  border: 3px solid rgba(34,197,94,0.34);
-  pointer-events: none;
-}
-
-.white-key.used-key {
-  opacity: 0.56;
-  filter: grayscale(0.18);
+.white-key.used {
+  opacity: 0.55;
 }
 
 .white-key.pressed {
-  transform: translateY(7px);
+  transform: translateY(5px);
   border-bottom-width: 2px;
   filter: brightness(0.96);
 }
@@ -397,47 +275,47 @@ body {
 .white-key.wrong {
   background: #ffe4e6;
   border-color: #fb7185;
-  animation: wrongShake 0.22s linear;
+  animation: wrongShake 0.18s linear;
 }
 
 @keyframes wrongShake {
   0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-7px); }
-  75% { transform: translateX(7px); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
 }
 
 .black-key {
   position: absolute;
-  top: 4px;
-  height: 60%;
+  top: 3px;
+  height: 58%;
   width: 7.4%;
   border: 2px solid #020617;
-  border-bottom: 8px solid #020617;
-  border-radius: 0 0 12px 12px;
+  border-bottom: 7px solid #020617;
+  border-radius: 0 0 10px 10px;
   background:
     linear-gradient(180deg, #475569 0%, #111827 58%, #020617 100%);
-  color: #f8fafc;
+  color: white;
   z-index: 8;
   cursor: pointer;
   box-shadow:
-    0 7px 12px rgba(15,23,42,0.45),
-    inset 0 -9px 14px rgba(0,0,0,0.42),
+    0 6px 10px rgba(15,23,42,0.42),
+    inset 0 -8px 12px rgba(0,0,0,0.42),
     inset 0 4px 5px rgba(255,255,255,0.13);
   transition: transform 0.07s, border-bottom-width 0.07s, filter 0.07s;
 }
 
 .black-key.pressed {
-  transform: translateY(6px);
+  transform: translateY(5px);
   border-bottom-width: 2px;
-  filter: brightness(1.22);
+  filter: brightness(1.18);
 }
 
 .key-radical {
   position: absolute;
   left: 50%;
-  top: 45%;
+  top: 44%;
   transform: translate(-50%, -50%);
-  font-size: clamp(28px, 5.2vw, 44px);
+  font-size: clamp(23px, 5vw, 42px);
   font-weight: 900;
   z-index: 3;
 }
@@ -445,9 +323,9 @@ body {
 .key-note {
   position: absolute;
   left: 50%;
-  bottom: 10px;
+  bottom: clamp(5px, 1vh, 9px);
   transform: translateX(-50%);
-  font-size: 13px;
+  font-size: clamp(9px, 1.8vw, 13px);
   font-weight: 900;
   color: #64748b;
   z-index: 3;
@@ -455,108 +333,58 @@ body {
 
 .black-key .key-note {
   color: #cbd5e1;
-  bottom: 8px;
-  font-size: 11px;
-}
-
-.next-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #22c55e;
-  color: white;
-  font-size: 11px;
-  font-weight: 900;
-  padding: 2px 7px;
-  border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(34,197,94,0.4);
+  font-size: clamp(8px, 1.4vw, 11px);
 }
 
 .hit-token {
   position: absolute;
   z-index: 95;
-  min-width: 56px;
-  height: 56px;
-  padding: 0 10px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.97);
+  min-width: 48px;
+  height: 48px;
+  padding: 0 9px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.95);
   border: 3px solid #4ade80;
   color: #5b21b6;
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 0 22px rgba(34,197,94,0.72),
-    0 8px 20px rgba(76,29,149,0.24);
+    0 0 16px rgba(34,197,94,0.52),
+    0 6px 16px rgba(76,29,149,0.20);
   pointer-events: none;
-  transform-style: preserve-3d;
-  will-change: left, top, transform;
 }
 
-.hit-token.fast {
-  filter: brightness(1.15) drop-shadow(0 0 12px rgba(34,197,94,0.7));
-}
-
-.particle {
+.impact-ring {
   position: absolute;
   z-index: 120;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(34,197,94,0.72);
+  border-radius: 999px;
+  transform: translate(-50%, -50%) scale(0.35);
   pointer-events: none;
-  font-size: 18px;
-  font-weight: 900;
+  animation: impactRing 0.36s ease-out forwards;
 }
 
-.float-text {
-  position: absolute;
-  z-index: 130;
-  pointer-events: none;
-  font-size: 28px;
-  font-weight: 900;
-  color: #fef9c3;
-  text-shadow: 0 4px 10px rgba(76,29,149,0.55);
-  animation: floatUp 0.75s ease-out forwards;
-}
-
-@keyframes floatUp {
-  0% { opacity: 0; transform: translate(-50%, 0) scale(0.85); }
-  20% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -48px) scale(1.05); }
-}
-
-.center-msg {
-  position: absolute;
-  z-index: 140;
-  left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  font-size: clamp(30px, 7vw, 60px);
-  font-weight: 900;
-  color: #fef9c3;
-  text-shadow: 0 5px 14px rgba(76,29,149,0.55);
-  animation: centerPulse 0.75s ease-out forwards;
-}
-
-.center-msg.good {
-  color: #22c55e;
-}
-
-.center-msg.bad {
-  color: #fb7185;
-}
-
-@keyframes centerPulse {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.75); }
-  25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -65%) scale(1.05); }
+@keyframes impactRing {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.4);
+  }
 }
 
 .overlay {
   position: absolute;
   inset: 0;
   z-index: 300;
-  background: rgba(76,29,149,0.9);
+  background: rgba(76,29,149,0.90);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -568,7 +396,7 @@ body {
 .overlay h1 {
   margin: 0 0 10px;
   color: #fef9c3;
-  font-size: clamp(34px, 8vw, 62px);
+  font-size: clamp(32px, 8vw, 60px);
   line-height: 1.05;
   text-shadow: 0 5px 0 rgba(124,58,237,0.8);
 }
@@ -581,10 +409,10 @@ body {
 }
 
 .overlay p {
-  margin: 0 0 28px;
-  max-width: 840px;
+  margin: 0 0 26px;
+  max-width: 760px;
   color: #ede9fe;
-  font-size: clamp(17px, 3vw, 22px);
+  font-size: clamp(16px, 3vw, 22px);
   font-weight: 800;
   line-height: 1.45;
 }
@@ -606,39 +434,35 @@ body {
   box-shadow: 0 1px 0 #10b981;
 }
 
+@media (orientation: landscape) and (max-height: 700px) {
+  :root {
+    --keyboard-height: clamp(104px, 26vh, 138px);
+  }
+
+  .hud-box {
+    padding: 5px 9px;
+    font-size: clamp(12px, 2vw, 16px);
+  }
+
+  .progress {
+    bottom: -18px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+  }
+}
+
 @media (max-width: 700px) {
   :root {
-    --keyboard-height: 162px;
-  }
-
-  #piano-wrap {
-    padding: 9px 8px 11px;
-  }
-
-  .depth-character {
-    font-size: clamp(54px, 15vw, 92px);
+    --keyboard-height: clamp(112px, 23vh, 152px);
   }
 
   .hit-token {
-    min-width: 50px;
-    height: 50px;
-    font-size: 28px;
-  }
-
-  .key-note {
-    bottom: 7px;
-    font-size: 11px;
-  }
-
-  .black-key .key-note {
-    font-size: 9px;
-  }
-
-  .next-badge {
-    top: 6px;
-    right: 5px;
-    font-size: 9px;
-    padding: 2px 5px;
+    min-width: 42px;
+    height: 42px;
+    font-size: 24px;
   }
 }
 </style>
@@ -646,25 +470,18 @@ body {
 
 <body>
 <div id="game">
-  <div id="cloud-layer"></div>
-
   <div id="hud">
     <div class="hud-box">⭐ <span id="score">0</span></div>
-    <div class="hud-box">🔥 Combo <span id="combo">0</span></div>
-    <div class="hud-box">➡️ Next: <span id="next-part">-</span></div>
-    <div class="hud-box">🎹 Free Play</div>
+    <div class="hud-box">进度 <span id="progress-text">0/0</span></div>
+    <div class="hud-box">练习模式</div>
   </div>
 
-  <div id="guide-panel">按顺序击中部件：只按发光的下一个部件，把汉字推回轨道深处！</div>
-
   <div id="arena">
-    <div id="depth-stage"></div>
+    <div id="depth-fog"></div>
     <svg id="track-svg"></svg>
-    <div id="horizon-dot"></div>
   </div>
 
   <div id="miss-line"></div>
-  <div id="miss-label">MISS LINE</div>
 
   <div id="piano-wrap">
     <div id="piano"></div>
@@ -672,36 +489,37 @@ body {
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v1.6.0</div>
+    <div class="version-label" id="version-label">Version v1.7.0</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v1.6.0";
+const GAME_VERSION = "v1.7.0";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
 const KEY_COUNT = 8;
+const HINT_AFTER_PROGRESS = 0.5;
 
 const WHITE_KEYS = [
-  { note: "C4", label: "C", freq: 261.63 },
-  { note: "D4", label: "D", freq: 293.66 },
-  { note: "E4", label: "E", freq: 329.63 },
-  { note: "F4", label: "F", freq: 349.23 },
-  { note: "G4", label: "G", freq: 392.00 },
-  { note: "A4", label: "A", freq: 440.00 },
-  { note: "B4", label: "B", freq: 493.88 },
-  { note: "C5", label: "C", freq: 523.25 }
+  { label: "C", freq: 261.63 },
+  { label: "D", freq: 293.66 },
+  { label: "E", freq: 329.63 },
+  { label: "F", freq: 349.23 },
+  { label: "G", freq: 392.00 },
+  { label: "A", freq: 440.00 },
+  { label: "B", freq: 493.88 },
+  { label: "C", freq: 523.25 }
 ];
 
 const BLACK_KEYS = [
-  { afterWhite: 0, note: "C#4", label: "C#", freq: 277.18 },
-  { afterWhite: 1, note: "D#4", label: "D#", freq: 311.13 },
-  { afterWhite: 3, note: "F#4", label: "F#", freq: 369.99 },
-  { afterWhite: 4, note: "G#4", label: "G#", freq: 415.30 },
-  { afterWhite: 5, note: "A#4", label: "A#", freq: 466.16 }
+  { afterWhite: 0, label: "C#", freq: 277.18 },
+  { afterWhite: 1, label: "D#", freq: 311.13 },
+  { afterWhite: 3, label: "F#", freq: 369.99 },
+  { afterWhite: 4, label: "G#", freq: 415.30 },
+  { afterWhite: 5, label: "A#", freq: 466.16 }
 ];
 
 const distractors = [
@@ -713,25 +531,20 @@ const distractors = [
 
 const arena = document.getElementById("arena");
 const trackSvg = document.getElementById("track-svg");
-const horizonDot = document.getElementById("horizon-dot");
 const piano = document.getElementById("piano");
 const startScreen = document.getElementById("start-screen");
 
 const scoreEl = document.getElementById("score");
-const comboEl = document.getElementById("combo");
-const nextPartEl = document.getElementById("next-part");
+const progressTextEl = document.getElementById("progress-text");
 
 let dictionary = [];
 let score = 0;
-let combo = 0;
-let wrongStreak = 0;
 
 let isPlaying = false;
 let character = null;
 let hitTokens = [];
-let particles = [];
-
 let keyboardSlots = [];
+
 let keyCenters = [];
 let trackGeometry = [];
 
@@ -741,8 +554,6 @@ let lastFrameTime = 0;
 let idCounter = 1;
 
 let audioCtx = null;
-let slowMotionUntil = 0;
-let timeScale = 1;
 
 window.addEventListener("load", loadDictionary);
 window.addEventListener("resize", handleResize);
@@ -775,12 +586,12 @@ function loadDictionary() {
           .map(p => p.trim())
           .filter(Boolean);
 
-        if (parts.length === 0) return;
+        if (!parts.length) return;
 
         dictionary.push({ word, parts });
       });
 
-      if (dictionary.length > 0) {
+      if (dictionary.length) {
         showReadyScreen();
       } else {
         showLoadError("没有找到有效题目。请检查 Question / Parts 列。");
@@ -805,14 +616,12 @@ function cleanCell(value) {
 }
 
 function showReadyScreen() {
-  document.getElementById("start-title").textContent = "汉字连击 · 3D轨道钢琴版";
+  document.getElementById("start-title").textContent = "汉字连击 · 慢速轨道练习版";
   document.getElementById("start-text").innerHTML =
     `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
-    `v1.6.0 改进：<br>` +
-    `1. 部件必须按顺序使用。<br>` +
-    `2. 打击效果升级：冲击波、发光、3D旋转和推回深处。<br>` +
-    `3. 钢琴和轨道视觉升级。<br><br>` +
-    `测试模式：没有生命、没有 Game Over。`;
+    `v1.7.0：平板适配、慢速轨道、每次一个字。<br>` +
+    `汉字从远处慢慢靠近，部件必须按顺序按。<br>` +
+    `前半程不提示，过半后才轻微提示。`;
 
   const oldBtn = document.getElementById("start-btn");
   if (oldBtn) oldBtn.remove();
@@ -820,7 +629,7 @@ function showReadyScreen() {
   const btn = document.createElement("button");
   btn.id = "start-btn";
   btn.className = "btn";
-  btn.textContent = "开始测试 🚀";
+  btn.textContent = "开始测试";
   btn.addEventListener("click", startGame);
   startScreen.appendChild(btn);
 }
@@ -838,44 +647,35 @@ function startGame() {
   clearScene();
 
   score = 0;
-  combo = 0;
-  wrongStreak = 0;
-
   isPlaying = true;
   lastFrameTime = performance.now();
-  slowMotionUntil = 0;
-  timeScale = 1;
 
   startScreen.style.display = "none";
 
   initKeyboardSlots();
   renderPiano();
-  calculateKeyCenters();
-  renderTracks();
-
-  updateHUD();
-  spawnCharacter();
-
-  animationRef = requestAnimationFrame(gameLoop);
+  requestAnimationFrame(() => {
+    calculateKeyCenters();
+    renderTracks();
+    spawnCharacter();
+    updateHUD();
+    animationRef = requestAnimationFrame(gameLoop);
+  });
 }
 
 function clearTimers() {
   if (spawnTimer) clearTimeout(spawnTimer);
   if (animationRef) cancelAnimationFrame(animationRef);
-
   spawnTimer = null;
   animationRef = null;
 }
 
 function clearScene() {
-  if (character && character.el) character.el.remove();
-
+  if (character?.el) character.el.remove();
   hitTokens.forEach(t => t.el.remove());
-  particles.forEach(p => p.el.remove());
 
   character = null;
   hitTokens = [];
-  particles = [];
   keyboardSlots = [];
   keyCenters = [];
   trackGeometry = [];
@@ -893,14 +693,10 @@ function initKeyboardSlots() {
 }
 
 function spawnCharacter() {
-  if (!isPlaying) return;
-  if (character) return;
+  if (!isPlaying || character) return;
 
   const data = dictionary[Math.floor(Math.random() * dictionary.length)];
-  if (!data || !data.word || !data.parts.length) {
-    scheduleNextCharacter(800);
-    return;
-  }
+  if (!data) return;
 
   const el = document.createElement("div");
   el.className = "depth-character";
@@ -911,14 +707,13 @@ function spawnCharacter() {
 
   const progress = document.createElement("div");
   progress.className = "progress";
-
   data.parts.forEach(() => {
     const dot = document.createElement("div");
     dot.className = "dot";
     progress.appendChild(dot);
   });
-
   el.appendChild(progress);
+
   arena.appendChild(el);
 
   character = {
@@ -929,56 +724,37 @@ function spawnCharacter() {
     nextPartIndex: 0,
 
     laneIndex: Math.floor(Math.random() * KEY_COUNT),
+    laneOffset: randomBetween(-0.045, 0.045),
 
-    z: 0.96,
-    zVelocity: -0.00225,
-
-    laneOffset: randomBetween(-0.06, 0.06),
-    sideWobble: randomBetween(0, Math.PI * 2),
-
-    rotX: randomBetween(-18, 18),
-    rotY: randomBetween(-18, 18),
-    rotZ: randomBetween(-6, 6),
-    rotVX: randomBetween(-0.08, 0.08),
-    rotVY: randomBetween(-0.08, 0.08),
-    rotVZ: randomBetween(-0.06, 0.06),
+    z: 0.985,
+    zVelocity: -0.00068,
 
     scaleKick: 0,
-    completed: false,
-    dead: false
+    dead: false,
+    completed: false
   };
 
-  placePartsForCurrentCharacter();
+  placePartsForCharacter();
   renderPiano();
   renderTracks();
   renderCharacter();
   updateHUD();
 }
 
-function scheduleNextCharacter(delay) {
-  if (!isPlaying) return;
-  clearTimeout(spawnTimer);
-
-  spawnTimer = setTimeout(() => {
-    if (!isPlaying) return;
-    if (!character) spawnCharacter();
-  }, delay);
-}
-
-function placePartsForCurrentCharacter() {
+function placePartsForCharacter() {
   if (!character) return;
 
   initKeyboardSlots();
 
-  const visibleParts = character.parts.slice(0, KEY_COUNT);
+  const parts = character.parts.slice(0, KEY_COUNT);
   const indices = Array.from({ length: KEY_COUNT }, (_, i) => i);
   shuffle(indices);
 
-  for (let i = 0; i < visibleParts.length; i++) {
+  for (let i = 0; i < parts.length; i++) {
     const slotIndex = indices[i];
     keyboardSlots[slotIndex] = {
       kind: "part",
-      char: visibleParts[i],
+      char: parts[i],
       partIndex: i,
       noteIndex: slotIndex
     };
@@ -988,71 +764,25 @@ function placePartsForCurrentCharacter() {
     if (!keyboardSlots[i] || keyboardSlots[i].kind !== "part") {
       keyboardSlots[i] = {
         kind: "distractor",
-        char: randomDistractorAvoiding(visibleParts),
+        char: randomDistractorAvoiding(parts),
         noteIndex: i
       };
     }
   }
 }
 
-function refillUsedSlot(slotIndex) {
-  const pending = findPendingPartNotOnKeyboard();
-
-  if (pending) {
-    keyboardSlots[slotIndex] = {
-      kind: "part",
-      char: pending.char,
-      partIndex: pending.partIndex,
-      noteIndex: slotIndex
-    };
-  } else {
-    keyboardSlots[slotIndex] = {
-      kind: "distractor",
-      char: randomDistractorAvoiding(getRequiredCharsOnKeyboard()),
-      noteIndex: slotIndex
-    };
-  }
+function getTravelProgress() {
+  if (!character) return 0;
+  return clamp((0.985 - character.z) / 0.965, 0, 1);
 }
 
-function findPendingPartNotOnKeyboard() {
-  if (!character || character.completed || character.dead) return null;
-
-  for (let i = 0; i < character.parts.length; i++) {
-    if (i < character.nextPartIndex) continue;
-
-    const alreadyVisible = keyboardSlots.some(slot =>
-      slot &&
-      slot.kind === "part" &&
-      slot.partIndex === i
-    );
-
-    if (!alreadyVisible) {
-      return {
-        partIndex: i,
-        char: character.parts[i]
-      };
-    }
-  }
-
-  return null;
-}
-
-function getRequiredCharsOnKeyboard() {
-  return keyboardSlots
-    .filter(slot => slot && slot.kind === "part")
-    .map(slot => slot.char);
-}
-
-function getNextRequiredPart() {
-  if (!character || character.completed || character.dead) return null;
-  return character.parts[character.nextPartIndex] || null;
+function shouldShowHint() {
+  return getTravelProgress() >= HINT_AFTER_PROGRESS;
 }
 
 function getNextRequiredSlotIndex() {
   if (!character) return -1;
-
   return keyboardSlots.findIndex(slot =>
-    slot &&
     slot.kind === "part" &&
     slot.partIndex === character.nextPartIndex
   );
@@ -1062,7 +792,7 @@ function renderPiano() {
   piano.innerHTML = "";
 
   const whiteWidth = 100 / KEY_COUNT;
-  const nextSlotIndex = getNextRequiredSlotIndex();
+  const nextSlotIndex = shouldShowHint() ? getNextRequiredSlotIndex() : -1;
 
   keyboardSlots.forEach((slot, index) => {
     const keyInfo = WHITE_KEYS[index];
@@ -1071,13 +801,11 @@ function renderPiano() {
     btn.className = "white-key";
 
     if (slot.kind === "part") btn.classList.add("required");
-    if (index === nextSlotIndex) btn.classList.add("next-required");
-    if (slot.kind === "used") btn.classList.add("used-key");
+    if (index === nextSlotIndex) btn.classList.add("hint");
+    if (slot.kind === "used") btn.classList.add("used");
 
     btn.style.left = `${index * whiteWidth}%`;
     btn.style.width = `${whiteWidth}%`;
-
-    btn.dataset.index = String(index);
 
     const radicalSpan = document.createElement("div");
     radicalSpan.className = "key-radical";
@@ -1089,13 +817,6 @@ function renderPiano() {
 
     btn.appendChild(radicalSpan);
     btn.appendChild(noteSpan);
-
-    if (index === nextSlotIndex) {
-      const badge = document.createElement("div");
-      badge.className = "next-badge";
-      badge.textContent = "NEXT";
-      btn.appendChild(badge);
-    }
 
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
@@ -1120,7 +841,7 @@ function renderPiano() {
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
       pressVisual(btn);
-      playTonePiano(black.freq, 0.55);
+      playTonePiano(black.freq, 0.48);
     });
 
     piano.appendChild(btn);
@@ -1140,31 +861,25 @@ function calculateKeyCenters() {
 
   whiteKeys.forEach(key => {
     const rect = key.getBoundingClientRect();
-
     keyCenters.push({
       x: rect.left + rect.width / 2 - arenaRect.left,
-      y: arenaRect.height + 2,
-      screenX: rect.left + rect.width / 2,
-      screenY: rect.top + rect.height * 0.18
+      y: arenaRect.height + 8
     });
   });
 }
 
-function getHorizon() {
+function getFarPoint() {
   return {
     x: arena.clientWidth / 2,
-    y: Math.max(105, arena.clientHeight * 0.21)
+    y: Math.max(-arena.clientHeight * 0.55, -260)
   };
 }
 
 function renderTracks() {
   if (!keyCenters.length) return;
 
-  const horizon = getHorizon();
-  const nextSlotIndex = getNextRequiredSlotIndex();
-
-  horizonDot.style.left = `${horizon.x}px`;
-  horizonDot.style.top = `${horizon.y}px`;
+  const far = getFarPoint();
+  const nextSlotIndex = shouldShowHint() ? getNextRequiredSlotIndex() : -1;
 
   trackSvg.innerHTML = "";
   trackSvg.setAttribute("viewBox", `0 0 ${arena.clientWidth} ${arena.clientHeight}`);
@@ -1173,106 +888,88 @@ function renderTracks() {
 
   for (let i = 0; i < KEY_COUNT; i++) {
     const base = keyCenters[i];
+    const isHint = i === nextSlotIndex;
 
-    const isActive = i === nextSlotIndex;
-
-    const laneWidthNear = Math.min(100, arena.clientWidth / KEY_COUNT * 0.82);
+    const laneWidthNear = Math.min(96, arena.clientWidth / KEY_COUNT * 0.82);
     const nearLeft = base.x - laneWidthNear / 2;
     const nearRight = base.x + laneWidthNear / 2;
 
-    const farSpread = 18;
-    const laneOffset = (i - (KEY_COUNT - 1) / 2) * 4;
-
-    const farLeft = horizon.x - farSpread + laneOffset;
-    const farRight = horizon.x + farSpread + laneOffset;
+    const farOffset = (i - (KEY_COUNT - 1) / 2) * 3.2;
+    const farX = far.x + farOffset;
+    const farY = far.y;
 
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute(
       "d",
       `M ${nearLeft} ${arena.clientHeight}
-       L ${farLeft} ${horizon.y}
-       L ${farRight} ${horizon.y}
+       L ${farX - 12} ${farY}
+       L ${farX + 12} ${farY}
        L ${nearRight} ${arena.clientHeight}
        Z`
     );
-    path.setAttribute("class", isActive ? "track-fill active-fill" : "track-fill");
+    path.setAttribute("class", "track-fill");
     trackSvg.appendChild(path);
 
-    const centerLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    centerLine.setAttribute("x1", base.x);
-    centerLine.setAttribute("y1", arena.clientHeight);
-    centerLine.setAttribute("x2", horizon.x + laneOffset);
-    centerLine.setAttribute("y2", horizon.y);
-    centerLine.setAttribute("class", isActive ? "track-line active-track" : "track-line");
-    trackSvg.appendChild(centerLine);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", base.x);
+    line.setAttribute("y1", arena.clientHeight);
+    line.setAttribute("x2", farX);
+    line.setAttribute("y2", farY);
+    line.setAttribute("class", isHint ? "track-line hint" : "track-line");
+    trackSvg.appendChild(line);
 
-    for (let r = 1; r <= 5; r++) {
-      const t = r / 6;
-      const leftX = farLeft + (nearLeft - farLeft) * t;
-      const rightX = farRight + (nearRight - farRight) * t;
-      const y = horizon.y + (arena.clientHeight - horizon.y) * t;
+    for (let r = 1; r <= 7; r++) {
+      const t = r / 8;
+      const y = farY + (arena.clientHeight - farY) * t;
+      const width = 12 + t * laneWidthNear;
+      const x = farX + (base.x - farX) * t;
 
       const rung = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      rung.setAttribute("x1", leftX);
+      rung.setAttribute("x1", x - width / 2);
       rung.setAttribute("y1", y);
-      rung.setAttribute("x2", rightX);
+      rung.setAttribute("x2", x + width / 2);
       rung.setAttribute("y2", y);
-      rung.setAttribute("class", isActive ? "track-rung active-rung" : "track-rung");
+      rung.setAttribute("class", "track-rung");
       trackSvg.appendChild(rung);
     }
 
     trackGeometry[i] = {
       nearX: base.x,
       nearY: arena.clientHeight,
-      farX: horizon.x + laneOffset,
-      farY: horizon.y
+      farX,
+      farY
     };
   }
 }
 
 function getPointOnLane(laneIndex, z, offset = 0) {
   const lane = trackGeometry[laneIndex] || trackGeometry[0];
-
-  if (!lane) {
-    return { x: arena.clientWidth / 2, y: arena.clientHeight / 2 };
-  }
+  if (!lane) return { x: arena.clientWidth / 2, y: arena.clientHeight / 2 };
 
   const t = 1 - z;
-
   const x = lane.farX + (lane.nearX - lane.farX) * t;
   const y = lane.farY + (lane.nearY - lane.farY) * t;
+  const laneWidth = 12 + t * 72;
 
-  const laneWidth = 18 + t * 72;
-
-  return {
-    x: x + offset * laneWidth,
-    y
-  };
+  return { x: x + offset * laneWidth, y };
 }
 
 function renderCharacter() {
   if (!character || character.dead) return;
 
-  const wobble = Math.sin(character.sideWobble) * 0.035;
-  const point = getPointOnLane(character.laneIndex, character.z, character.laneOffset + wobble);
-
+  const point = getPointOnLane(character.laneIndex, character.z, character.laneOffset);
   const closeness = 1 - character.z;
-  const scale = 0.3 + closeness * 1.58 + character.scaleKick;
-  const opacity = 0.34 + closeness * 0.66;
-  const fontSize = 72 + closeness * 58;
+
+  const scale = 0.26 + closeness * 1.45 + character.scaleKick;
+  const opacity = 0.28 + closeness * 0.72;
+  const fontSize = clamp(54 + closeness * 64, 42, 118);
 
   character.el.style.left = `${point.x}px`;
   character.el.style.top = `${point.y}px`;
   character.el.style.opacity = opacity;
   character.el.style.fontSize = `${fontSize}px`;
+  character.el.style.transform = `translate(-50%, -50%) scale(${scale})`;
   character.el.style.zIndex = String(35 + Math.floor(closeness * 45));
-
-  character.el.style.transform =
-    `translate(-50%, -50%) ` +
-    `rotateX(${character.rotX}deg) ` +
-    `rotateY(${character.rotY}deg) ` +
-    `rotateZ(${character.rotZ}deg) ` +
-    `scale(${scale})`;
 
   const dots = character.el.querySelectorAll(".dot");
   dots.forEach((dot, i) => {
@@ -1282,7 +979,7 @@ function renderCharacter() {
 }
 
 function handleWhiteKeyPress(slotIndex, buttonElement) {
-  if (!isPlaying) return;
+  if (!isPlaying || !character) return;
 
   const slot = keyboardSlots[slotIndex];
   if (!slot) return;
@@ -1290,27 +987,20 @@ function handleWhiteKeyPress(slotIndex, buttonElement) {
   pressVisual(buttonElement);
   playPianoKey(slotIndex);
 
-  if (!character || character.dead || character.completed || slot.kind !== "part") {
-    handleWrongPress(buttonElement);
+  if (slot.kind !== "part" || slot.partIndex !== character.nextPartIndex) {
+    buttonElement.classList.add("wrong");
+    setTimeout(() => buttonElement.classList.remove("wrong"), 180);
+    playBadTone();
     return;
   }
 
-  if (slot.partIndex !== character.nextPartIndex) {
-    handleWrongPress(buttonElement);
-    return;
-  }
-
-  combo++;
-  wrongStreak = 0;
-
-  const gain = 100 + combo * 10;
-  score += gain;
+  score += 100;
 
   const arenaRect = arena.getBoundingClientRect();
   const keyRect = buttonElement.getBoundingClientRect();
 
   const startX = keyRect.left + keyRect.width / 2 - arenaRect.left;
-  const startY = arena.clientHeight + 2;
+  const startY = arena.clientHeight + 4;
 
   launchHitToken(slot.char, startX, startY, character, slot.partIndex, slotIndex);
 
@@ -1320,31 +1010,13 @@ function handleWhiteKeyPress(slotIndex, buttonElement) {
     noteIndex: slotIndex
   };
 
-  showFloatingText(`+${gain}`, startX, arena.clientHeight - 22);
-  showCenterMessage(`Combo ${combo}`, "good");
-  triggerSlowMotion(130);
-
   updateHUD();
   renderPiano();
 }
 
-function handleWrongPress(buttonElement) {
-  combo = 0;
-  wrongStreak++;
-  score = Math.max(0, score - 20);
-
-  buttonElement.classList.add("wrong");
-  setTimeout(() => buttonElement.classList.remove("wrong"), 220);
-
-  showCenterMessage("顺序不对", "bad");
-  playBadTone();
-
-  updateHUD();
-}
-
 function launchHitToken(char, x, y, target, partIndex, laneIndex) {
   const el = document.createElement("div");
-  el.className = "hit-token fast";
+  el.className = "hit-token";
   el.textContent = char;
 
   const token = {
@@ -1357,9 +1029,8 @@ function launchHitToken(char, x, y, target, partIndex, laneIndex) {
     z: 0.02,
     x,
     y,
-    rotation: 0,
-    arrived: false,
-    dead: false
+    dead: false,
+    arrived: false
   };
 
   arena.appendChild(el);
@@ -1370,12 +1041,8 @@ function launchHitToken(char, x, y, target, partIndex, laneIndex) {
 function renderHitToken(t) {
   t.el.style.left = `${t.x}px`;
   t.el.style.top = `${t.y}px`;
-
-  const scale = 1.12 - t.z * 0.48;
-  const stretch = 1 + Math.min(0.65, t.z * 0.9);
-
-  t.el.style.transform =
-    `translate(-50%, -50%) rotate(${t.rotation}deg) scale(${scale}, ${scale / stretch})`;
+  const scale = 1.02 - t.z * 0.45;
+  t.el.style.transform = `translate(-50%, -50%) scale(${scale})`;
 }
 
 function gameLoop(now) {
@@ -1383,13 +1050,10 @@ function gameLoop(now) {
 
   const rawDelta = Math.min(32, now - lastFrameTime);
   lastFrameTime = now;
-
-  timeScale = now < slowMotionUntil ? 0.55 : 1;
-  const dt = (rawDelta / 16.67) * timeScale;
+  const dt = rawDelta / 16.67;
 
   updateCharacter(dt);
   updateHitTokens(dt);
-  updateParticles(dt);
   cleanupDeadObjects();
 
   animationRef = requestAnimationFrame(gameLoop);
@@ -1398,23 +1062,10 @@ function gameLoop(now) {
 function updateCharacter(dt) {
   if (!character || character.dead || character.completed) return;
 
+  const oldShouldHint = shouldShowHint();
+
   character.z += character.zVelocity * dt;
-  character.sideWobble += 0.018 * dt;
-
-  character.rotX += character.rotVX * dt;
-  character.rotY += character.rotVY * dt;
-  character.rotZ += character.rotVZ * dt;
-
-  character.rotVX *= Math.pow(0.993, dt);
-  character.rotVY *= Math.pow(0.993, dt);
-  character.rotVZ *= Math.pow(0.993, dt);
-
-  character.scaleKick *= Math.pow(0.87, dt);
-
-  if (character.z > 0.98) {
-    character.z = 0.98;
-    character.zVelocity = -Math.abs(character.zVelocity);
-  }
+  character.scaleKick *= Math.pow(0.88, dt);
 
   if (character.z <= 0.02) {
     missCharacter();
@@ -1422,52 +1073,22 @@ function updateCharacter(dt) {
   }
 
   renderCharacter();
-}
 
-function missCharacter() {
-  if (!character || character.dead) return;
-
-  showCenterMessage("Miss", "bad");
-  combo = 0;
-  updateHUD();
-
-  character.dead = true;
-  character.el.style.transition = "opacity 0.25s, transform 0.25s";
-  character.el.style.opacity = "0";
-
-  clearKeyboardParts();
-
-  setTimeout(() => {
-    if (character && character.el) character.el.remove();
-    character = null;
+  if (oldShouldHint !== shouldShowHint()) {
     renderPiano();
     renderTracks();
-    scheduleNextCharacter(520);
-  }, 260);
-}
-
-function clearKeyboardParts() {
-  for (let i = 0; i < KEY_COUNT; i++) {
-    keyboardSlots[i] = {
-      kind: "distractor",
-      char: randomDistractorAvoiding([]),
-      noteIndex: i
-    };
   }
 }
 
 function updateHitTokens(dt) {
   hitTokens.forEach(t => {
-    if (t.dead || !t.target || t.target.dead || t.target.completed) {
+    if (t.dead || !t.target || t.target.dead) {
       t.dead = true;
       return;
     }
 
-    t.z += 0.05 * dt;
-
-    if (t.z > t.target.z) {
-      t.z = t.target.z;
-    }
+    t.z += 0.038 * dt;
+    if (t.z > t.target.z) t.z = t.target.z;
 
     const targetPoint = getPointOnLane(t.target.laneIndex, t.target.z, t.target.laneOffset);
     const lanePoint = getPointOnLane(t.laneIndex, t.z, 0);
@@ -1476,11 +1097,7 @@ function updateHitTokens(dt) {
     t.x = lanePoint.x + (targetPoint.x - lanePoint.x) * blend;
     t.y = lanePoint.y + (targetPoint.y - lanePoint.y) * blend;
 
-    t.rotation += 22 * dt;
-
-    const d = distance(t.x, t.y, targetPoint.x, targetPoint.y);
-
-    if ((d < 35 || t.z >= t.target.z - 0.01) && !t.arrived) {
+    if (!t.arrived && (distance(t.x, t.y, targetPoint.x, targetPoint.y) < 32 || t.z >= t.target.z - 0.01)) {
       t.arrived = true;
       tokenHitsCharacter(t, t.target);
     }
@@ -1493,33 +1110,15 @@ function tokenHitsCharacter(token, c) {
   token.dead = true;
 
   c.nextPartIndex++;
+  c.z = Math.min(0.985, c.z + 0.115);
+  c.zVelocity = -0.00062;
+  c.scaleKick = 0.08;
 
-  c.el.classList.add("hit");
-  setTimeout(() => {
-    if (c.el) c.el.classList.remove("hit");
-  }, 170);
-
-  c.z = Math.min(0.97, c.z + 0.2);
-  c.zVelocity = -0.00205;
-
-  const centerLane = (KEY_COUNT - 1) / 2;
-  const lanePush = (centerLane - c.laneIndex) * 0.002;
-
-  c.laneOffset += randomBetween(-0.045, 0.045) + lanePush;
-  c.laneOffset = clamp(c.laneOffset, -0.33, 0.33);
-
-  c.rotVX += randomBetween(-9, 9);
-  c.rotVY += randomBetween(-14, 14);
-  c.rotZ += randomBetween(-7, 7);
-  c.scaleKick = 0.2;
-
-  score += 50;
+  c.el.classList.add("correct");
+  setTimeout(() => c.el?.classList.remove("correct"), 160);
 
   const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
-
   createImpactRing(point.x, point.y);
-  showFloatingText("+50", point.x, point.y - 54);
-  particleBurst(point.x, point.y, 22);
   playBounceTone();
 
   if (c.nextPartIndex >= c.parts.length) {
@@ -1534,44 +1133,113 @@ function tokenHitsCharacter(token, c) {
   updateHUD();
 }
 
+function refillUsedSlot(slotIndex) {
+  const pending = findPendingPartNotVisible();
+
+  if (pending) {
+    keyboardSlots[slotIndex] = {
+      kind: "part",
+      char: pending.char,
+      partIndex: pending.partIndex,
+      noteIndex: slotIndex
+    };
+  } else {
+    keyboardSlots[slotIndex] = {
+      kind: "distractor",
+      char: randomDistractorAvoiding(getVisibleParts()),
+      noteIndex: slotIndex
+    };
+  }
+}
+
+function findPendingPartNotVisible() {
+  if (!character) return null;
+
+  for (let i = character.nextPartIndex; i < character.parts.length; i++) {
+    const visible = keyboardSlots.some(slot =>
+      slot.kind === "part" &&
+      slot.partIndex === i
+    );
+
+    if (!visible) {
+      return {
+        partIndex: i,
+        char: character.parts[i]
+      };
+    }
+  }
+
+  return null;
+}
+
+function getVisibleParts() {
+  return keyboardSlots
+    .filter(slot => slot.kind === "part")
+    .map(slot => slot.char);
+}
+
 function createImpactRing(x, y) {
   const ring = document.createElement("div");
   ring.className = "impact-ring";
   ring.style.left = `${x}px`;
   ring.style.top = `${y}px`;
   arena.appendChild(ring);
-
-  setTimeout(() => ring.remove(), 460);
+  setTimeout(() => ring.remove(), 380);
 }
 
 function completeCharacter(c) {
-  if (!c || c.completed) return;
-
   c.completed = true;
-
-  const bonus = 300 + combo * 20;
-  score += bonus;
-
-  const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
-
-  showCenterMessage("完成！", "good");
-  showFloatingText(`+${bonus}`, point.x, point.y - 74);
-  particleBurst(point.x, point.y, 38);
-  playCompleteSound();
+  score += 300;
 
   clearKeyboardParts();
   renderPiano();
   renderTracks();
 
   c.el.classList.add("complete");
+  playCompleteSound();
 
   setTimeout(() => {
-    if (character && character.el) character.el.remove();
+    if (character?.el) character.el.remove();
     character = null;
     scheduleNextCharacter(680);
-  }, 480);
+  }, 460);
 
   updateHUD();
+}
+
+function missCharacter() {
+  if (!character) return;
+
+  character.dead = true;
+  clearKeyboardParts();
+  renderPiano();
+  renderTracks();
+
+  character.el.style.transition = "opacity 0.28s, transform 0.28s";
+  character.el.style.opacity = "0";
+
+  setTimeout(() => {
+    if (character?.el) character.el.remove();
+    character = null;
+    scheduleNextCharacter(600);
+  }, 300);
+}
+
+function clearKeyboardParts() {
+  for (let i = 0; i < KEY_COUNT; i++) {
+    keyboardSlots[i] = {
+      kind: "distractor",
+      char: randomDistractorAvoiding([]),
+      noteIndex: i
+    };
+  }
+}
+
+function scheduleNextCharacter(delay) {
+  clearTimeout(spawnTimer);
+  spawnTimer = setTimeout(() => {
+    if (isPlaying && !character) spawnCharacter();
+  }, delay);
 }
 
 function cleanupDeadObjects() {
@@ -1580,94 +1248,21 @@ function cleanupDeadObjects() {
     t.el.remove();
     return false;
   });
-
-  particles = particles.filter(p => {
-    if (!p.dead) return true;
-    p.el.remove();
-    return false;
-  });
 }
 
 function updateHUD() {
   scoreEl.textContent = score;
-  comboEl.textContent = combo;
-  nextPartEl.textContent = getNextRequiredPart() || "-";
-}
 
-function particleBurst(x, y, count) {
-  const icons = ["✨", "⭐", "💫", "✦"];
-
-  for (let i = 0; i < count; i++) {
-    const el = document.createElement("div");
-    el.className = "particle";
-    el.textContent = icons[Math.floor(Math.random() * icons.length)];
-
-    const p = {
-      el,
-      x,
-      y,
-      vx: randomBetween(-6.2, 6.2),
-      vy: randomBetween(-8, 3),
-      gravity: randomBetween(0.18, 0.34),
-      life: randomBetween(25, 44),
-      age: 0,
-      rotation: randomBetween(0, 360),
-      rotationVelocity: randomBetween(-16, 16),
-      dead: false
-    };
-
-    arena.appendChild(el);
-    particles.push(p);
+  if (character) {
+    progressTextEl.textContent = `${character.nextPartIndex}/${character.parts.length}`;
+  } else {
+    progressTextEl.textContent = `0/0`;
   }
 }
 
-function updateParticles(dt) {
-  particles.forEach(p => {
-    if (p.dead) return;
-
-    p.age += dt;
-    p.x += p.vx * dt;
-    p.y += p.vy * dt;
-    p.vy += p.gravity * dt;
-    p.rotation += p.rotationVelocity * dt;
-
-    const opacity = Math.max(0, 1 - p.age / p.life);
-
-    p.el.style.left = `${p.x}px`;
-    p.el.style.top = `${p.y}px`;
-    p.el.style.opacity = opacity;
-    p.el.style.transform =
-      `translate(-50%, -50%) rotate(${p.rotation}deg) scale(${0.8 + opacity * 0.7})`;
-
-    if (p.age >= p.life) p.dead = true;
-  });
-}
-
-function showFloatingText(text, x, y) {
-  const el = document.createElement("div");
-  el.className = "float-text";
-  el.textContent = text;
-  el.style.left = `${x}px`;
-  el.style.top = `${y}px`;
-  arena.appendChild(el);
-  setTimeout(() => el.remove(), 780);
-}
-
-function showCenterMessage(text, type) {
-  const el = document.createElement("div");
-  el.className = `center-msg ${type || ""}`;
-  el.textContent = text;
-  arena.appendChild(el);
-  setTimeout(() => el.remove(), 780);
-}
-
-function triggerSlowMotion(ms) {
-  slowMotionUntil = performance.now() + ms;
-}
-
-function pressVisual(buttonElement) {
-  buttonElement.classList.add("pressed");
-  setTimeout(() => buttonElement.classList.remove("pressed"), 120);
+function pressVisual(el) {
+  el.classList.add("pressed");
+  setTimeout(() => el.classList.remove("pressed"), 110);
 }
 
 function ensureAudio() {
@@ -1680,21 +1275,19 @@ function ensureAudio() {
   }
 }
 
-function playPianoKey(keyIndex) {
+function playPianoKey(index) {
   ensureAudio();
-  playTonePiano(WHITE_KEYS[keyIndex].freq, 0.75);
+  playTonePiano(WHITE_KEYS[index].freq, 0.62);
 }
 
 function playTonePiano(freq, duration) {
   ensureAudio();
 
   const now = audioCtx.currentTime;
-
   const harmonics = [
     { ratio: 1, amp: 0.42 },
-    { ratio: 2, amp: 0.18 },
-    { ratio: 3, amp: 0.08 },
-    { ratio: 4, amp: 0.035 }
+    { ratio: 2, amp: 0.16 },
+    { ratio: 3, amp: 0.07 }
   ];
 
   harmonics.forEach(h => {
@@ -1717,17 +1310,16 @@ function playTonePiano(freq, duration) {
 }
 
 function playBadTone() {
-  playSimpleTone(180, 0.18, 0.08, "sawtooth");
+  playSimpleTone(180, 0.15, 0.07, "sawtooth");
 }
 
 function playBounceTone() {
-  playSimpleTone(392, 0.12, 0.08, "triangle");
+  playSimpleTone(392, 0.1, 0.07, "triangle");
 }
 
 function playCompleteSound() {
-  const notes = [523.25, 659.25, 783.99];
-  notes.forEach((freq, i) => {
-    setTimeout(() => playSimpleTone(freq, 0.14, 0.08, "sine"), i * 70);
+  [523.25, 659.25, 783.99].forEach((freq, i) => {
+    setTimeout(() => playSimpleTone(freq, 0.13, 0.08, "sine"), i * 70);
   });
 }
 
