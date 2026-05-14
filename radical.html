@@ -52,21 +52,15 @@ body { touch-action: manipulation; }
   background: linear-gradient(90deg, transparent, rgba(244, 114, 182, 0.8), transparent); box-shadow: 0 0 20px rgba(244, 114, 182, 0.6); pointer-events: none;
 }
 
-/* 取消了旋转和夸张特效，改为平滑闪烁和缩放 */
 .depth-character {
   position: absolute; z-index: 40; background: transparent; color: #fff; font-weight: 900; line-height: 1;
   text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--neon-cyan), 0 10px 20px rgba(0,0,0,0.5);
   transform-origin: center center; will-change: left, top, transform, opacity, font-size;
   transition: transform 0.1s ease-out, filter 0.1s;
 }
-.depth-character.correct {
-  color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e; filter: brightness(1.8);
-}
+.depth-character.correct { color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e; filter: brightness(1.8); }
 .depth-character.complete { animation: completeFade 0.3s ease-out forwards; }
-@keyframes completeFade {
-  0% { opacity: 1; filter: brightness(2); }
-  100% { opacity: 0; filter: brightness(3); transform: translate(-50%, -50%) scale(2); }
-}
+@keyframes completeFade { 0% { opacity: 1; filter: brightness(2); } 100% { opacity: 0; filter: brightness(3); transform: translate(-50%, -50%) scale(2); } }
 
 .progress { position: absolute; left: 50%; bottom: -28px; transform: translateX(-50%); display: flex; gap: 6px; }
 .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(15,23,42,0.8); border: 2px solid var(--neon-cyan); box-shadow: 0 0 5px var(--neon-cyan); transition: all 0.2s; }
@@ -106,14 +100,13 @@ body { touch-action: manipulation; }
 .white-key.pressed .key-radical { color: #020617; }
 .key-note { position: absolute; left: 50%; bottom: clamp(6px, 1.2vh, 10px); transform: translateX(-50%); font-size: clamp(10px, 2vw, 14px); font-weight: 900; color: #94a3b8; z-index: 12; }
 
-/* 取消了飞行子弹的旋转 */
 .hit-token { position: absolute; z-index: 95; min-width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle, #fff, #a7f3d0); border: 4px solid #10b981; color: #064e3b; font-size: 30px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px #4ade80, 0 0 40px #22c55e, inset 0 0 10px #fff; pointer-events: none; }
 .impact-ring { position: absolute; z-index: 120; width: 50px; height: 50px; border: 4px solid #4ade80; border-radius: 50%; transform: translate(-50%, -50%) scale(0.1); pointer-events: none; box-shadow: 0 0 20px #22c55e, inset 0 0 20px #4ade80; animation: impactRingAnim 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
 @keyframes impactRingAnim { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.1); border-width: 10px; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(3.5); border-width: 0px; } }
 
 .overlay { position: absolute; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
 .overlay h1 { margin: 0 0 10px; color: #fff; font-size: clamp(36px, 9vw, 68px); line-height: 1.1; text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan); }
-.version-label { margin: 0 0 20px; color: var(--neon-pink); font-size: 20px; font-weight: 900; text-shadow: 0 0 10px var(--neon-pink); letter-spacing: 2px; }
+.version-label { margin: 0 0 20px; color: #4ade80; font-size: 20px; font-weight: 900; letter-spacing: 2px; }
 .overlay p { margin: 0 0 30px; max-width: 760px; color: #e2e8f0; font-size: clamp(18px, 3.5vw, 24px); font-weight: 800; line-height: 1.5; }
 .btn { border: none; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; padding: 16px 30px; font-size: 24px; font-weight: 900; border-radius: 999px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4); cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.1s, box-shadow 0.1s; margin: 10px; }
 .btn:active { transform: translateY(6px) scale(0.95); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4); }
@@ -130,47 +123,73 @@ body { touch-action: manipulation; }
   <div id="piano-wrap"><div id="piano"></div></div>
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v2.3.0 音轨同步版</div>
+    <div class="version-label" id="version-label">Version v2.5.0 Henry Park 原版修复</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v2.3.0 完美乐谱修复版";
+const GAME_VERSION = "v2.5.0 Henry Park 校歌原版修复";
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
 const KEY_COUNT = 8;
 const HINT_AFTER_PROGRESS = 0.5;
 
-// 【重磅功能】带精准节拍的旋律数组
-// 格式: [按键编号(0-5代表音符1-6, -1是休止符), 持续拍数]
+// 【重置】基于 Henry Park 五线谱真迹（A大调 4/4 拍）
+// 映射关系：0=5̣, 1=6̣, 2=7̣, 3=1, 4=2, 5=3, 6=4, 7=5. 休止符 = -1.
+// 数组格式：[键位索引, 拍数] (一拍=400ms)
 const MELODY = [
-  // 5· 3 4 | 5 - 5 6 | 5 3 4 5 | - - - - |
-  [4, 1.5], [2, 0.5], [3, 2], [4, 2], [4, 1], [5, 1], [4, 1], [2, 1], [3, 1], [4, 1], [-1, 4],
-  // 6 6 5 4 | 6 - 5 3 | 2 - 3 4 | 5 - - 5 |
-  [5, 1], [5, 1], [4, 1], [3, 1], [5, 2], [4, 1], [2, 1], [1, 2], [2, 1], [3, 1], [4, 3], [4, 1],
-  // 3· 3 5 | 3 2 1 - | 5 4 3 4 | 5 - - - |
-  [2, 1.5], [2, 0.5], [4, 2], [2, 1], [1, 1], [0, 2], [4, 1], [3, 1], [2, 1], [3, 1], [4, 4],
-  // 5 6 5 4 | 5 6 5 3 | 2 - 3 4 | 5 - - - |
-  [4, 1], [5, 1], [4, 1], [3, 1], [4, 1], [5, 1], [4, 1], [2, 1], [1, 2], [2, 1], [3, 1], [4, 4],
-  // 5 5 6 5 | 4 4 5 4 | 3 - 2 3 | 1 - - 5 |
-  [4, 1], [4, 1], [5, 1], [4, 1], [3, 1], [3, 1], [4, 1], [3, 1], [2, 2], [1, 1], [2, 1], [0, 3], [4, 1],
-  // 3· 3 5 | 3 2 1 - | 5 4 3 4 | 5 - - - |
-  [2, 1.5], [2, 0.5], [4, 2], [2, 1], [1, 1], [0, 2], [4, 1], [3, 1], [2, 1], [3, 1], [4, 4],
-  // 5 6 5 4 | 5 6 5 3 | 2 - 3 4 | 5 - - - |
-  [4, 1], [5, 1], [4, 1], [3, 1], [4, 1], [5, 1], [4, 1], [2, 1], [1, 2], [2, 1], [3, 1], [4, 4],
-  // 5 5 6 5 | 4 4 5 4 | 3 - 2 3 | 1 - - - |
-  [4, 1], [4, 1], [5, 1], [4, 1], [3, 1], [3, 1], [4, 1], [3, 1], [2, 2], [1, 1], [2, 1], [0, 4]
+  // 前奏
+  [-1, 1], [3, 0.5], [3, 0.5], [0, 1], [1, 1],
+  [2, 1], [2, 0.5], [2, 0.5], [3, 1], [4, 1],
+  [-1, 1], [3, 0.5], [3, 0.5], [0, 1], [1, 1],
+  [2, 1], [2, 1], [3, 2],
+  
+  // We fight to win...
+  [3, 1], [3, 0.5], [3, 0.5], [0, 1], [1, 1],
+  [2, 1], [2, 0.5], [2, 0.5], [3, 1], [4, 1],
+  [3, 1], [3, 0.5], [3, 0.5], [0, 1], [1, 1],
+  [2, 1], [2, 1], [3, 1], [-1, 0.5], [7, 0.5],
+
+  // Henry Park, we salute...
+  [3, 0.5], [3, 0.5], [3, 0.5], [4, 0.5], [5, 1], [3, 1],
+  [0, 0.5], [0, 0.5], [1, 0.5], [2, 0.5], [3, 0.5], [4, 0.5], [5, 1],
+  [3, 1], [2, 1], [1, 1], [0, 1],
+  [-1, 3], [7, 0.5], [6, 0.5],
+
+  // study in racial harmony...
+  [5, 1], [5, 0.5], [5, 0.5], [4, 1], [5, 1],
+  [3, 1], [4, 1], [3, 2],
+  [4, 0.5], [4, 0.5], [4, 0.5], [5, 0.5], [6, 1], [4, 1],
+  [5, 1], [4, 1], [3, 1], [-1, 0.5], [7, 0.25], [6, 0.25],
+
+  // search for success...
+  [5, 1], [5, 0.5], [5, 0.5], [4, 1], [5, 1],
+  [3, 1], [4, 1], [3, 2],
+  [4, 0.5], [4, 0.5], [4, 0.5], [5, 0.5], [6, 1], [4, 1],
+  [5, 1], [4, 1], [3, 3]
 ];
 
+// 【重置】物理按键频率，完美匹配 A大调 (从低音 E3 到 高音 E4)
 const WHITE_KEYS = [
-  { label: "C", freq: 261.63 }, { label: "D", freq: 293.66 }, { label: "E", freq: 329.63 }, { label: "F", freq: 349.23 },
-  { label: "G", freq: 392.00 }, { label: "A", freq: 440.00 }, { label: "B", freq: 493.88 }, { label: "C", freq: 523.25 }
+  { label: "5̣", freq: 164.81 }, // E3
+  { label: "6̣", freq: 185.00 }, // F#3
+  { label: "7̣", freq: 207.65 }, // G#3
+  { label: "1", freq: 220.00 },  // A3
+  { label: "2", freq: 246.94 },  // B3
+  { label: "3", freq: 277.18 },  // C#4
+  { label: "4", freq: 293.66 },  // D4
+  { label: "5", freq: 329.63 }   // E4
 ];
+
 const BLACK_KEYS = [
-  { afterWhite: 0, label: "C#", freq: 277.18 }, { afterWhite: 1, label: "D#", freq: 311.13 },
-  { afterWhite: 3, label: "F#", freq: 369.99 }, { afterWhite: 4, label: "G#", freq: 415.30 }, { afterWhite: 5, label: "A#", freq: 466.16 }
+  { afterWhite: 0, label: "F", freq: 174.61 }, 
+  { afterWhite: 1, label: "G", freq: 196.00 },
+  { afterWhite: 3, label: "A#", freq: 233.08 }, 
+  { afterWhite: 4, label: "C", freq: 261.63 }, 
+  { afterWhite: 5, label: "D#", freq: 311.13 }
 ];
+
 const distractors = [ "扌", "亻", "心", "忄", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日", "木", "女", "讠", "辶", "土", "火", "宀", "贝", "王", "纟", "石", "禾", "目", "竹", "页", "刂" ];
 
 const arena = document.getElementById("arena"); const trackSvg = document.getElementById("track-svg");
@@ -188,13 +207,11 @@ window.addEventListener("resize", () => { setViewportHeight(); handleResize(); }
 window.addEventListener("orientationchange", () => { setTimeout(() => { setViewportHeight(); handleResize(); }, 300); });
 function setViewportHeight() { document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`); }
 
-// 解决苹果设备没有声音的核心：强制激活音频上下文
 function unlockAudio() {
   if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
   if (audioCtx.state === 'suspended') { audioCtx.resume(); }
   const buffer = audioCtx.createBuffer(1, 1, 22050);
-  const source = audioCtx.createBufferSource();
-  source.buffer = buffer; source.connect(audioCtx.destination); source.start(0);
+  const source = audioCtx.createBufferSource(); source.buffer = buffer; source.connect(audioCtx.destination); source.start(0);
 }
 
 function loadDictionary() {
@@ -213,11 +230,11 @@ function loadDictionary() {
         dictionary.push({ word, parts });
       });
       if (dictionary.length) {
-        document.getElementById("start-title").textContent = "汉字连击快线";
-        document.getElementById("start-text").innerHTML = `修复了无声BUG！<br>请点击“播放旋律”验收乐谱节奏。<br>开始游戏后，正确答案将强制关联旋律！`;
+        document.getElementById("start-title").textContent = "校歌弹奏版加载完毕";
+        document.getElementById("start-text").innerHTML = `已修复底层谱面与琴键频率映射。<br>原版《Henry Park》A大调，请点击试听验收。`;
         
         const btnBox = document.createElement("div"); btnBox.style.marginTop = "20px";
-        const melodyBtn = document.createElement("button"); melodyBtn.id = "play-melody-btn"; melodyBtn.className = "btn"; melodyBtn.textContent = "🎹 播放旋律";
+        const melodyBtn = document.createElement("button"); melodyBtn.id = "play-melody-btn"; melodyBtn.className = "btn"; melodyBtn.textContent = "🎹 试听校歌";
         melodyBtn.addEventListener("click", () => { unlockAudio(); previewMelody(); });
         
         const startBtn = document.createElement("button"); startBtn.className = "btn"; startBtn.textContent = "🚀 开始游戏";
@@ -229,38 +246,31 @@ function loadDictionary() {
   });
 }
 
-// 精准节奏播放器
 function previewMelody() {
   if (isPlayingPreview) {
     isPlayingPreview = false; clearTimeout(melodyTimeout); stopAllNotes();
-    document.getElementById("play-melody-btn").textContent = "🎹 播放旋律"; return;
+    document.getElementById("play-melody-btn").textContent = "🎹 试听校歌"; return;
   }
-  stopAllNotes(); document.getElementById("play-melody-btn").textContent = "⏹️ 停止播放";
-  previewIndex = 0; isPlayingPreview = true;
-  playNextMelodyNote();
+  stopAllNotes(); document.getElementById("play-melody-btn").textContent = "⏹️ 停止试听";
+  previewIndex = 0; isPlayingPreview = true; playNextMelodyNote();
 }
 
 function playNextMelodyNote() {
   if (!isPlayingPreview || previewIndex >= MELODY.length) {
-    isPlayingPreview = false; document.getElementById("play-melody-btn").textContent = "🎹 播放旋律"; return;
+    isPlayingPreview = false; document.getElementById("play-melody-btn").textContent = "🎹 试听校歌"; return;
   }
   const [note, beats] = MELODY[previewIndex];
-  const beatMs = 400; // BPM大概在 150 左右，每拍400毫秒
+  const beatMs = 450; 
   const durationMs = beats * beatMs;
 
   if (note !== -1) {
     const key = piano.querySelectorAll('.white-key')[note];
     if(key) key.classList.add('pressed');
     startSustainNote(`preview-${note}`, WHITE_KEYS[note].freq);
-    
-    setTimeout(() => {
-      if (key) key.classList.remove('pressed');
-      stopSustainNote(`preview-${note}`);
-    }, durationMs - 50); // 留一点缝隙，让同音重复更清晰
+    setTimeout(() => { if (key) key.classList.remove('pressed'); stopSustainNote(`preview-${note}`); }, durationMs - 50);
   }
 
-  previewIndex++;
-  melodyTimeout = setTimeout(playNextMelodyNote, durationMs);
+  previewIndex++; melodyTimeout = setTimeout(playNextMelodyNote, durationMs);
 }
 
 function startGame() {
@@ -278,7 +288,7 @@ function initKeyboardSlots() { keyboardSlots = Array.from({ length: KEY_COUNT },
 function spawnCharacter() {
   if (!isPlaying || character) return;
   const data = dictionary[Math.floor(Math.random() * dictionary.length)];
-  if (!data) { scheduleNextCharacter(10); return; } // 缩短等待时间
+  if (!data) { scheduleNextCharacter(10); return; } 
 
   const el = document.createElement("div"); el.className = "depth-character";
   const wordSpan = document.createElement("span"); wordSpan.textContent = data.word; el.appendChild(wordSpan);
@@ -286,45 +296,32 @@ function spawnCharacter() {
   data.parts.forEach(() => { const dot = document.createElement("div"); dot.className = "dot"; progress.appendChild(dot); });
   el.appendChild(progress); arena.appendChild(el);
 
-  // 为这个字的每个部件，分配好对应的旋律轨道
   const partLanes = [];
   for(let i=0; i<data.parts.length; i++) {
      while(gameMelodyIndex < MELODY.length && MELODY[gameMelodyIndex][0] === -1) { gameMelodyIndex++; }
      if (gameMelodyIndex >= MELODY.length) { gameMelodyIndex = 0; }
-     partLanes.push(MELODY[gameMelodyIndex][0]);
-     gameMelodyIndex++;
+     partLanes.push(MELODY[gameMelodyIndex][0]); gameMelodyIndex++;
   }
 
   character = {
     id: nextId(), el, word: data.word, parts: [...data.parts], nextPartIndex: 0,
     partLanes: partLanes, laneIndex: partLanes[0], laneOffset: randomBetween(-0.04, 0.04),
-    z: 0.985, baseSpeed: -0.00180, zVelocity: -0.00180, // 大幅提升初始掉落速度
+    z: 0.985, baseSpeed: -0.00180, zVelocity: -0.00180, 
     slowUntil: 0, scaleKick: 0, dead: false, completed: false
   };
 
   refreshKeyboardSlots(); renderPiano(); renderTracks(); renderCharacter();
 }
 
-// 核心逻辑：刷新键盘布局，确保待击打的部件出现在旋律规定的按键上
 function refreshKeyboardSlots() {
-  initKeyboardSlots();
-  if (!character) return;
-  
+  initKeyboardSlots(); if (!character) return;
   const placedLanes = new Set();
   for (let i = character.nextPartIndex; i < character.parts.length; i++) {
     const lane = character.partLanes[i];
-    if (!placedLanes.has(lane)) {
-       keyboardSlots[lane] = { kind: "part", char: character.parts[i], partIndex: i, noteIndex: lane };
-       placedLanes.add(lane);
-    }
+    if (!placedLanes.has(lane)) { keyboardSlots[lane] = { kind: "part", char: character.parts[i], partIndex: i, noteIndex: lane }; placedLanes.add(lane); }
   }
-  
   const visibleChars = keyboardSlots.filter(s => s.kind === "part").map(s => s.char);
-  for(let i=0; i<KEY_COUNT; i++) {
-     if (keyboardSlots[i].kind !== "part") {
-        keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding(visibleChars), noteIndex: i };
-     }
-  }
+  for(let i=0; i<KEY_COUNT; i++) { if (keyboardSlots[i].kind !== "part") { keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding(visibleChars), noteIndex: i }; } }
 }
 
 function getTravelProgress() { return !character ? 0 : clamp((0.985 - character.z) / 0.965, 0, 1); }
@@ -413,11 +410,7 @@ function gameLoop(now) {
 
 function updateCharacter(dt, now) {
   if (!character || character.dead || character.completed) return; const oldShouldHint = shouldShowHint();
-  
-  // 被击中后减速，减速时间延长到 2 秒，减速比例设为 25% (让你有充分时间看)
-  const isSlowed = now < character.slowUntil;
-  const currentSpeed = isSlowed ? character.baseSpeed * 0.25 : character.baseSpeed;
-  
+  const isSlowed = now < character.slowUntil; const currentSpeed = isSlowed ? character.baseSpeed * 0.25 : character.baseSpeed;
   character.z += currentSpeed * dt; character.scaleKick *= Math.pow(0.9, dt);
   if (character.z <= 0.02) { missCharacter(); return; } renderCharacter(); if (oldShouldHint !== shouldShowHint()) { renderPiano(); renderTracks(); }
 }
@@ -432,10 +425,7 @@ function updateHitTokens(dt) {
 }
 
 function tokenHitsCharacter(token, c) {
-  token.dead = true; c.nextPartIndex++; 
-  c.slowUntil = performance.now() + 2000; // 减速持续 2 秒
-  c.scaleKick = 0.15; // 稍微变大一点，取消暴击夸张效果
-  
+  token.dead = true; c.nextPartIndex++; c.slowUntil = performance.now() + 2000; c.scaleKick = 0.15; 
   c.el.classList.remove("correct"); void c.el.offsetWidth; c.el.classList.add("correct");
   const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset); createImpactRing(point.x, point.y); playBounceTone();
   if (c.nextPartIndex >= c.parts.length) { completeCharacter(c); } else { refreshKeyboardSlots(); renderPiano(); renderTracks(); } renderCharacter(); updateHUD();
