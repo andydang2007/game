@@ -30,19 +30,18 @@
         }
         
         @media (orientation: landscape) {
-            /* 在横屏时，保持纵向排布，只是稍微缩小上下内边距，避免元素被挤出屏幕 */
             #header { padding: 10px 15px; }
             #keyboard { padding: 10px 15px 18px 15px; }
         }
         
-        #sand-storm { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.22; background-image: radial-gradient(white 1px, transparent 1px); background-size: 60px 60px; animation: windScroll 18s linear infinite; }
+        #sand-storm { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.22; background-image: radial-gradient(white 1px, transparent 1px); background-size: 60px 60px; animation: windScroll 8s linear infinite; }
         @keyframes windScroll { from { background-position: 0 0; } to { background-position: 500px 500px; } }
 
         #header { width: 100%; display: flex; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.45); z-index: 10; border-bottom: 2px solid rgba(255,255,255,0.85); backdrop-filter: blur(4px); }
         .score-box { color: #7c3aed; font-size: 24px; font-weight: 900; }
         .lives-box { color: #f43f5e; font-size: 22px; letter-spacing: 2px; }
 
-        #play-area { flex: 1 1 auto; width: 100vw; position: relative; overflow: hidden; z-index: 5; border-bottom: 3px solid #f9a8d4; background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(219,234,254,0.2)); }
+        #play-area { flex: 1 1 auto; width: 100vw; position: relative; overflow: hidden; z-index: 5; border-bottom: 3px solid #f9a8d4; background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(200,150,255,0.1)); }
         #defense-wall { position: absolute; top: 0; right: 0; bottom: 0; width: 8px; background: var(--defense-line); box-shadow: -3px 0 10px rgba(251, 113, 133, 0.6); z-index: 6; }
         #play-area.hurt { animation: screenFlash 0.15s; }
         @keyframes screenFlash { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(244, 63, 94, 0.3); } }
@@ -95,16 +94,24 @@
             100% { opacity: 0; transform: translate(-50%, -58%) scale(1.03); }
         }
 
-        #keyboard { width: 100%; background: rgba(255,255,255,0.55); padding: 10px 12px 14px 12px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; z-index: 5; flex: 0 0 auto; margin-top: auto; border-top: 2px solid rgba(255,255,255,0.85); }
-        .key-btn { height: 52px; border-radius: 14px; background: var(--key-bg); color: var(--text-main); font-size: 28px; font-weight: 900; border: 2px solid #ddd6fe; border-bottom: 4px solid var(--key-border); cursor: pointer; transition: all 0.1s; box-shadow: 0 4px 0 rgba(196,181,253,0.7); }
+        #keyboard { width: 100%; background: rgba(255,255,255,0.55); padding: 10px 12px 14px 12px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; z-index: 5; flex: 0 0 auto; }
+        .key-btn { height: 52px; border-radius: 14px; background: var(--key-bg); color: var(--text-main); font-size: 28px; font-weight: 900; border: 2px solid #ddd6fe; border-bottom: 4px solid var(--key-border); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05); cursor: pointer; transition: all 0.1s; position: relative; }
+        .key-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0, 0, 0, 0.08); }
         .key-btn:active { transform: translateY(3px); border-bottom-width: 1px; box-shadow: none; }
         .key-btn.wrong { background: #ffe4e6; border-color: #fb7185; animation: shakeBtn 0.2s; }
         @keyframes shakeBtn { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
 
+        /* 空位状态显示 */
+        .key-btn.empty-slot { opacity: 0.3; cursor: not-allowed; pointer-events: none; background: #f3f4f6; }
+
+        /* 音符标签 */
+        .key-note { position: absolute; top: 2px; right: 4px; font-size: 10px; color: #a78bfa; font-weight: 600; }
+
         .overlay { position: absolute; inset: 0; background: rgba(76,29,149,0.86); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; text-align: center; }
         .overlay h1 { font-size: 46px; margin: 0 0 16px 0; color: #fef9c3; text-shadow: 0 4px 0 #7c3aed; }
         .overlay p { font-size: 19px; color: #ede9fe; margin-bottom: 34px; font-weight: 900; }
-        .btn-start { background: #34d399; color: #064e3b; font-size: 24px; font-weight: 900; padding: 12px 30px; border-radius: 999px; border: 3px solid #a7f3d0; box-shadow: 0 6px 0 #10b981; cursor: pointer; }
+        .btn-start { background: #34d399; color: #064e3b; font-size: 24px; font-weight: 900; padding: 12px 30px; border-radius: 999px; border: 3px solid #a7f3d0; box-shadow: 0 6px 0 #10b981; cursor: pointer; transition: all 0.1s; }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #10b981; }
         .btn-start:active { transform: translateY(6px); box-shadow: 0 0 0 transparent; }
     </style>
 </head>
@@ -136,7 +143,6 @@
 </div>
 
 <script>
-    // 🌟 GID 573238154 (HYPY分页)
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
     let dictionary = [];
@@ -151,8 +157,9 @@
     let lastTime = 0;
     let keyboardNeedsUpdate = false;
     const KEY_POOL_SIZE = 8;
-    // keyboardSlots[index] 固定对应某个格子的位置：部件在“未使用/未作废”前不换位置
-    // slot: { kind: 'part'|'distractor', char: string, vehicleId?: number, partIndex?: number }
+    const PART_EMPTY_DURATION = 500; // 部件使用后的空缺时间（毫秒）
+
+    // slot: { kind: 'part'|'distractor'|'empty', char?: string, vehicleId?: number, partIndex?: number, emptyUntil?: number }
     let keyboardSlots = null;
     let spawnOrderCounter = 0;
     let wrongStreak = 0;
@@ -161,6 +168,18 @@
     let comboCount = 0;
     let bgmInterval = null;
     let bgmGain = null;
+
+    // 8个按键对应的音符（C major scale）
+    const keyNotes = [
+        { name: 'C', freq: 261.63 },
+        { name: 'D', freq: 293.66 },
+        { name: 'E', freq: 329.63 },
+        { name: 'F', freq: 349.23 },
+        { name: 'G', freq: 392.00 },
+        { name: 'A', freq: 440.00 },
+        { name: 'B', freq: 493.88 },
+        { name: 'C', freq: 523.25 }
+    ];
 
     const playArea = document.getElementById('play-area');
     const keyboard = document.getElementById('keyboard');
@@ -173,7 +192,6 @@
             transformHeader: h => h.replace(/^\uFEFF/, '').trim().toUpperCase(), 
             complete: function(results) {
                 results.data.forEach(row => {
-                    // 🌟 重点修改：优先读取 'QUESTION' (即表格里的 Question 列)
                     let targetWord = row['QUESTION'] || row['ANSWER'] || row['CORRECT ANSWER'] || ""; 
                     let partsStr = row['PARTS'] || row['部件'] || ""; 
                     
@@ -194,7 +212,7 @@
                 if (dictionary.length > 0) {
                     startScreen.innerHTML = `
                         <h1>大漠狂沙特快</h1>
-                        <p>已从 [HYPY] 加载 <b>${dictionary.length}</b> 个战车！<br><br>看准目标，按顺序打出偏旁部首。<br>爆胎会减速，守住防线！</p>
+                        <p>已从 [HYPY] 加载 <b>${dictionary.length}</b> 个战车！<br><br>看准目标，按顺序打出偏旁部首。<br>爆胎会减速，守住防线！<br>按键配音符，节奏感十足！</p>
                         <button class="btn-start" onclick="startGame()">全军出击 🚀</button>
                     `;
                 } else {
@@ -205,6 +223,7 @@
     };
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
     function playSound(type) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
@@ -222,6 +241,24 @@
             osc.type = 'triangle'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
             osc.start(); osc.stop(audioCtx.currentTime + 0.2);
         }
+    }
+
+    // 为按键播放音符
+    function playKeyNote(noteIndex) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const note = keyNotes[noteIndex % keyNotes.length];
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); 
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(note.freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
     }
 
     function startGame() {
@@ -242,7 +279,6 @@
         if (audioCtx.state === 'suspended') audioCtx.resume();
         startBgm();
         keyboardNeedsUpdate = true;
-        // 先渲染一版干扰部件，保证格子位置稳定；后续部件插入/替换只在空位/干扰位发生
         renderKeyboardPool();
         keyboardNeedsUpdate = false;
         spawnTimer = setTimeout(spawnVehicleLoop, 1000); 
@@ -257,36 +293,30 @@
 
     function spawnVehicleLoop() {
         if (!isPlaying) return;
-        // 场上最多 3 个怪兽
         if (activeVehicles.length >= 3) {
             spawnTimer = setTimeout(spawnVehicleLoop, 1800);
             return;
         }
         spawnVehicle();
-        // 拉长刷新间隔
         let interval = 4200 + Math.random() * 2800; 
         spawnTimer = setTimeout(spawnVehicleLoop, interval);
     }
 
     function getImagePath(totalParts, currentHits) {
         let stateNum = currentHits + 1;
-        // Fixed typo: radicalfiles (was redicalfiles)
         return `radicalfiles/${totalParts}l${stateNum}.png`;
     }
 
-        function spawnVehicle() {
+    function spawnVehicle() {
         if (dictionary.length === 0) return;
         if (!keyboardSlots || keyboardSlots.length !== KEY_POOL_SIZE) {
-            // 确保键盘格子状态存在
             renderKeyboardPool();
         }
 
-        // 可用于放置“新汉字部件”的格子数量 = 当前键盘上不是部件格（干扰/空）的格子数
         const availableSlots = keyboardSlots.reduce((acc, slot) => {
-            return acc + (!slot || slot.kind === 'distractor' ? 1 : 0);
+            return acc + (!slot || slot.kind === 'distractor' || slot.kind === 'empty' ? 1 : 0);
         }, 0);
 
-        // 汉字过多时：不增加新的汉字（坦克），直到有足够空位容纳全部未使用部件
         let wordData = null;
         for (let attempt = 0; attempt < 12; attempt++) {
             const candidate = dictionary[Math.floor(Math.random() * dictionary.length)];
@@ -299,7 +329,6 @@
         if (!wordData) return;
 
         const totalP = wordData.parts.length;
-        // 部件数严格对应“车轮数/图片里的数字”
         const displayP = totalP;
         
         const laneMax = Math.max(36, playArea.clientHeight - 120);
@@ -318,7 +347,6 @@
         el.style.top = lanePos + 'px';
         playArea.appendChild(el);
         
-        // 速度降到原来的约三分之一
         const base_speed_on_start = (1.3 + Math.random() * 0.7) / 3;
 
         activeVehicles.push({
@@ -353,7 +381,6 @@
             v.x += v.currentSpeed * delta;
             v.el.style.left = v.x + 'px';
 
-            // 穿过防线时扣血一次，但让战车继续向右飞出屏幕边缘
             if (!v.breached && v.x >= defenseWallX - 72) {
                 v.breached = true;
                 lives--;
@@ -365,7 +392,6 @@
                 keyboardNeedsUpdate = true;
             }
 
-            // 完整飞出右边缘后再移除，避免被“截断”
             if (v.x >= defenseWallX + 110) {
                 v.el.remove();
                 activeVehicles.splice(i, 1);
@@ -373,7 +399,6 @@
             }
         }
 
-        // Only update keyboard if needed
         if (keyboardNeedsUpdate) {
             renderKeyboardPool();
             keyboardNeedsUpdate = false;
@@ -382,13 +407,19 @@
         gameLoopRef = requestAnimationFrame(gameLoop);
     }
 
-    function handleKeyPress(char, btnElement) {
+    function handleKeyPress(char, btnElement, slotIndex) {
         if (!isPlaying) return;
+        
+        // 检查是否是空位状态
+        if (keyboardSlots[slotIndex] && keyboardSlots[slotIndex].kind === 'empty') {
+            return;
+        }
+
         const now = Date.now();
-        // 轻量节流，防止纯高速乱点刷概率
         if (now - lastInputTs < 70) return;
         lastInputTs = now;
         if (now < inputLockedUntil) return;
+        
         let candidateIndices = [];
 
         for (let i = 0; i < activeVehicles.length; i++) {
@@ -400,7 +431,8 @@
 
         if (candidateIndices.length > 0) {
             playSound('hit');
-            // 匹配到多个战车时随机选择一个，避免总是前面两辆被持续命中
+            playKeyNote(slotIndex); // 播放对应按键的音符
+            
             const pickedIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
             let v = activeVehicles[pickedIndex];
             v.hits++; 
@@ -415,8 +447,12 @@
             showVehicleScore(v, "+100");
             updateUI();
             
-            // 无论是普通命中还是“最后一击”，都尽快刷新键盘池
-            // （尤其是最后一击，避免在闪失效间隙仍显示已用完的部件）。
+            // 设置该格子为空状态，500ms后再补位
+            keyboardSlots[slotIndex] = {
+                kind: 'empty',
+                emptyUntil: now + PART_EMPTY_DURATION
+            };
+            
             keyboardNeedsUpdate = true;
             if (v.hits >= v.totalParts) {
                 setTimeout(() => killVehicle(v.id), 200); 
@@ -425,7 +461,6 @@
             playSound('wrong');
             btnElement.classList.add('wrong');
             setTimeout(() => btnElement.classList.remove('wrong'), 200);
-            // 乱点惩罚：扣分 + 累计失误，失误过多会掉血
             score = Math.max(0, score - 20);
             comboCount = 0;
             showCenterMessage("-20", "bad");
@@ -450,8 +485,7 @@
         playSound('explode');
         v.el.classList.add('exploded');
         activeVehicles.splice(index, 1);
-            // 击毁后立即刷新键盘池（避免还显示已不需要的部件）
-            keyboardNeedsUpdate = true;
+        keyboardNeedsUpdate = true;
         comboCount++;
         score += 200;
         showCenterMessage(`Combo ${comboCount} +200`, "combo");
@@ -521,13 +555,8 @@
     }
 
     function renderKeyboardPool() {
-        // 键盘固定 KEY_POOL_SIZE 个格子：
-        // 1) 一个汉字出来时，把该汉字“全部未使用部件”放入格子（用干扰格替换）
-        // 2) 部件被正确使用后该格消失（格子再被干扰部件/后续汉字替换）
-        // 3) 汉字飞出屏幕后，该汉字剩余部件作废（对应格清空）
-        // 4) 非部件格填充随机干扰部件
-
         const randDistractor = () => distractors[Math.floor(Math.random() * distractors.length)];
+        const now = Date.now();
 
         if (!keyboardSlots || keyboardSlots.length !== KEY_POOL_SIZE) {
             keyboardSlots = Array.from({ length: KEY_POOL_SIZE }, () => ({
@@ -538,7 +567,7 @@
 
         const vehicleById = new Map(activeVehicles.map(v => [v.id, v]));
 
-        // 清理：把已作废/已使用的“部件格”移除，但不移动其它仍然有效的部件格
+        // 清理已用完或已失效的部件格
         for (let i = 0; i < keyboardSlots.length; i++) {
             const slot = keyboardSlots[i];
             if (!slot || slot.kind !== 'part') continue;
@@ -547,18 +576,24 @@
                 keyboardSlots[i] = null;
                 continue;
             }
-            // partIndex < v.hits 表示已经被正确点击消耗掉了
             if (slot.partIndex < v.hits) {
                 keyboardSlots[i] = null;
                 continue;
             }
-            // 防御性检查
             if (slot.partIndex >= v.totalParts || v.hits > v.totalParts) {
                 keyboardSlots[i] = null;
             }
         }
 
-        // 按出现顺序确保“每个在场汉字的全部未使用部件”都在键盘上
+        // 清理已过期的空位状态，转为干扰部件
+        for (let i = 0; i < keyboardSlots.length; i++) {
+            const slot = keyboardSlots[i];
+            if (slot && slot.kind === 'empty' && slot.emptyUntil <= now) {
+                keyboardSlots[i] = null;
+            }
+        }
+
+        // 按出现顺序放置部件
         const orderedVehicles = [...activeVehicles].sort((a, b) => (a.spawnOrder ?? 0) - (b.spawnOrder ?? 0));
 
         for (const v of orderedVehicles) {
@@ -573,8 +608,8 @@
 
                 if (alreadyPlaced) continue;
 
-                // 缺失的部件，必须马上补到“空格/干扰格”中
-                const slotIndex = keyboardSlots.findIndex(slot => !slot || slot.kind === 'distractor');
+                // 优先找到非空的可用位置（不是空位状态）
+                const slotIndex = keyboardSlots.findIndex(slot => !slot || (slot.kind === 'distractor'));
                 if (slotIndex === -1) {
                     allPlaced = false;
                     break;
@@ -587,7 +622,6 @@
                 };
             }
 
-            // 仅用于调试状态：true 代表该车当前剩余部件都已落在键盘里
             v.keyboardActive = allPlaced;
         }
 
@@ -598,10 +632,20 @@
             }
         }
 
-        keyboard.innerHTML = keyboardSlots.map(slot => {
+        keyboard.innerHTML = keyboardSlots.map((slot, index) => {
             const char = slot.char;
+            const isEmptySlot = slot.kind === 'empty';
+            const noteLabel = keyNotes[index % keyNotes.length].name;
+            
             return `
-                <button class="key-btn" onclick="handleKeyPress('${char}', this)">${char}</button>
+                <button 
+                    class="key-btn ${isEmptySlot ? 'empty-slot' : ''}" 
+                    onclick="handleKeyPress('${char}', this, ${index})"
+                    ${isEmptySlot ? 'disabled' : ''}
+                >
+                    ${isEmptySlot ? '♪' : char}
+                    <span class="key-note">${noteLabel}</span>
+                </button>
             `;
         }).join('');
     }
