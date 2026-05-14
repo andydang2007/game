@@ -1,16 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>老爸专属测试通道</title>
+<meta charset="UTF-8">
+<title>音频引擎测试 - Majulah Singapura</title>
+<style>
+  body { 
+    display: flex; justify-content: center; align-items: center; 
+    height: 100vh; background: #0f172a; margin: 0; font-family: sans-serif; 
+  }
+  button { 
+    padding: 20px 40px; font-size: 24px; border-radius: 50px; 
+    background: #22c55e; color: white; border: none; cursor: pointer; 
+    box-shadow: 0 10px 20px rgba(34,197,94,0.3); font-weight: bold; 
+    transition: transform 0.1s;
+  }
+  button:active { transform: scale(0.95); }
+  button:disabled { background: #64748b; cursor: not-allowed; box-shadow: none; }
+</style>
 </head>
-<body style="display:flex; justify-content:center; align-items:center; height:100vh; background:#0f172a; margin:0;">
-    
-    <button onclick="window.location.href='https://andydang2007.github.io/game/index.html?ticket=' + Date.now() + '&returnUrl=index.html'" 
-            style="padding: 20px 40px; font-size: 24px; font-weight: bold; background: #10b981; color: white; border: none; border-radius: 20px; box-shadow: 0 8px 0 #059669; cursor: pointer;">
-        🎫 获取防作弊门票并测试游戏
-    </button>
+<body>
 
+<button id="playBtn">▶ 播放测试 (新加坡国歌)</button>
+
+<script>
+const playBtn = document.getElementById('playBtn');
+
+// F大调真实物理频率
+const F3 = 174.61, G3 = 196.00, A3 = 220.00, Bb3 = 233.08, C4 = 261.63, D4 = 293.66;
+
+// 旋律数组：前两句 "Mari kita rakyat Singapura, sama-sama menuju bahagia"
+// 格式: [频率, 拍数]
+const melody = [
+  [C4, 1], [C4, 0.5], [C4, 0.5], [G3, 1], [A3, 1],       // Ma-ri ki-ta rak-
+  [Bb3, 1], [Bb3, 0.5], [Bb3, 0.5], [C4, 1], [D4, 1],    // yat Si-nga-pu-ra
+  [C4, 1], [C4, 0.5], [C4, 0.5], [G3, 1], [A3, 1],       // sa-ma sa-ma me-
+  [Bb3, 1], [Bb3, 0.5], [C4, 0.5], [A3, 1], [G3, 1],     // nu-ju ba-ha-gi-
+  [F3, 3]                                                // a
+];
+
+let audioCtx = null;
+
+playBtn.addEventListener('click', () => {
+  // 解锁苹果设备的音频限制
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  
+  playBtn.disabled = true;
+  playBtn.innerText = "播放中...";
+
+  const beatMs = 600; // 设定节拍速度
+  let startTime = audioCtx.currentTime + 0.1;
+
+  melody.forEach(([freq, beats]) => {
+    const duration = (beats * beatMs) / 1000;
+    
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'sine'; // 纯净的正弦波
+    osc.frequency.value = freq;
+    
+    // 平滑处理声音的起步和结束，防止爆音
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(0.5, startTime + 0.05);
+    gain.gain.setValueAtTime(0.5, startTime + duration - 0.05);
+    gain.gain.linearRampToValueAtTime(0, startTime + duration);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+    
+    startTime += duration;
+  });
+
+  // 播放结束后恢复按钮
+  setTimeout(() => {
+    playBtn.disabled = false;
+    playBtn.innerText = "▶ 播放测试 (新加坡国歌)";
+  }, (startTime - audioCtx.currentTime) * 1000);
+});
+</script>
 </body>
 </html>
