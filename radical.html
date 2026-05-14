@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>PSLE 汉字连击快线 · 编曲大师版</title>
+<title>PSLE 汉字节奏大师 · 终极编曲版</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -15,7 +15,6 @@
   --keyboard-height: clamp(160px, 28vh, 220px);
   --neon-cyan: #00f3ff;
   --neon-pink: #ff00ff;
-  --neon-yellow: #facc15;
   --bg-deep: #050510;
 }
 
@@ -57,18 +56,18 @@ body { touch-action: manipulation; }
 
 .depth-character {
   position: absolute; z-index: 40; background: transparent; color: #fff; font-weight: 900; line-height: 1;
-  text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--neon-cyan); font-size: 60px;
-  transform-origin: center center; will-change: left, top, transform, opacity; transition: transform 0.05s ease-out;
+  text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--neon-cyan);
+  transform-origin: center center; will-change: left, top, transform, opacity, font-size; transition: transform 0.05s ease-out;
 }
-.depth-character.correct { color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e; }
-.depth-character.complete { animation: completeExplosion 0.4s ease-out forwards; }
-@keyframes completeExplosion { 0% { opacity: 1; filter: brightness(1); } 50% { opacity: 1; filter: brightness(3) drop-shadow(0 0 40px #facc15); color: #fef08a; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(3); filter: brightness(4) blur(4px); } }
+.depth-character.correct { color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e; filter: brightness(1.5); }
+.depth-character.complete { animation: completeFade 0.4s ease-out forwards; }
+@keyframes completeFade { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: brightness(2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); filter: brightness(3) blur(2px); } }
 
-.progress { position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%); display: flex; gap: 6px; }
+.progress { position: absolute; left: 50%; bottom: -25px; transform: translateX(-50%); display: flex; gap: 6px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(0,0,0,0.8); border: 2px solid var(--neon-cyan); box-shadow: 0 0 5px var(--neon-cyan); transition: all 0.2s; }
 .dot.done { background: #10b981; border-color: #a7f3d0; box-shadow: 0 0 10px #10b981; }
-.dot.next { background: #fef08a; border-color: #facc15; box-shadow: 0 0 15px #facc15; animation: pulseDot 0.6s alternate infinite; }
-@keyframes pulseDot { from { transform: scale(1); } to { transform: scale(1.4); } }
+.dot.next { background: #fef08a; border-color: #facc15; box-shadow: 0 0 10px #facc15; animation: pulseDot 0.8s alternate infinite; }
+@keyframes pulseDot { from { transform: scale(1); } to { transform: scale(1.3); } }
 
 #piano-wrap {
   position: absolute; left: 0; right: 0; bottom: 0; height: var(--keyboard-height); z-index: 100;
@@ -83,11 +82,9 @@ body { touch-action: manipulation; }
 }
 .white-key.pressed { transform: rotateX(10deg); border-bottom-width: 2px; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); box-shadow: inset 0 20px 20px rgba(0,0,0,0.3); }
 .white-key.wrong { background: #ffe4e6; border-color: #e11d48; border-bottom-color: #9f1239; animation: wrongShake 0.2s both; }
-@keyframes wrongShake { 0%, 100% { transform: rotateX(10deg) translateX(0); } 20%, 60% { transform: rotateX(10deg) translateX(-4px); } 40%, 80% { transform: rotateX(10deg) translateX(4px); } }
+@keyframes wrongShake { 0%, 100% { transform: rotateX(8deg) translateX(0); } 20%, 60% { transform: rotateX(8deg) translateX(-4px); } 40%, 80% { transform: rotateX(8deg) translateX(4px); } }
 
 .key-radical { position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%); font-size: clamp(24px, 4vw, 48px); font-weight: 900; color: #0f172a; pointer-events: none; }
-.key-radical.pop { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-@keyframes popIn { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 .key-note { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); font-size: 14px; font-weight: bold; color: #64748b; pointer-events: none; }
 
 .hit-token { position: absolute; z-index: 95; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 3px solid var(--neon-cyan); color: #000; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--neon-cyan); pointer-events: none; }
@@ -106,21 +103,21 @@ body { touch-action: manipulation; }
 <div id="game">
   <div id="hud">
     <div class="hud-box">⭐ 得分: <span id="score">0</span></div>
-    <div class="hud-box timer-box">⏳ 时间: <span id="timer">180</span>s</div>
+    <div class="hud-box timer-box">⏳ 时间: <span id="timer">120</span>s</div>
   </div>
   <div id="arena"><div id="depth-fog"></div><svg id="track-svg"></svg></div>
   <div id="miss-line"></div>
   <div id="piano-wrap"><div id="piano"></div></div>
   
   <div id="start-screen" class="overlay">
-    <h1 id="start-title">题库同步中...</h1>
-    <p id="start-text">必须等待云端数据就绪，请稍候</p>
+    <h1 id="start-title">题库加载中...</h1>
+    <p id="start-text">请稍候，正在获取云端题库</p>
   </div>
 
   <div id="replay-screen" class="overlay">
     <h1>编曲完成！</h1>
-    <p>点击下方，聆听属于 Valerie 的汉字电子单曲</p>
-    <button class="btn btn-pink" id="btn-replay">🎹 播放我的音乐</button>
+    <p>Valerie 的专属五声调式电子单曲已生成</p>
+    <button class="btn btn-pink" id="btn-replay">🎹 回放我的音乐</button>
     <button class="btn" onclick="location.reload()">🔄 再来一局</button>
   </div>
 </div>
@@ -128,9 +125,9 @@ body { touch-action: manipulation; }
 <script>
 // --- 系统配置 ---
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
-const KEY_COUNT = 12; // 12键 iPad版
+const KEY_COUNT = 12; // iPad 宽屏 12 键
 const MAX_ACTIVE_CHARS = 4; // 同屏最多 4 个字
-const GAME_TIME = 180;
+const GAME_TIME = 120; // 改为 2 分钟
 
 const PENTA_KEYS = [
   { label: "低5", freq: 196.00 }, { label: "低6", freq: 220.00 }, { label: "1", freq: 261.63 },
@@ -141,25 +138,21 @@ const PENTA_KEYS = [
 const distractors = ["扌", "亻", "心", "忄", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日", "木", "女", "讠", "辶", "土", "火", "宀", "贝", "王", "纟", "石", "禾", "目", "竹", "页", "刂"];
 
 // --- 游戏变量 ---
-let dictionary = []; let activeChars = []; 
-let keyboardSlots = Array(KEY_COUNT).fill(null); // 键盘上现在的按键状态
-let pendingParts = []; // 核心排队系统：等候上键盘的部首
-
+let dictionary = []; let activeChars = []; let keyboardSlots = Array(KEY_COUNT).fill(null);
 let score = 0; let timeLeft = GAME_TIME; let isPlaying = false; 
 let lastFrameTime = 0; let lastSpawnTime = 0; let animationRef = null; let clockTimer = null;
 let idCounter = 1; let hitTokens = []; let trackGeometry = [];
 let audioCtx = null; let activeNotes = new Map();
 let recordedNotes = []; let gameStartTime = 0;
+let beatTimer = null; let nextBeatTime = 0; let currentBeat = 0;
 
 const arena = document.getElementById("arena");
 const trackSvg = document.getElementById("track-svg");
 const piano = document.getElementById("piano");
 
 window.addEventListener("load", () => {
-  setViewportHeight();
-  initPianoDOM();
+  setViewportHeight(); initPianoDOM();
   
-  // 第一步：严格等待题库下载
   Papa.parse(SHEET_URL + "&t=" + Date.now(), {
     download: true, header: true, skipEmptyLines: "greedy",
     transformHeader: h => String(h || "").trim().toUpperCase(),
@@ -171,8 +164,8 @@ window.addEventListener("load", () => {
       }).filter(Boolean);
 
       if (dictionary.length) {
-        document.getElementById("start-title").textContent = "PSLE 汉字节奏大师";
-        document.getElementById("start-text").innerHTML = `题库就绪（${dictionary.length}字）<br>后台弹夹系统已加载，局部替换，绝不闪烁！`;
+        document.getElementById("start-title").textContent = "汉字节奏大师";
+        document.getElementById("start-text").innerHTML = `已加载 ${dictionary.length} 个汉字<br>无序自由击打 · 2分钟沉浸编曲`;
         const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "🚀 启动";
         btn.addEventListener("click", startGame); document.getElementById("start-screen").appendChild(btn);
       }
@@ -199,25 +192,29 @@ function initPianoDOM() {
 function startGame() {
   ensureAudio(); 
   document.getElementById("start-screen").style.display = "none";
-  score = 0; timeLeft = GAME_TIME; isPlaying = true; 
-  activeChars = []; pendingParts = []; hitTokens = []; keyboardSlots.fill(null);
+  score = 0; timeLeft = GAME_TIME; isPlaying = true; activeChars = []; recordedNotes = []; hitTokens = [];
   gameStartTime = Date.now(); lastFrameTime = performance.now(); lastSpawnTime = 0;
   
   document.getElementById("score").textContent = score;
   document.getElementById("timer").textContent = timeLeft;
   
   calculateTrack();
-  tryFillKeyboard(); // 游戏开始时用干扰项填满键盘
+  keyboardSlots.fill(null); // 初始化键盘
   
+  // 启动背景律动鼓点
+  nextBeatTime = audioCtx.currentTime + 0.1; currentBeat = 0;
+  scheduleBeats();
+
   clockTimer = setInterval(() => {
     timeLeft--; document.getElementById("timer").textContent = timeLeft;
     if (timeLeft <= 0) endGame();
   }, 1000);
+  
   animationRef = requestAnimationFrame(gameLoop);
 }
 
 function endGame() {
-  isPlaying = false; clearInterval(clockTimer); cancelAnimationFrame(animationRef);
+  isPlaying = false; clearInterval(clockTimer); cancelAnimationFrame(animationRef); cancelAnimationFrame(beatTimer);
   activeChars.forEach(c => c.el.remove()); activeChars = [];
   document.getElementById("replay-screen").style.display = "flex";
   document.getElementById("btn-replay").onclick = () => playRecording();
@@ -227,8 +224,7 @@ function gameLoop(now) {
   if (!isPlaying) return;
   const dt = Math.min(32, now - lastFrameTime) / 16.67; lastFrameTime = now;
 
-  // 出字频率控制
-  if (activeChars.length < MAX_ACTIVE_CHARS && now - lastSpawnTime > 1500) {
+  if (activeChars.length < MAX_ACTIVE_CHARS && now - lastSpawnTime > 2000) { // 出字间隔略微加长
     spawnCharacter(); lastSpawnTime = now;
   }
 
@@ -247,84 +243,37 @@ function spawnCharacter() {
 
   const c = {
     id: idCounter++, el, word: data.word, parts: [...data.parts],
-    expectedIndex: 0, visualIndex: 0,
+    remainingParts: [...data.parts], // 用于无序匹配
+    visualHitCount: 0,               // 用于更新进度点
     laneIndex: Math.floor(Math.random() * KEY_COUNT), 
-    z: 0.05, baseSpeed: 0.0015 + Math.random() * 0.0005, slowUntil: 0, dead: false
+    z: 0.05, 
+    baseSpeed: 0.0006 + Math.random() * 0.00025, // 速度强制减半
+    slowUntil: 0, dead: false
   };
   activeChars.push(c);
-  
-  // 核心改动：新字的部首全部加入“后台排队”，绝不强制洗牌
-  c.parts.forEach((p, index) => {
-    pendingParts.push({ char: p, target: c, partIndex: index });
-  });
-  
-  // 尝试把排队的部首塞进键盘（前提是键盘上有无用的干扰项或空位）
-  tryFillKeyboard();
+  refreshKeyboardSlots();
 }
 
-// 核心改动：局部替换系统（一个换一个）
-function tryFillKeyboard() {
-  const keys = piano.children;
-  for (let i = 0; i < KEY_COUNT; i++) {
-    const slot = keyboardSlots[i];
-    // 只有当按键是空的，或者是“无用的干扰项”时，才能被新部首替换！
-    if (!slot || slot.kind === "distractor") {
-      if (pendingParts.length > 0) {
-        const nextPart = pendingParts.shift(); // 从排队区拉取第一个
-        keyboardSlots[i] = { kind: "part", char: nextPart.char, target: nextPart.target, partIndex: nextPart.partIndex };
-      } else if (!slot) {
-        // 排队区没东西，而且按键空着，就塞个新的干扰项
-        keyboardSlots[i] = { kind: "distractor", char: distractors[Math.floor(Math.random() * distractors.length)] };
-      }
-      // 只更新这一个键的文字，带轻微动画
-      const keyEl = keys[i].querySelector(".key-radical");
-      keyEl.textContent = keyboardSlots[i].char;
-      keyEl.classList.remove("pop"); void keyEl.offsetWidth; keyEl.classList.add("pop");
-    }
-  }
-}
-
-// 角色如果挂掉或者消失，必须清空它残留在键盘和排队区里的部件
-function cleanupDeadCharacter(charObj) {
-  pendingParts = pendingParts.filter(p => p.target !== charObj); // 清除排队
-  for (let i = 0; i < KEY_COUNT; i++) {
-    if (keyboardSlots[i] && keyboardSlots[i].target === charObj) {
-      keyboardSlots[i] = null; // 腾出空位
-    }
-  }
-  tryFillKeyboard(); // 立刻补上新部件或干扰项
-}
-
-// 数学修复：完全正确的近大远小坐标系（z=0在远方，z=1在面前）
 function calculateTrack() {
   const rect = arena.getBoundingClientRect(); trackSvg.innerHTML = ""; trackGeometry = [];
-  const farY = -rect.height * 0.4; // 消失点
-  const centerX = rect.width / 2;
-  const laneW = rect.width / KEY_COUNT;
+  const farY = -rect.height * 0.5; const centerX = rect.width / 2; const laneW = rect.width / KEY_COUNT;
 
   for (let i = 0; i < KEY_COUNT; i++) {
     const nearLeft = i * laneW; const nearRight = (i + 1) * laneW; const nearCenterX = nearLeft + laneW / 2;
-    const farCenterX = centerX + (i - (KEY_COUNT - 1) / 2) * 8; 
-    
+    const farCenterX = centerX + (i - (KEY_COUNT - 1) / 2) * 5; 
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", `M ${nearLeft} ${rect.height} L ${farCenterX - 2} ${farY} L ${farCenterX + 2} ${farY} L ${nearRight} ${rect.height} Z`);
     path.setAttribute("class", "track-fill"); trackSvg.appendChild(path);
-    
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
     line.setAttribute("x1", nearCenterX); line.setAttribute("y1", rect.height); line.setAttribute("x2", farCenterX); line.setAttribute("y2", farY);
     line.setAttribute("class", "track-line"); trackSvg.appendChild(line);
-
     trackGeometry.push({ nearX: nearCenterX, nearY: rect.height, farX: farCenterX, farY: farY });
   }
 }
 
 function getPointOnLane(laneIndex, z) {
-  const lane = trackGeometry[laneIndex]; 
-  // z从0.05飞向1。z越大，越靠近nearX(面前)。数学修正完成！
-  return { 
-    x: lane.farX + (lane.nearX - lane.farX) * z, 
-    y: lane.farY + (lane.nearY - lane.farY) * z 
-  };
+  const lane = trackGeometry[laneIndex]; const t = 1 - z;
+  return { x: lane.farX + (lane.nearX - lane.farX) * t, y: lane.farY + (lane.nearY - lane.farY) * t };
 }
 
 function updateCharacters(dt, now) {
@@ -332,26 +281,81 @@ function updateCharacters(dt, now) {
     const c = activeChars[i]; if (c.dead) continue;
     
     const speed = now < c.slowUntil ? c.baseSpeed * 0.2 : c.baseSpeed;
-    c.z += speed * dt; // 向前飞
+    c.z += speed * dt;
 
-    if (c.z >= 1) { // 越界漏掉了
-      c.dead = true; c.el.remove(); 
-      activeChars.splice(i, 1);
-      cleanupDeadCharacter(c); // 清理键盘遗留
-      continue;
+    if (c.z >= 1) { 
+      c.dead = true; c.el.remove(); activeChars.splice(i, 1);
+      refreshKeyboardSlots(); continue;
     }
 
     const pt = getPointOnLane(c.laneIndex, c.z);
     c.el.style.left = `${pt.x}px`; c.el.style.top = `${pt.y}px`;
-    
-    // 近大远小，缩放控制
-    const scale = 0.2 + c.z * 1.6; 
-    c.el.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    c.el.style.fontSize = `${20 + c.z * 80}px`; 
     c.el.style.opacity = c.z < 0.2 ? c.z * 5 : 1;
 
+    // 无序显示的视觉逻辑：点亮前 N 个 dot，剩下的全闪烁
     c.el.querySelectorAll(".dot").forEach((dot, idx) => {
-      dot.className = idx < c.visualIndex ? "dot done" : (idx === c.visualIndex ? "dot next" : "dot");
+      dot.className = idx < c.visualHitCount ? "dot done" : "dot next";
     });
+  }
+}
+
+// 核心优化：确保只有按键后，或者旧字死掉后，键盘才会变化
+function refreshKeyboardSlots() {
+  // 1. 清理死掉的字，或者已经被按掉的部件插槽
+  for (let i = 0; i < KEY_COUNT; i++) {
+    if (keyboardSlots[i] && keyboardSlots[i].kind === "part") {
+      const c = keyboardSlots[i].target;
+      if (c.dead || !c.remainingParts.includes(keyboardSlots[i].char)) {
+        keyboardSlots[i] = null; // 这个位置腾出来了
+      }
+    }
+  }
+
+  // 2. 统计目前所有活跃字还需要哪些部件
+  let needed = [];
+  activeChars.forEach(c => {
+    if (c.dead) return;
+    let req = [...c.remainingParts];
+    // 如果这个部件已经在键盘上了，就不需要再分配新插槽
+    for (let i = 0; i < KEY_COUNT; i++) {
+      if (keyboardSlots[i] && keyboardSlots[i].kind === "part" && keyboardSlots[i].target === c) {
+        const idx = req.indexOf(keyboardSlots[i].char);
+        if (idx > -1) req.splice(idx, 1);
+      }
+    }
+    // 剩下的就是急需放在键盘上的
+    req.forEach(char => needed.push({ char, target: c }));
+  });
+
+  // 3. 找出所有空位或干扰项插槽
+  let availableSlots = [];
+  for (let i = 0; i < KEY_COUNT; i++) {
+    if (!keyboardSlots[i] || keyboardSlots[i].kind === "distractor") {
+      availableSlots.push(i);
+    }
+  }
+  shuffle(availableSlots); // 随机打乱，让部件随机分布
+
+  // 4. 把需要的部件塞进空位
+  needed.forEach(n => {
+    if (availableSlots.length > 0) {
+      const slotIdx = availableSlots.pop();
+      keyboardSlots[slotIdx] = { kind: "part", char: n.char, target: n.target };
+    }
+  });
+
+  // 5. 剩下的空位全部填满随机干扰项
+  const allParts = activeChars.flatMap(c => c.parts);
+  availableSlots.forEach(slotIdx => {
+    keyboardSlots[slotIdx] = { kind: "distractor", char: randomDistractorAvoiding(allParts) };
+  });
+
+  // 6. 渲染到界面（只改字，不刷新按钮DOM，防止闪烁）
+  const keys = piano.children;
+  for (let i = 0; i < KEY_COUNT; i++) {
+    const slot = keyboardSlots[i];
+    keys[i].querySelector(".key-radical").textContent = slot ? slot.char : "";
   }
 }
 
@@ -360,47 +364,48 @@ function handleKeyPress(index, btnElement) {
   const slot = keyboardSlots[index]; if (!slot) return;
   
   btnElement.classList.add("pressed");
-  startSustainNote(`key-${index}`, PENTA_KEYS[index].freq);
+  startSustainNote(`key-${index}`, PENTA_KEYS[index].freq); // 纯净的琴声，无论对错都有
   recordedNotes.push({ time: Date.now() - gameStartTime, index: index, freq: PENTA_KEYS[index].freq });
 
-  // 必须是正确目标，且顺序也是正确的
-  if (slot.kind === "part" && !slot.target.dead && slot.partIndex === slot.target.expectedIndex) {
-    score += 50; document.getElementById("score").textContent = score;
+  if (slot.kind === "part") {
     const c = slot.target;
-    c.expectedIndex++; 
-    
-    const rect = btnElement.getBoundingClientRect(); const arenaRect = arena.getBoundingClientRect();
-    launchHitToken(slot.char, rect.left + rect.width/2 - arenaRect.left, arenaRect.height, c);
-    
-    // 核心改动：击中后，清空【这一个】按键，并立刻从排队区抽取新的补上
-    keyboardSlots[index] = null;
-    tryFillKeyboard();
-    
+    // 无序匹配：只要你按的是剩下的部件之一就行
+    const pIdx = c.remainingParts.indexOf(slot.char);
+    if (pIdx > -1) {
+      c.remainingParts.splice(pIdx, 1); // 从剩余需求中划掉
+      score += 50; document.getElementById("score").textContent = score;
+      
+      const rect = btnElement.getBoundingClientRect(); const arenaRect = arena.getBoundingClientRect();
+      launchHitToken(slot.char, rect.left + rect.width/2 - arenaRect.left, arenaRect.height, c);
+      
+      // 立刻腾空这个按键并刷新，旧键消失，新键进来
+      keyboardSlots[index] = null;
+      refreshKeyboardSlots();
+    }
   } else {
+    // 错误只给按键变色发抖，不发额外的错误音
     btnElement.classList.remove("wrong"); void btnElement.offsetWidth; btnElement.classList.add("wrong");
-    playBadTone();
   }
 }
 
 function launchHitToken(char, x, y, targetChar) {
   const el = document.createElement("div"); el.className = "hit-token"; el.textContent = char;
   arena.appendChild(el);
-  hitTokens.push({ el, x, y, z: 1.0, target: targetChar, dead: false, arrived: false });
+  hitTokens.push({ el, x, y, z: 0.98, target: targetChar, dead: false, arrived: false });
 }
 
 function updateHitTokens(dt) {
   hitTokens.forEach(t => {
     if (t.dead || t.target.dead) { t.dead = true; t.el.remove(); return; }
-    t.z -= 0.08 * dt; // 子弹向深处飞去
+    t.z -= 0.08 * dt; 
     if (t.z < t.target.z) t.z = t.target.z;
 
     const targetPt = getPointOnLane(t.target.laneIndex, t.target.z);
-    const blend = (1.0 - t.z) / (1.0 - t.target.z + 0.001); // 混合系数
+    const blend = (0.98 - t.z) / (0.98 - t.target.z + 0.001);
     t.x = t.x + (targetPt.x - t.x) * blend * 0.2; 
     t.y = t.y + (targetPt.y - t.y) * blend * 0.5;
     
-    t.el.style.left = `${t.x}px`; t.el.style.top = `${t.y}px`; 
-    t.el.style.transform = `translate(-50%, -50%) scale(${0.4 + t.z * 0.6})`;
+    t.el.style.left = `${t.x}px`; t.el.style.top = `${t.y}px`; t.el.style.transform = `translate(-50%, -50%) scale(${0.5 + t.z * 0.5})`;
 
     if (!t.arrived && t.z <= t.target.z + 0.02) {
       t.arrived = true; t.dead = true; t.el.remove();
@@ -411,20 +416,64 @@ function updateHitTokens(dt) {
 }
 
 function hitTarget(c) {
-  c.visualIndex++; c.slowUntil = performance.now() + 1000;
+  c.visualHitCount++; // 子弹打中，视觉进度加一
+  c.slowUntil = performance.now() + 1000;
   c.el.classList.remove("correct"); void c.el.offsetWidth; c.el.classList.add("correct");
   
-  if (c.visualIndex >= c.parts.length) {
+  if (c.visualHitCount >= c.parts.length) {
     score += 200; document.getElementById("score").textContent = score;
-    c.dead = true; c.el.classList.add("complete"); playCompleteSound();
-    activeChars = activeChars.filter(char => char !== c);
+    c.dead = true; c.el.classList.add("complete");
     setTimeout(() => c.el.remove(), 400);
-  } else {
-    playBounceTone();
   }
 }
 
-// --- 音频系统 (无损原声) ---
+// --- 背景律动引擎 (Web Audio API) ---
+function scheduleBeats() {
+  if (!isPlaying || !audioCtx) return;
+  const secPerBeat = 60 / 110; // 110 BPM 律动节奏
+  while (nextBeatTime < audioCtx.currentTime + 0.1) {
+    playDrumStep(nextBeatTime, currentBeat);
+    nextBeatTime += secPerBeat;
+    currentBeat++;
+  }
+  beatTimer = requestAnimationFrame(scheduleBeats);
+}
+
+function playDrumStep(time, beat) {
+  // 基础底鼓与踩镲
+  const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+
+  if (beat % 4 === 0 || beat % 4 === 2) {
+    // 柔和的电子底鼓 (Kick)
+    osc.frequency.setValueAtTime(100, time);
+    osc.frequency.exponentialRampToValueAtTime(10, time + 0.3);
+    gain.gain.setValueAtTime(0.4, time); 
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
+  } else {
+    // 闭镲 (Hi-hat click)
+    osc.type = 'triangle'; osc.frequency.setValueAtTime(800, time);
+    gain.gain.setValueAtTime(0.1, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+  }
+  osc.start(time); osc.stop(time + 0.3);
+
+  // 每 8 拍叠加一层柔和的 Pad 和弦，增加音乐色彩
+  if (beat % 8 === 0) {
+    [261.63, 329.63, 392.00].forEach(f => {
+      const pOsc = audioCtx.createOscillator(); const pGain = audioCtx.createGain();
+      pOsc.type = 'sine'; pOsc.frequency.value = f / 2;
+      pGain.gain.setValueAtTime(0, time);
+      pGain.gain.linearRampToValueAtTime(0.05, time + 1);
+      pGain.gain.setValueAtTime(0.05, time + 3);
+      pGain.gain.linearRampToValueAtTime(0, time + 4);
+      pOsc.connect(pGain); pGain.connect(audioCtx.destination);
+      pOsc.start(time); pOsc.stop(time + 4);
+    });
+  }
+}
+
+// --- 原生电子琴音色 (完全保留，无额外音效) ---
 function ensureAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume(); }
 
 function startSustainNote(noteId, freq) {
@@ -452,31 +501,16 @@ function stopSustainNote(noteId) {
   activeNotes.delete(noteId);
 }
 
-function playBadTone() { playSimpleTone(150, 0.15, 0.1, "sawtooth"); }
-function playBounceTone() { playSimpleTone(800, 0.1, 0.05, "sine"); }
-function playCompleteSound() { [523.25, 659.25, 1046.50].forEach((f, i) => setTimeout(() => playSimpleTone(f, 0.3, 0.1, "sine"), i*50)); }
-function playSimpleTone(freq, duration, vol, type) {
-  ensureAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const now = audioCtx.currentTime;
-  osc.type = type; osc.frequency.value = freq; gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(vol, now + 0.02); gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-  osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + duration + 0.1);
-}
-
-function playBackgroundPad(durationMs) {
-  ensureAudio(); const now = audioCtx.currentTime; const dur = durationMs / 1000;
-  [261.63, 329.63, 392.00].forEach(f => {
-    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-    osc.type = 'triangle'; osc.frequency.value = f / 2;
-    gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.1, now + 2); gain.gain.setValueAtTime(0.1, now + dur - 2); gain.gain.linearRampToValueAtTime(0, now + dur);
-    osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + dur + 0.1);
-  });
-}
-
+// --- 回放单曲逻辑 ---
 function playRecording() {
-  if (recordedNotes.length === 0) return alert("刚刚没有按对任何字哦，再来一把！");
+  if (recordedNotes.length === 0) return alert("刚刚没有弹奏任何音符哦，再来一把！");
   document.getElementById("replay-screen").style.display = "none";
   
   const totalMs = recordedNotes[recordedNotes.length - 1].time + 2000;
-  playBackgroundPad(totalMs);
+  
+  // 回放时启动相同的律动底鼓引擎
+  isPlaying = true; nextBeatTime = audioCtx.currentTime + 0.1; currentBeat = 0;
+  scheduleBeats();
 
   recordedNotes.forEach(note => {
     setTimeout(() => {
@@ -486,8 +520,16 @@ function playRecording() {
     }, note.time);
   });
 
-  setTimeout(() => document.getElementById("replay-screen").style.display = "flex", totalMs);
+  // 回放结束
+  setTimeout(() => {
+    isPlaying = false; cancelAnimationFrame(beatTimer); // 停止鼓点
+    document.getElementById("replay-screen").style.display = "flex";
+  }, totalMs);
 }
+
+// --- 辅助工具 ---
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
+function randomDistractorAvoiding(avoid) { const safe = distractors.filter(d => !avoid.includes(d)); return safe.length ? safe[Math.floor(Math.random() * safe.length)] : distractors[0]; }
 </script>
 </body>
 </html>
