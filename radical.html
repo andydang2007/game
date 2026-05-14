@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>PSLE 汉字连击快线 · 轨道钢琴版</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js</script>
 
 <style>
 * {
@@ -20,6 +20,8 @@
   --purple: #4c1d95;
   --green: #22c55e;
   --pink: #fb7185;
+  --track-base: rgba(255,255,255,0.38);
+  --track-soft: rgba(255,255,255,0.18);
 }
 
 html, body {
@@ -29,8 +31,9 @@ html, body {
   overflow: hidden;
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
   background:
-    radial-gradient(ellipse at 50% 18%, rgba(255,255,255,0.58), transparent 36%),
-    linear-gradient(180deg, #93c5fd 0%, #bfdbfe 48%, #fef3c7 100%);
+    radial-gradient(ellipse at 50% 14%, rgba(255,255,255,0.62), transparent 34%),
+    radial-gradient(ellipse at 50% 5%, rgba(56,189,248,0.28), transparent 42%),
+    linear-gradient(180deg, #60a5fa 0%, #bfdbfe 48%, #fef3c7 100%);
 }
 
 body {
@@ -80,8 +83,8 @@ body {
   pointer-events: none;
   z-index: 6;
   background:
-    radial-gradient(ellipse at 50% 12%, rgba(76,29,149,0.24), transparent 42%),
-    linear-gradient(180deg, rgba(255,255,255,0.2), transparent 60%);
+    radial-gradient(ellipse at 50% 2%, rgba(76,29,149,0.24), transparent 46%),
+    linear-gradient(180deg, rgba(255,255,255,0.22), transparent 62%);
 }
 
 #track-svg {
@@ -94,26 +97,56 @@ body {
 }
 
 .track-fill {
-  fill: rgba(255,255,255,0.07);
-  stroke: rgba(255,255,255,0.2);
+  fill: rgba(255,255,255,0.06);
+  stroke: rgba(255,255,255,0.16);
   stroke-width: 1;
 }
 
+.track-fill.hint-fill {
+  fill: rgba(34,197,94,0.08);
+  stroke: rgba(34,197,94,0.20);
+}
+
 .track-line {
-  stroke: rgba(76,29,149,0.28);
+  stroke: var(--track-base);
   stroke-width: 3;
   stroke-linecap: round;
+  stroke-dasharray: 12 18;
+  animation: trackDash 1.25s linear infinite;
 }
 
 .track-line.hint {
-  stroke: rgba(34,197,94,0.46);
+  stroke: rgba(34,197,94,0.55);
   stroke-width: 5;
-  filter: drop-shadow(0 0 7px rgba(34,197,94,0.32));
+  filter: drop-shadow(0 0 8px rgba(34,197,94,0.35));
 }
 
 .track-rung {
-  stroke: rgba(255,255,255,0.2);
+  stroke: rgba(255,255,255,0.22);
   stroke-width: 2;
+  animation: rungPulse 1.8s ease-in-out infinite;
+}
+
+.track-rung.hint {
+  stroke: rgba(167,243,208,0.38);
+}
+
+@keyframes trackDash {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -30;
+  }
+}
+
+@keyframes rungPulse {
+  0%, 100% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 #miss-line {
@@ -123,7 +156,7 @@ body {
   bottom: var(--keyboard-height);
   height: 4px;
   z-index: 70;
-  background: linear-gradient(90deg, transparent, rgba(251,113,133,0.48), transparent);
+  background: linear-gradient(90deg, transparent, rgba(251,113,133,0.45), transparent);
   pointer-events: none;
 }
 
@@ -144,11 +177,11 @@ body {
 }
 
 .depth-character.correct {
-  filter: brightness(1.16) drop-shadow(0 0 10px rgba(34,197,94,0.5));
+  filter: brightness(1.14) drop-shadow(0 0 10px rgba(34,197,94,0.45));
 }
 
 .depth-character.complete {
-  animation: completeFade 0.45s ease-out forwards;
+  animation: completeFade 0.28s ease-out forwards;
 }
 
 @keyframes completeFade {
@@ -156,14 +189,14 @@ body {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
-  45% {
+  55% {
     opacity: 1;
-    filter: brightness(1.28);
-    transform: translate(-50%, -50%) scale(1.1);
+    filter: brightness(1.25);
+    transform: translate(-50%, -50%) scale(1.08);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.3);
+    transform: translate(-50%, -50%) scale(1.22);
   }
 }
 
@@ -206,7 +239,7 @@ body {
     max(8px, env(safe-area-inset-left))
     max(10px, env(safe-area-inset-bottom));
   background:
-    linear-gradient(180deg, rgba(15,23,42,0.22), rgba(15,23,42,0) 22%),
+    linear-gradient(180deg, rgba(15,23,42,0.24), rgba(15,23,42,0) 22%),
     linear-gradient(180deg, rgba(248,250,252,0.96), rgba(203,213,225,0.98));
   border-top: 4px solid rgba(255,255,255,0.92);
   box-shadow: 0 -8px 24px rgba(76,29,149,0.18);
@@ -244,8 +277,9 @@ body {
   transition: transform 0.07s, border-bottom-width 0.07s, filter 0.07s;
 }
 
+/* 一开始不做紫色提示，所以 required 不加明显颜色 */
 .white-key.required {
-  border-color: #a78bfa;
+  border-color: #cbd5e1;
 }
 
 .white-key.hint {
@@ -253,7 +287,7 @@ body {
   box-shadow:
     inset 0 -12px 18px rgba(15,23,42,0.07),
     inset 0 6px 9px rgba(255,255,255,0.82),
-    0 0 14px rgba(34,197,94,0.38);
+    0 0 14px rgba(34,197,94,0.34);
 }
 
 .white-key.used {
@@ -357,7 +391,7 @@ body {
   z-index: 120;
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(34,197,94,0.68);
+  border: 3px solid rgba(34,197,94,0.62);
   border-radius: 999px;
   transform: translate(-50%, -50%) scale(0.35);
   pointer-events: none;
@@ -495,13 +529,13 @@ body {
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v1.8.0</div>
+    <div class="version-label" id="version-label">Version v1.9.0</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v1.8.0";
+const GAME_VERSION = "v1.9.0";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
@@ -558,6 +592,7 @@ let lastFrameTime = 0;
 let idCounter = 1;
 
 let audioCtx = null;
+let activeNotes = new Map();
 
 window.addEventListener("load", () => {
   setViewportHeight();
@@ -642,7 +677,7 @@ function showReadyScreen() {
   document.getElementById("start-title").textContent = "汉字连击 · 轨道钢琴版";
   document.getElementById("start-text").innerHTML =
     `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
-    `v1.8.0：修复安卓平板按键显示，汉字更慢，打中后只减速不后退。`;
+    `v1.9.0：轨道动画升级、下一个字更快出现、长按琴键支持长音。`;
 
   const oldBtn = document.getElementById("start-btn");
   if (oldBtn) oldBtn.remove();
@@ -702,6 +737,8 @@ function clearScene() {
   keyCenters = [];
   trackGeometry = [];
 
+  stopAllNotes();
+
   piano.innerHTML = "";
   trackSvg.innerHTML = "";
 }
@@ -719,7 +756,7 @@ function spawnCharacter() {
 
   const data = dictionary[Math.floor(Math.random() * dictionary.length)];
   if (!data) {
-    scheduleNextCharacter(300);
+    scheduleNextCharacter(80);
     return;
   }
 
@@ -753,8 +790,8 @@ function spawnCharacter() {
     laneOffset: randomBetween(-0.04, 0.04),
 
     z: 0.985,
-    baseSpeed: -0.00046,
-    zVelocity: -0.00046,
+    baseSpeed: -0.00040,
+    zVelocity: -0.00040,
 
     slowUntil: 0,
     scaleKick: 0,
@@ -807,20 +844,28 @@ function shouldShowHint() {
   return getTravelProgress() >= HINT_AFTER_PROGRESS;
 }
 
-function getNextRequiredSlotIndex() {
-  if (!character) return -1;
+function getHintSlotIndices() {
+  if (!character || !shouldShowHint()) return new Set();
 
-  return keyboardSlots.findIndex(slot =>
-    slot.kind === "part" &&
-    slot.partIndex === character.nextPartIndex
-  );
+  const remaining = new Set();
+
+  keyboardSlots.forEach((slot, index) => {
+    if (
+      slot.kind === "part" &&
+      slot.partIndex >= character.nextPartIndex
+    ) {
+      remaining.add(index);
+    }
+  });
+
+  return remaining;
 }
 
 function renderPiano() {
   piano.innerHTML = "";
 
   const whiteWidth = 100 / KEY_COUNT;
-  const nextSlotIndex = shouldShowHint() ? getNextRequiredSlotIndex() : -1;
+  const hintSlots = getHintSlotIndices();
 
   keyboardSlots.forEach((slot, index) => {
     const keyInfo = WHITE_KEYS[index];
@@ -829,7 +874,7 @@ function renderPiano() {
     btn.className = "white-key";
 
     if (slot.kind === "part") btn.classList.add("required");
-    if (index === nextSlotIndex) btn.classList.add("hint");
+    if (hintSlots.has(index)) btn.classList.add("hint");
     if (slot.kind === "used") btn.classList.add("used");
 
     btn.style.left = `${index * whiteWidth}%`;
@@ -848,13 +893,28 @@ function renderPiano() {
 
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
-      handleWhiteKeyPress(index, btn);
+      handleWhiteKeyDown(index, btn);
+    });
+
+    btn.addEventListener("pointerup", e => {
+      e.preventDefault();
+      handleKeyRelease(`white-${index}`, btn);
+    });
+
+    btn.addEventListener("pointercancel", e => {
+      e.preventDefault();
+      handleKeyRelease(`white-${index}`, btn);
+    });
+
+    btn.addEventListener("pointerleave", e => {
+      e.preventDefault();
+      handleKeyRelease(`white-${index}`, btn);
     });
 
     piano.appendChild(btn);
   });
 
-  BLACK_KEYS.forEach(black => {
+  BLACK_KEYS.forEach((black, blackIndex) => {
     const btn = document.createElement("button");
     btn.className = "black-key";
 
@@ -869,7 +929,22 @@ function renderPiano() {
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
       pressVisual(btn);
-      playTonePiano(black.freq, 0.45);
+      startSustainNote(`black-${blackIndex}`, black.freq);
+    });
+
+    btn.addEventListener("pointerup", e => {
+      e.preventDefault();
+      handleKeyRelease(`black-${blackIndex}`, btn);
+    });
+
+    btn.addEventListener("pointercancel", e => {
+      e.preventDefault();
+      handleKeyRelease(`black-${blackIndex}`, btn);
+    });
+
+    btn.addEventListener("pointerleave", e => {
+      e.preventDefault();
+      handleKeyRelease(`black-${blackIndex}`, btn);
     });
 
     piano.appendChild(btn);
@@ -879,6 +954,47 @@ function renderPiano() {
     calculateKeyCenters();
     renderTracks();
   });
+}
+
+function handleWhiteKeyDown(slotIndex, buttonElement) {
+  if (!isPlaying || !character) return;
+
+  const slot = keyboardSlots[slotIndex];
+  if (!slot) return;
+
+  pressVisual(buttonElement);
+  startSustainNote(`white-${slotIndex}`, WHITE_KEYS[slotIndex].freq);
+
+  if (slot.kind !== "part" || slot.partIndex !== character.nextPartIndex) {
+    buttonElement.classList.add("wrong");
+    setTimeout(() => buttonElement.classList.remove("wrong"), 180);
+    playBadTone();
+    return;
+  }
+
+  score += 100;
+
+  const arenaRect = arena.getBoundingClientRect();
+  const keyRect = buttonElement.getBoundingClientRect();
+
+  const startX = keyRect.left + keyRect.width / 2 - arenaRect.left;
+  const startY = arena.clientHeight + 4;
+
+  launchHitToken(slot.char, startX, startY, character, slot.partIndex, slotIndex);
+
+  keyboardSlots[slotIndex] = {
+    kind: "used",
+    char: "",
+    noteIndex: slotIndex
+  };
+
+  updateHUD();
+  renderPiano();
+}
+
+function handleKeyRelease(noteId, buttonElement) {
+  stopSustainNote(noteId);
+  buttonElement.classList.remove("pressed");
 }
 
 function calculateKeyCenters() {
@@ -900,7 +1016,7 @@ function calculateKeyCenters() {
 function getFarPoint() {
   return {
     x: arena.clientWidth / 2,
-    y: Math.max(-arena.clientHeight * 0.55, -260)
+    y: Math.max(-arena.clientHeight * 0.62, -320)
   };
 }
 
@@ -908,7 +1024,7 @@ function renderTracks() {
   if (!keyCenters.length) return;
 
   const far = getFarPoint();
-  const nextSlotIndex = shouldShowHint() ? getNextRequiredSlotIndex() : -1;
+  const hintSlots = getHintSlotIndices();
 
   trackSvg.innerHTML = "";
   trackSvg.setAttribute("viewBox", `0 0 ${arena.clientWidth} ${arena.clientHeight}`);
@@ -917,7 +1033,7 @@ function renderTracks() {
 
   for (let i = 0; i < KEY_COUNT; i++) {
     const base = keyCenters[i];
-    const isHint = i === nextSlotIndex;
+    const isHint = hintSlots.has(i);
 
     const laneWidthNear = Math.min(96, arena.clientWidth / KEY_COUNT * 0.82);
     const nearLeft = base.x - laneWidthNear / 2;
@@ -936,7 +1052,7 @@ function renderTracks() {
        L ${nearRight} ${arena.clientHeight}
        Z`
     );
-    path.setAttribute("class", "track-fill");
+    path.setAttribute("class", isHint ? "track-fill hint-fill" : "track-fill");
     trackSvg.appendChild(path);
 
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -947,8 +1063,8 @@ function renderTracks() {
     line.setAttribute("class", isHint ? "track-line hint" : "track-line");
     trackSvg.appendChild(line);
 
-    for (let r = 1; r <= 7; r++) {
-      const t = r / 8;
+    for (let r = 1; r <= 9; r++) {
+      const t = r / 10;
       const y = farY + (arena.clientHeight - farY) * t;
       const width = 12 + t * laneWidthNear;
       const x = farX + (base.x - farX) * t;
@@ -958,7 +1074,8 @@ function renderTracks() {
       rung.setAttribute("y1", y);
       rung.setAttribute("x2", x + width / 2);
       rung.setAttribute("y2", y);
-      rung.setAttribute("class", "track-rung");
+      rung.setAttribute("class", isHint ? "track-rung hint" : "track-rung");
+      rung.style.animationDelay = `${r * -0.14}s`;
       trackSvg.appendChild(rung);
     }
 
@@ -1005,42 +1122,6 @@ function renderCharacter() {
     dot.classList.toggle("done", i < character.nextPartIndex);
     dot.classList.toggle("next", i === character.nextPartIndex);
   });
-}
-
-function handleWhiteKeyPress(slotIndex, buttonElement) {
-  if (!isPlaying || !character) return;
-
-  const slot = keyboardSlots[slotIndex];
-  if (!slot) return;
-
-  pressVisual(buttonElement);
-  playPianoKey(slotIndex);
-
-  if (slot.kind !== "part" || slot.partIndex !== character.nextPartIndex) {
-    buttonElement.classList.add("wrong");
-    setTimeout(() => buttonElement.classList.remove("wrong"), 180);
-    playBadTone();
-    return;
-  }
-
-  score += 100;
-
-  const arenaRect = arena.getBoundingClientRect();
-  const keyRect = buttonElement.getBoundingClientRect();
-
-  const startX = keyRect.left + keyRect.width / 2 - arenaRect.left;
-  const startY = arena.clientHeight + 4;
-
-  launchHitToken(slot.char, startX, startY, character, slot.partIndex, slotIndex);
-
-  keyboardSlots[slotIndex] = {
-    kind: "used",
-    char: "",
-    noteIndex: slotIndex
-  };
-
-  updateHUD();
-  renderPiano();
 }
 
 function launchHitToken(char, x, y, target, partIndex, laneIndex) {
@@ -1094,7 +1175,7 @@ function updateCharacter(dt, now) {
   const oldShouldHint = shouldShowHint();
 
   const slowed = now < character.slowUntil;
-  const speed = slowed ? character.baseSpeed * 0.34 : character.baseSpeed;
+  const speed = slowed ? character.baseSpeed * 0.28 : character.baseSpeed;
 
   character.z += speed * dt;
   character.scaleKick *= Math.pow(0.9, dt);
@@ -1119,7 +1200,7 @@ function updateHitTokens(dt) {
       return;
     }
 
-    t.z += 0.04 * dt;
+    t.z += 0.045 * dt;
     if (t.z > t.target.z) t.z = t.target.z;
 
     const targetPoint = getPointOnLane(t.target.laneIndex, t.target.z, t.target.laneOffset);
@@ -1142,11 +1223,11 @@ function tokenHitsCharacter(token, c) {
   token.dead = true;
 
   c.nextPartIndex++;
-  c.slowUntil = performance.now() + 2800;
-  c.scaleKick = 0.055;
+  c.slowUntil = performance.now() + 3200;
+  c.scaleKick = 0.05;
 
   c.el.classList.add("correct");
-  setTimeout(() => c.el?.classList.remove("correct"), 160);
+  setTimeout(() => c.el?.classList.remove("correct"), 150);
 
   const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
   createImpactRing(point.x, point.y);
@@ -1232,8 +1313,8 @@ function completeCharacter(c) {
   setTimeout(() => {
     if (character?.el) character.el.remove();
     character = null;
-    scheduleNextCharacter(280);
-  }, 460);
+    scheduleNextCharacter(80);
+  }, 280);
 
   updateHUD();
 }
@@ -1246,14 +1327,14 @@ function missCharacter() {
   renderPiano();
   renderTracks();
 
-  character.el.style.transition = "opacity 0.22s, transform 0.22s";
+  character.el.style.transition = "opacity 0.18s, transform 0.18s";
   character.el.style.opacity = "0";
 
   setTimeout(() => {
     if (character?.el) character.el.remove();
     character = null;
-    scheduleNextCharacter(260);
-  }, 240);
+    scheduleNextCharacter(80);
+  }, 180);
 }
 
 function clearKeyboardParts() {
@@ -1287,7 +1368,6 @@ function updateHUD() {
 
 function pressVisual(el) {
   el.classList.add("pressed");
-  setTimeout(() => el.classList.remove("pressed"), 110);
 }
 
 function ensureAudio() {
@@ -1300,19 +1380,23 @@ function ensureAudio() {
   }
 }
 
-function playPianoKey(index) {
+function startSustainNote(noteId, freq) {
   ensureAudio();
-  playTonePiano(WHITE_KEYS[index].freq, 0.58);
-}
 
-function playTonePiano(freq, duration) {
-  ensureAudio();
+  if (activeNotes.has(noteId)) return;
 
   const now = audioCtx.currentTime;
+  const output = audioCtx.createGain();
+  output.gain.setValueAtTime(0.001, now);
+  output.gain.linearRampToValueAtTime(0.12, now + 0.025);
+  output.connect(audioCtx.destination);
+
+  const oscillators = [];
+
   const harmonics = [
-    { ratio: 1, amp: 0.42 },
-    { ratio: 2, amp: 0.16 },
-    { ratio: 3, amp: 0.07 }
+    { ratio: 1, amp: 1.0 },
+    { ratio: 2, amp: 0.35 },
+    { ratio: 3, amp: 0.16 }
   ];
 
   harmonics.forEach(h => {
@@ -1323,15 +1407,50 @@ function playTonePiano(freq, duration) {
     osc.frequency.setValueAtTime(freq * h.ratio, now);
 
     gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(h.amp * 0.18, now + 0.018);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    gain.gain.linearRampToValueAtTime(0.18 * h.amp, now + 0.03);
 
     osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    gain.connect(output);
 
     osc.start(now);
-    osc.stop(now + duration + 0.04);
+    oscillators.push({ osc, gain });
   });
+
+  activeNotes.set(noteId, {
+    output,
+    oscillators
+  });
+}
+
+function stopSustainNote(noteId) {
+  if (!audioCtx) return;
+
+  const note = activeNotes.get(noteId);
+  if (!note) return;
+
+  const now = audioCtx.currentTime;
+
+  try {
+    note.output.gain.cancelScheduledValues(now);
+    note.output.gain.setValueAtTime(note.output.gain.value || 0.08, now);
+    note.output.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+    note.oscillators.forEach(({ osc }) => {
+      osc.stop(now + 0.24);
+    });
+
+    setTimeout(() => {
+      try {
+        note.output.disconnect();
+      } catch (e) {}
+    }, 280);
+  } catch (e) {}
+
+  activeNotes.delete(noteId);
+}
+
+function stopAllNotes() {
+  Array.from(activeNotes.keys()).forEach(key => stopSustainNote(key));
 }
 
 function playBadTone() {
