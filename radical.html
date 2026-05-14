@@ -8,130 +8,64 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <style>
-* {
-  box-sizing: border-box;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
+* { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 :root {
-  --vh: 1vh;
-  --keyboard-height: clamp(170px, 32vh, 260px);
-  --purple: #4c1d95;
-  --green: #22c55e;
-  --pink: #fb7185;
-  --track-base: rgba(255,255,255,0.38);
-  --track-soft: rgba(255,255,255,0.18);
-  --neon-cyan: #22d3ee;
-  --neon-pink: #f472b6;
+  --vh: 1vh; --keyboard-height: clamp(170px, 32vh, 260px);
+  --neon-cyan: #22d3ee; --neon-pink: #f472b6;
 }
-
 html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-  background:
-    radial-gradient(ellipse at 50% 14%, rgba(255,255,255,0.4), transparent 34%),
-    radial-gradient(ellipse at 50% 5%, rgba(56,189,248,0.2), transparent 42%),
-    linear-gradient(180deg, #1e1b4b 0%, #312e81 48%, #0f172a 100%);
+  margin: 0; width: 100%; height: 100%; overflow: hidden; font-family: "Microsoft YaHei", sans-serif;
+  background: radial-gradient(ellipse at 50% 14%, rgba(255,255,255,0.4), transparent 34%),
+              radial-gradient(ellipse at 50% 5%, rgba(56,189,248,0.2), transparent 42%),
+              linear-gradient(180deg, #1e1b4b 0%, #312e81 48%, #0f172a 100%);
 }
-
 body { touch-action: manipulation; }
 
-#game {
-  position: relative;
-  width: 100vw;
-  height: calc(var(--vh) * 100);
-  overflow: hidden;
-  perspective: 1000px;
-}
+#game { position: relative; width: 100vw; height: calc(var(--vh) * 100); overflow: hidden; perspective: 1000px; }
 
-#hud {
-  position: absolute;
-  top: max(8px, env(safe-area-inset-top));
-  left: 10px;
-  z-index: 90;
-  pointer-events: none;
-}
-
+#hud { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 10px; z-index: 90; pointer-events: none; }
 .hud-box {
-  background: rgba(15, 23, 42, 0.68);
-  border: 2px solid rgba(34, 211, 238, 0.6);
-  backdrop-filter: blur(8px);
-  border-radius: 16px;
-  padding: 7px 12px;
-  font-size: clamp(14px, 2.4vw, 20px);
-  font-weight: 900;
-  color: #fff;
-  text-shadow: 0 0 8px var(--neon-cyan);
-  box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
+  background: rgba(15, 23, 42, 0.68); border: 2px solid rgba(34, 211, 238, 0.6); backdrop-filter: blur(8px);
+  border-radius: 16px; padding: 7px 12px; font-size: clamp(14px, 2.4vw, 20px); font-weight: 900;
+  color: #fff; text-shadow: 0 0 8px var(--neon-cyan); box-shadow: 0 0 15px rgba(34, 211, 238, 0.3);
 }
 
-#arena {
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  bottom: var(--keyboard-height);
-  overflow: hidden;
-  z-index: 5;
-}
-
+#arena { position: absolute; left: 0; right: 0; top: 0; bottom: var(--keyboard-height); overflow: hidden; z-index: 5; }
 #depth-fog {
   position: absolute; inset: 0; pointer-events: none; z-index: 6;
-  background:
-    radial-gradient(ellipse at 50% 2%, rgba(22, 193, 206, 0.3), transparent 50%),
-    linear-gradient(180deg, rgba(255,255,255,0.05), transparent 62%);
+  background: radial-gradient(ellipse at 50% 2%, rgba(22, 193, 206, 0.3), transparent 50%), linear-gradient(180deg, rgba(255,255,255,0.05), transparent 62%);
 }
-
-#track-svg {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  z-index: 8; pointer-events: none;
-  filter: drop-shadow(0 0 12px rgba(34,211,238,0.2));
-}
+#track-svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 8; pointer-events: none; filter: drop-shadow(0 0 12px rgba(34,211,238,0.2)); }
 
 .track-fill { fill: rgba(34, 211, 238, 0.03); stroke: rgba(34, 211, 238, 0.1); stroke-width: 1; }
 .track-fill.hint-fill { fill: rgba(34,197,94,0.15); stroke: rgba(34,197,94,0.4); }
-.track-line {
-  stroke: var(--neon-cyan); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 12 18;
-  animation: trackDash 0.8s linear infinite; opacity: 0.7;
-}
-.track-line.hint {
-  stroke: #4ade80; stroke-width: 6; filter: drop-shadow(0 0 12px #4ade80);
-  animation: trackDash 0.4s linear infinite;
-}
+.track-line { stroke: var(--neon-cyan); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 12 18; animation: trackDash 0.6s linear infinite; opacity: 0.7; }
+.track-line.hint { stroke: #4ade80; stroke-width: 6; filter: drop-shadow(0 0 12px #4ade80); animation: trackDash 0.3s linear infinite; }
 .track-rung { stroke: rgba(34, 211, 238, 0.4); stroke-width: 2; animation: rungPulse 1s ease-in-out infinite; }
 .track-rung.hint { stroke: rgba(74, 222, 128, 0.8); filter: drop-shadow(0 0 8px #4ade80); }
 
 @keyframes trackDash { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -30; } }
-@keyframes rungPulse {
-  0%, 100% { opacity: 0.2; filter: brightness(1); }
-  50% { opacity: 0.9; filter: brightness(1.5) drop-shadow(0 0 5px var(--neon-cyan)); }
-}
+@keyframes rungPulse { 0%, 100% { opacity: 0.2; filter: brightness(1); } 50% { opacity: 0.9; filter: brightness(1.5) drop-shadow(0 0 5px var(--neon-cyan)); } }
 
 #miss-line {
-  position: absolute; left: 0; right: 0; bottom: var(--keyboard-height);
-  height: 6px; z-index: 70;
-  background: linear-gradient(90deg, transparent, rgba(244, 114, 182, 0.8), transparent);
-  box-shadow: 0 0 20px rgba(244, 114, 182, 0.6); pointer-events: none;
+  position: absolute; left: 0; right: 0; bottom: var(--keyboard-height); height: 6px; z-index: 70;
+  background: linear-gradient(90deg, transparent, rgba(244, 114, 182, 0.8), transparent); box-shadow: 0 0 20px rgba(244, 114, 182, 0.6); pointer-events: none;
 }
 
+/* 取消了旋转和夸张特效，改为平滑闪烁和缩放 */
 .depth-character {
-  position: absolute; z-index: 40; background: transparent; color: #fff;
-  font-weight: 900; line-height: 1;
+  position: absolute; z-index: 40; background: transparent; color: #fff; font-weight: 900; line-height: 1;
   text-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px var(--neon-cyan), 0 10px 20px rgba(0,0,0,0.5);
   transform-origin: center center; will-change: left, top, transform, opacity, font-size;
-  transition: transform 0.05s ease-out;
+  transition: transform 0.1s ease-out, filter 0.1s;
 }
 .depth-character.correct {
-  color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e;
+  color: #a7f3d0; text-shadow: 0 0 15px #4ade80, 0 0 30px #22c55e; filter: brightness(1.8);
 }
-
-.depth-character.complete { animation: completeExplosion 0.4s ease-out forwards; }
-@keyframes completeExplosion {
-  0% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotateY(0deg) rotateZ(0deg); filter: brightness(1); }
-  50% { opacity: 1; transform: translate(-50%, -50%) scale(2) rotateY(180deg) rotateZ(10deg); filter: brightness(2.5) drop-shadow(0 0 40px #facc15); color: #fef08a; }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(3) rotateY(360deg) rotateZ(20deg); filter: brightness(3) blur(4px); }
+.depth-character.complete { animation: completeFade 0.3s ease-out forwards; }
+@keyframes completeFade {
+  0% { opacity: 1; filter: brightness(2); }
+  100% { opacity: 0; filter: brightness(3); transform: translate(-50%, -50%) scale(2); }
 }
 
 .progress { position: absolute; left: 50%; bottom: -28px; transform: translateX(-50%); display: flex; gap: 6px; }
@@ -143,111 +77,49 @@ body { touch-action: manipulation; }
 #piano-wrap {
   position: absolute; left: 0; right: 0; bottom: 0; height: var(--keyboard-height); z-index: 100;
   padding: clamp(8px, 1.5vh, 12px) max(8px, env(safe-area-inset-left)) max(10px, env(safe-area-inset-bottom));
-  background: linear-gradient(180deg, rgba(2,6,23,0.8), rgba(15,23,42,0.95));
-  border-top: 2px solid var(--neon-cyan); box-shadow: 0 -10px 30px rgba(34,211,238,0.2);
+  background: linear-gradient(180deg, rgba(2,6,23,0.8), rgba(15,23,42,0.95)); border-top: 2px solid var(--neon-cyan); box-shadow: 0 -10px 30px rgba(34,211,238,0.2);
 }
-
 #piano {
   position: relative; width: 100%; height: 100%; max-width: 1180px; margin: 0 auto;
-  border-radius: 14px; background: #020617; padding: 4px; box-shadow: inset 0 0 20px rgba(34,211,238,0.1);
-  perspective: 800px;
+  border-radius: 14px; background: #020617; padding: 4px; box-shadow: inset 0 0 20px rgba(34,211,238,0.1); perspective: 800px;
 }
-
 .white-key {
   position: absolute; bottom: 4px; height: calc(100% - 8px);
   border: 1px solid #334155; border-bottom: 12px solid #1e293b; border-radius: 0 0 12px 12px;
   background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%); color: #0f172a; cursor: pointer; overflow: hidden;
-  box-shadow: inset 0 -10px 10px rgba(0,0,0,0.1);
-  transform-origin: top center;
+  box-shadow: inset 0 -10px 10px rgba(0,0,0,0.1); transform-origin: top center;
   transition: transform 0.05s ease, border-bottom-width 0.05s ease, filter 0.05s, box-shadow 0.05s, background 0.05s;
 }
-
-.white-key.pressed {
-  transform: rotateX(8deg);
-  border-bottom-width: 2px;
-  background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%);
-  box-shadow: inset 0 20px 20px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.3);
-}
-
-.white-key.hint {
-  background: linear-gradient(180deg, #ecfdf5 0%, #a7f3d0 100%); border-color: #10b981; border-bottom-color: #059669;
-  box-shadow: inset 0 0 20px #6ee7b7, 0 0 15px rgba(16,185,129,0.5);
-}
+.white-key.pressed { transform: rotateX(8deg); border-bottom-width: 2px; background: linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%); box-shadow: inset 0 20px 20px rgba(0,0,0,0.2), inset 0 2px 5px rgba(255,255,255,0.3); }
+.white-key.hint { background: linear-gradient(180deg, #ecfdf5 0%, #a7f3d0 100%); border-color: #10b981; border-bottom-color: #059669; box-shadow: inset 0 0 20px #6ee7b7, 0 0 15px rgba(16,185,129,0.5); }
 .white-key.used { background: linear-gradient(180deg, #64748b 0%, #475569 100%); color: #94a3b8; border-bottom-color: #334155; }
-
-.white-key.wrong {
-  background: #ffe4e6; border-color: #e11d48; border-bottom-color: #9f1239; box-shadow: inset 0 0 30px #f43f5e;
-  animation: wrongShake 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-@keyframes wrongShake {
-  0%, 100% { transform: rotateX(8deg) translateX(0); }
-  20%, 60% { transform: rotateX(8deg) translateX(-6px); }
-  40%, 80% { transform: rotateX(8deg) translateX(6px); }
-}
-
+.white-key.wrong { background: #ffe4e6; border-color: #e11d48; border-bottom-color: #9f1239; box-shadow: inset 0 0 30px #f43f5e; animation: wrongShake 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes wrongShake { 0%, 100% { transform: rotateX(8deg) translateX(0); } 20%, 60% { transform: rotateX(8deg) translateX(-6px); } 40%, 80% { transform: rotateX(8deg) translateX(6px); } }
 .black-key {
-  position: absolute; top: 4px; height: 52%; width: 7.2%;
-  border: 1px solid #000; border-bottom: 10px solid #000; border-radius: 0 0 8px 8px;
-  background: linear-gradient(180deg, #334155 0%, #0f172a 100%); color: #cbd5e1; z-index: 8; cursor: pointer;
-  box-shadow: 0 8px 15px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.2);
-  transform-origin: top center;
-  transition: transform 0.05s ease, border-bottom-width 0.05s ease, filter 0.05s, box-shadow 0.05s, background 0.05s;
+  position: absolute; top: 4px; height: 52%; width: 7.2%; border: 1px solid #000; border-bottom: 10px solid #000; border-radius: 0 0 8px 8px;
+  background: linear-gradient(180deg, #334155 0%, #0f172a 100%); color: #cbd5e1; z-index: 8; cursor: pointer; box-shadow: 0 8px 15px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.2);
+  transform-origin: top center; transition: transform 0.05s ease, border-bottom-width 0.05s ease, filter 0.05s, box-shadow 0.05s, background 0.05s;
 }
+.black-key.pressed { transform: rotateX(12deg); border-bottom-width: 2px; background: linear-gradient(180deg, #1e293b 0%, #020617 100%); box-shadow: 0 2px 5px rgba(0,0,0,0.6), inset 0 10px 10px rgba(0,0,0,0.8); }
 
-.black-key.pressed {
-  transform: rotateX(12deg);
-  border-bottom-width: 2px;
-  background: linear-gradient(180deg, #1e293b 0%, #020617 100%);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.6), inset 0 10px 10px rgba(0,0,0,0.8);
-}
-
-.key-radical {
-  position: absolute; left: 50%; top: 65%; transform: translate(-50%, -50%);
-  font-size: clamp(32px, 6vw, 60px); font-weight: 900; z-index: 12; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
+.key-radical { position: absolute; left: 50%; top: 65%; transform: translate(-50%, -50%); font-size: clamp(32px, 6vw, 60px); font-weight: 900; z-index: 12; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .white-key.pressed .key-radical { color: #020617; }
-.key-note {
-  position: absolute; left: 50%; bottom: clamp(6px, 1.2vh, 10px); transform: translateX(-50%);
-  font-size: clamp(10px, 2vw, 14px); font-weight: 900; color: #94a3b8; z-index: 12;
-}
+.key-note { position: absolute; left: 50%; bottom: clamp(6px, 1.2vh, 10px); transform: translateX(-50%); font-size: clamp(10px, 2vw, 14px); font-weight: 900; color: #94a3b8; z-index: 12; }
 
-.hit-token {
-  position: absolute; z-index: 95; min-width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle, #fff, #a7f3d0);
-  border: 4px solid #10b981; color: #064e3b; font-size: 30px; font-weight: 900; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 20px #4ade80, 0 0 40px #22c55e, inset 0 0 10px #fff; pointer-events: none;
-}
-.impact-ring {
-  position: absolute; z-index: 120; width: 50px; height: 50px; border: 4px solid #4ade80; border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0.1); pointer-events: none; box-shadow: 0 0 20px #22c55e, inset 0 0 20px #4ade80;
-  animation: impactRingAnim 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
-}
-.impact-core {
-  position: absolute; z-index: 121; width: 30px; height: 30px; background: #fff; border-radius: 50%;
-  transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 0 30px #fff, 0 0 50px #facc15;
-  animation: impactCoreAnim 0.3s ease-out forwards;
-}
+/* 取消了飞行子弹的旋转 */
+.hit-token { position: absolute; z-index: 95; min-width: 50px; height: 50px; border-radius: 50%; background: radial-gradient(circle, #fff, #a7f3d0); border: 4px solid #10b981; color: #064e3b; font-size: 30px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px #4ade80, 0 0 40px #22c55e, inset 0 0 10px #fff; pointer-events: none; }
+.impact-ring { position: absolute; z-index: 120; width: 50px; height: 50px; border: 4px solid #4ade80; border-radius: 50%; transform: translate(-50%, -50%) scale(0.1); pointer-events: none; box-shadow: 0 0 20px #22c55e, inset 0 0 20px #4ade80; animation: impactRingAnim 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) forwards; }
 @keyframes impactRingAnim { 0% { opacity: 1; transform: translate(-50%, -50%) scale(0.1); border-width: 10px; } 100% { opacity: 0; transform: translate(-50%, -50%) scale(3.5); border-width: 0px; } }
-@keyframes impactCoreAnim { 0% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(4); } }
 
-.overlay {
-  position: absolute; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px;
-}
+.overlay { position: absolute; inset: 0; z-index: 300; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
 .overlay h1 { margin: 0 0 10px; color: #fff; font-size: clamp(36px, 9vw, 68px); line-height: 1.1; text-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan); }
 .version-label { margin: 0 0 20px; color: var(--neon-pink); font-size: 20px; font-weight: 900; text-shadow: 0 0 10px var(--neon-pink); letter-spacing: 2px; }
 .overlay p { margin: 0 0 30px; max-width: 760px; color: #e2e8f0; font-size: clamp(18px, 3.5vw, 24px); font-weight: 800; line-height: 1.5; }
-.btn {
-  border: none; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; padding: 16px 40px; font-size: 28px; font-weight: 900;
-  border-radius: 999px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4); cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.1s, box-shadow 0.1s;
-}
+.btn { border: none; background: linear-gradient(135deg, #0ea5e9, #6366f1); color: #fff; padding: 16px 30px; font-size: 24px; font-weight: 900; border-radius: 999px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4); cursor: pointer; text-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.1s, box-shadow 0.1s; margin: 10px; }
 .btn:active { transform: translateY(6px) scale(0.95); box-shadow: 0 4px 10px rgba(99, 102, 241, 0.5), inset 0 2px 4px rgba(255,255,255,0.4); }
 
-@media (orientation: landscape) and (max-height: 760px) {
-  :root { --keyboard-height: clamp(158px, 36vh, 230px); } .black-key { height: 48%; } .key-radical { top: 68%; font-size: clamp(30px, 6vh, 48px); } .progress { bottom: -20px; } .dot { width: 10px; height: 10px; }
-}
-@media (max-width: 700px) {
-  :root { --keyboard-height: clamp(168px, 34vh, 240px); } .hit-token { min-width: 42px; height: 42px; font-size: 26px; } .key-radical { font-size: clamp(34px, 8vw, 54px); }
-}
+@media (orientation: landscape) and (max-height: 760px) { :root { --keyboard-height: clamp(158px, 36vh, 230px); } .black-key { height: 48%; } .key-radical { top: 68%; font-size: clamp(30px, 6vh, 48px); } .progress { bottom: -20px; } .dot { width: 10px; height: 10px; } }
+@media (max-width: 700px) { :root { --keyboard-height: clamp(168px, 34vh, 240px); } .hit-token { min-width: 42px; height: 42px; font-size: 26px; } .key-radical { font-size: clamp(34px, 8vw, 54px); } }
 </style>
 </head>
 <body>
@@ -258,40 +130,37 @@ body { touch-action: manipulation; }
   <div id="piano-wrap"><div id="piano"></div></div>
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v2.2.0 电子琴超速版</div>
+    <div class="version-label" id="version-label">Version v2.3.0 音轨同步版</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v2.2.0 电子琴超速版";
+const GAME_VERSION = "v2.3.0 完美乐谱修复版";
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
 const KEY_COUNT = 8;
 const HINT_AFTER_PROGRESS = 0.5;
 
-// User's provided melody sequence, mapped from notes 1-6 to indices 0-5.
-// Mapping: 1 -> 0, 2 -> 1, 3 -> 2, 4 -> 3, 5 -> 4, 6 -> 5
+// 【重磅功能】带精准节拍的旋律数组
+// 格式: [按键编号(0-5代表音符1-6, -1是休止符), 持续拍数]
 const MELODY = [
-    4, 2, 3, 4, 4, 5, 4, 2, 3, 4,
-    5, 5, 4, 3, 5, 4, 2, 1, 2, 3,
-    4, 4, 2, 2, 4, 2, 1, 0, 4, 3,
-    2, 3, 4, 4, 5, 4, 3, 4, 5, 4,
-    2, 1, 2, 3, 4, 4, 4, 5, 4, 3,
-    3, 4, 3, 2, 1, 2, 0, 4, 2, 2,
-    4, 2, 1, 0, 4, 3, 2, 3, 4, 4,
-    5, 4, 3, 4, 5, 4, 2, 1, 2, 3,
-    4, 4, 4, 5, 4, 3, 3, 4, 3, 2,
-    1, 2, 0, 2, 2, 4, 2, 1, 0, 4,
-    3, 2, 3, 4, 5, 5, 4, 3, 5, 4,
-    2, 1, 2, 3, 4, 4, 2, 2, 4, 2,
-    1, 0, 4, 3, 2, 3, 4, 4, 5, 4,
-    3, 4, 5, 4, 2, 1, 2, 3, 4, 4,
-    4, 5, 4, 3, 3, 4, 3, 2, 1, 2,
-    0, 2, 2, 4, 2, 1, 0, 4, 3, 2,
-    3, 4, 4, 5, 4, 3, 4, 5, 4, 2,
-    1, 2, 3, 4, 4, 4, 5, 4, 3, 3,
-    4, 3, 2, 1, 2, 0
+  // 5· 3 4 | 5 - 5 6 | 5 3 4 5 | - - - - |
+  [4, 1.5], [2, 0.5], [3, 2], [4, 2], [4, 1], [5, 1], [4, 1], [2, 1], [3, 1], [4, 1], [-1, 4],
+  // 6 6 5 4 | 6 - 5 3 | 2 - 3 4 | 5 - - 5 |
+  [5, 1], [5, 1], [4, 1], [3, 1], [5, 2], [4, 1], [2, 1], [1, 2], [2, 1], [3, 1], [4, 3], [4, 1],
+  // 3· 3 5 | 3 2 1 - | 5 4 3 4 | 5 - - - |
+  [2, 1.5], [2, 0.5], [4, 2], [2, 1], [1, 1], [0, 2], [4, 1], [3, 1], [2, 1], [3, 1], [4, 4],
+  // 5 6 5 4 | 5 6 5 3 | 2 - 3 4 | 5 - - - |
+  [4, 1], [5, 1], [4, 1], [3, 1], [4, 1], [5, 1], [4, 1], [2, 1], [1, 2], [2, 1], [3, 1], [4, 4],
+  // 5 5 6 5 | 4 4 5 4 | 3 - 2 3 | 1 - - 5 |
+  [4, 1], [4, 1], [5, 1], [4, 1], [3, 1], [3, 1], [4, 1], [3, 1], [2, 2], [1, 1], [2, 1], [0, 3], [4, 1],
+  // 3· 3 5 | 3 2 1 - | 5 4 3 4 | 5 - - - |
+  [2, 1.5], [2, 0.5], [4, 2], [2, 1], [1, 1], [0, 2], [4, 1], [3, 1], [2, 1], [3, 1], [4, 4],
+  // 5 6 5 4 | 5 6 5 3 | 2 - 3 4 | 5 - - - |
+  [4, 1], [5, 1], [4, 1], [3, 1], [4, 1], [5, 1], [4, 1], [2, 1], [1, 2], [2, 1], [3, 1], [4, 4],
+  // 5 5 6 5 | 4 4 5 4 | 3 - 2 3 | 1 - - - |
+  [4, 1], [4, 1], [5, 1], [4, 1], [3, 1], [3, 1], [4, 1], [3, 1], [2, 2], [1, 1], [2, 1], [0, 4]
 ];
 
 const WHITE_KEYS = [
@@ -304,26 +173,29 @@ const BLACK_KEYS = [
 ];
 const distractors = [ "扌", "亻", "心", "忄", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日", "木", "女", "讠", "辶", "土", "火", "宀", "贝", "王", "纟", "石", "禾", "目", "竹", "页", "刂" ];
 
-const arena = document.getElementById("arena");
-const trackSvg = document.getElementById("track-svg");
-const piano = document.getElementById("piano");
-const startScreen = document.getElementById("start-screen");
+const arena = document.getElementById("arena"); const trackSvg = document.getElementById("track-svg");
+const piano = document.getElementById("piano"); const startScreen = document.getElementById("start-screen");
 const scoreEl = document.getElementById("score");
 
 let dictionary = []; let score = 0; let isPlaying = false; let character = null; let hitTokens = []; let keyboardSlots = [];
 let keyCenters = []; let trackGeometry = []; let animationRef = null; let spawnTimer = null; let lastFrameTime = 0; let idCounter = 1;
 let audioCtx = null; let activeNotes = new Map();
 
-// Variables for melody preview
-let MELODY_PREVIEW_INTERVAL = null;
-let previewIndex = 0;
-let isPlayingPreview = false;
+let previewIndex = 0; let isPlayingPreview = false; let melodyTimeout = null; let gameMelodyIndex = 0;
 
 window.addEventListener("load", () => { setViewportHeight(); loadDictionary(); });
 window.addEventListener("resize", () => { setViewportHeight(); handleResize(); });
 window.addEventListener("orientationchange", () => { setTimeout(() => { setViewportHeight(); handleResize(); }, 300); });
-
 function setViewportHeight() { document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`); }
+
+// 解决苹果设备没有声音的核心：强制激活音频上下文
+function unlockAudio() {
+  if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+  if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+  const buffer = audioCtx.createBuffer(1, 1, 22050);
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer; source.connect(audioCtx.destination); source.start(0);
+}
 
 function loadDictionary() {
   document.getElementById("version-label").textContent = GAME_VERSION;
@@ -341,77 +213,62 @@ function loadDictionary() {
         dictionary.push({ word, parts });
       });
       if (dictionary.length) {
-        document.getElementById("start-title").textContent = "汉字连击 · 超速版";
-        document.getElementById("start-text").innerHTML = `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>全新 GarageBand 电子琴音色 & 下压回弹物理效果，节奏调快！`;
+        document.getElementById("start-title").textContent = "汉字连击快线";
+        document.getElementById("start-text").innerHTML = `修复了无声BUG！<br>请点击“播放旋律”验收乐谱节奏。<br>开始游戏后，正确答案将强制关联旋律！`;
         
-        // Add Play Melody button
-        const melodyBtn = document.createElement("button"); melodyBtn.id = "play-melody-btn"; melodyBtn.className = "btn"; melodyBtn.textContent = "🎹 播放旋律"; melodyBtn.style.marginRight = "10px";
-        melodyBtn.addEventListener("click", previewMelody); startScreen.appendChild(melodyBtn);
-
-        const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "🚀 启动";
-        btn.addEventListener("click", startGame); startScreen.appendChild(btn);
-      } else {
-        document.getElementById("start-title").textContent = "数据加载失败"; document.getElementById("start-text").textContent = "没有找到有效题目。";
+        const btnBox = document.createElement("div"); btnBox.style.marginTop = "20px";
+        const melodyBtn = document.createElement("button"); melodyBtn.id = "play-melody-btn"; melodyBtn.className = "btn"; melodyBtn.textContent = "🎹 播放旋律";
+        melodyBtn.addEventListener("click", () => { unlockAudio(); previewMelody(); });
+        
+        const startBtn = document.createElement("button"); startBtn.className = "btn"; startBtn.textContent = "🚀 开始游戏";
+        startBtn.addEventListener("click", () => { unlockAudio(); startGame(); });
+        
+        btnBox.appendChild(melodyBtn); btnBox.appendChild(startBtn); startScreen.appendChild(btnBox);
       }
     }
   });
 }
 
-function startGame() {
-  if (!dictionary.length) return;
-  
-  stopMelodyPreview(); // Stop preview if running
-  ensureAudio(); clearTimers(); clearScene();
-  score = 0; isPlaying = true; lastFrameTime = performance.now(); startScreen.style.display = "none";
-  initKeyboardSlots(); renderPiano();
-  requestAnimationFrame(() => { calculateKeyCenters(); renderTracks(); spawnCharacter(); updateHUD(); animationRef = requestAnimationFrame(gameLoop); });
-}
-
-function stopMelodyPreview() {
-  if (isPlayingPreview && MELODY_PREVIEW_INTERVAL) {
-    clearInterval(MELODY_PREVIEW_INTERVAL);
-    isPlayingPreview = false;
-    MELODY_PREVIEW_INTERVAL = null;
-    document.getElementById("play-melody-btn").textContent = "🎹 播放旋律";
-  }
-}
-
+// 精准节奏播放器
 function previewMelody() {
   if (isPlayingPreview) {
-    stopMelodyPreview();
-    return;
+    isPlayingPreview = false; clearTimeout(melodyTimeout); stopAllNotes();
+    document.getElementById("play-melody-btn").textContent = "🎹 播放旋律"; return;
   }
-  
-  stopAllNotes(); // Stop any currently playing sounds
-  document.getElementById("play-melody-btn").textContent = "⏹️ 停止播放";
-  previewIndex = 0;
-  isPlayingPreview = true;
-  
-  MELODY_PREVIEW_INTERVAL = setInterval(() => {
-    if (previewIndex >= MELODY.length) {
-      stopMelodyPreview();
-      return;
-    }
-    
-    const note = MELODY[previewIndex];
+  stopAllNotes(); document.getElementById("play-melody-btn").textContent = "⏹️ 停止播放";
+  previewIndex = 0; isPlayingPreview = true;
+  playNextMelodyNote();
+}
+
+function playNextMelodyNote() {
+  if (!isPlayingPreview || previewIndex >= MELODY.length) {
+    isPlayingPreview = false; document.getElementById("play-melody-btn").textContent = "🎹 播放旋律"; return;
+  }
+  const [note, beats] = MELODY[previewIndex];
+  const beatMs = 400; // BPM大概在 150 左右，每拍400毫秒
+  const durationMs = beats * beatMs;
+
+  if (note !== -1) {
     const key = piano.querySelectorAll('.white-key')[note];
+    if(key) key.classList.add('pressed');
+    startSustainNote(`preview-${note}`, WHITE_KEYS[note].freq);
     
-    // Simulate visual press
-    key.classList.add('pressed');
-    
-    // Start sustain note
-    startSustainNote(`white-${note}`, WHITE_KEYS[note].freq);
-    
-    // Schedule release and stop sustain
     setTimeout(() => {
-      if (isPlayingPreview) { // Check if still playing
-          key.classList.remove('pressed');
-          stopSustainNote(`white-${note}`);
-      }
-    }, 250); // Note duration
-    
-    previewIndex++;
-  }, 300); // Note interval
+      if (key) key.classList.remove('pressed');
+      stopSustainNote(`preview-${note}`);
+    }, durationMs - 50); // 留一点缝隙，让同音重复更清晰
+  }
+
+  previewIndex++;
+  melodyTimeout = setTimeout(playNextMelodyNote, durationMs);
+}
+
+function startGame() {
+  if (!dictionary.length) return;
+  if (isPlayingPreview) { isPlayingPreview = false; clearTimeout(melodyTimeout); stopAllNotes(); }
+  clearTimers(); clearScene(); score = 0; gameMelodyIndex = 0; isPlaying = true; lastFrameTime = performance.now();
+  startScreen.style.display = "none"; initKeyboardSlots(); renderPiano();
+  requestAnimationFrame(() => { calculateKeyCenters(); renderTracks(); spawnCharacter(); updateHUD(); animationRef = requestAnimationFrame(gameLoop); });
 }
 
 function clearTimers() { if (spawnTimer) clearTimeout(spawnTimer); if (animationRef) cancelAnimationFrame(animationRef); spawnTimer = null; animationRef = null; }
@@ -421,7 +278,7 @@ function initKeyboardSlots() { keyboardSlots = Array.from({ length: KEY_COUNT },
 function spawnCharacter() {
   if (!isPlaying || character) return;
   const data = dictionary[Math.floor(Math.random() * dictionary.length)];
-  if (!data) { scheduleNextCharacter(20); return; } // Speed up character appearance
+  if (!data) { scheduleNextCharacter(10); return; } // 缩短等待时间
 
   const el = document.createElement("div"); el.className = "depth-character";
   const wordSpan = document.createElement("span"); wordSpan.textContent = data.word; el.appendChild(wordSpan);
@@ -429,23 +286,45 @@ function spawnCharacter() {
   data.parts.forEach(() => { const dot = document.createElement("div"); dot.className = "dot"; progress.appendChild(dot); });
   el.appendChild(progress); arena.appendChild(el);
 
-  // Speed is doubled by increasing baseSpeed value
+  // 为这个字的每个部件，分配好对应的旋律轨道
+  const partLanes = [];
+  for(let i=0; i<data.parts.length; i++) {
+     while(gameMelodyIndex < MELODY.length && MELODY[gameMelodyIndex][0] === -1) { gameMelodyIndex++; }
+     if (gameMelodyIndex >= MELODY.length) { gameMelodyIndex = 0; }
+     partLanes.push(MELODY[gameMelodyIndex][0]);
+     gameMelodyIndex++;
+  }
+
   character = {
     id: nextId(), el, word: data.word, parts: [...data.parts], nextPartIndex: 0,
-    laneIndex: Math.floor(Math.random() * KEY_COUNT), laneOffset: randomBetween(-0.04, 0.04),
-    z: 0.985, baseSpeed: -0.00120, zVelocity: -0.00120, // Doubled falling speed
+    partLanes: partLanes, laneIndex: partLanes[0], laneOffset: randomBetween(-0.04, 0.04),
+    z: 0.985, baseSpeed: -0.00180, zVelocity: -0.00180, // 大幅提升初始掉落速度
     slowUntil: 0, scaleKick: 0, dead: false, completed: false
   };
 
-  placePartsForCharacter(); renderPiano(); renderTracks(); renderCharacter();
+  refreshKeyboardSlots(); renderPiano(); renderTracks(); renderCharacter();
 }
 
-function placePartsForCharacter() {
-  if (!character) return; initKeyboardSlots();
-  const parts = character.parts.slice(0, KEY_COUNT);
-  const indices = Array.from({ length: KEY_COUNT }, (_, i) => i); shuffle(indices);
-  for (let i = 0; i < parts.length; i++) { keyboardSlots[indices[i]] = { kind: "part", char: parts[i], partIndex: i, noteIndex: indices[i] }; }
-  for (let i = 0; i < KEY_COUNT; i++) { if (!keyboardSlots[i] || keyboardSlots[i].kind !== "part") { keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding(parts), noteIndex: i }; } }
+// 核心逻辑：刷新键盘布局，确保待击打的部件出现在旋律规定的按键上
+function refreshKeyboardSlots() {
+  initKeyboardSlots();
+  if (!character) return;
+  
+  const placedLanes = new Set();
+  for (let i = character.nextPartIndex; i < character.parts.length; i++) {
+    const lane = character.partLanes[i];
+    if (!placedLanes.has(lane)) {
+       keyboardSlots[lane] = { kind: "part", char: character.parts[i], partIndex: i, noteIndex: lane };
+       placedLanes.add(lane);
+    }
+  }
+  
+  const visibleChars = keyboardSlots.filter(s => s.kind === "part").map(s => s.char);
+  for(let i=0; i<KEY_COUNT; i++) {
+     if (keyboardSlots[i].kind !== "part") {
+        keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding(visibleChars), noteIndex: i };
+     }
+  }
 }
 
 function getTravelProgress() { return !character ? 0 : clamp((0.985 - character.z) / 0.965, 0, 1); }
@@ -525,7 +404,6 @@ function launchHitToken(char, x, y, target, partIndex, laneIndex) {
   const token = { id: nextId(), el, char, partIndex, laneIndex, target, z: 0.02, x, y, dead: false, arrived: false }; arena.appendChild(el); hitTokens.push(token); renderHitToken(token);
 }
 
-// Rotation removed from flight path as per request
 function renderHitToken(t) { t.el.style.left = `${t.x}px`; t.el.style.top = `${t.y}px`; t.el.style.transform = `translate(-50%, -50%) scale(${1.02 - t.z * 0.45})`; }
 
 function gameLoop(now) {
@@ -535,14 +413,18 @@ function gameLoop(now) {
 
 function updateCharacter(dt, now) {
   if (!character || character.dead || character.completed) return; const oldShouldHint = shouldShowHint();
-  // Falling speed reduction on hit is still in place with stronger reduction factor (0.15)
-  character.z += (now < character.slowUntil ? character.baseSpeed * 0.15 : character.baseSpeed) * dt; character.scaleKick *= Math.pow(0.9, dt);
+  
+  // 被击中后减速，减速时间延长到 2 秒，减速比例设为 25% (让你有充分时间看)
+  const isSlowed = now < character.slowUntil;
+  const currentSpeed = isSlowed ? character.baseSpeed * 0.25 : character.baseSpeed;
+  
+  character.z += currentSpeed * dt; character.scaleKick *= Math.pow(0.9, dt);
   if (character.z <= 0.02) { missCharacter(); return; } renderCharacter(); if (oldShouldHint !== shouldShowHint()) { renderPiano(); renderTracks(); }
 }
 
 function updateHitTokens(dt) {
   hitTokens.forEach(t => {
-    if (t.dead || !t.target || t.target.dead) { t.dead = true; return; } t.z += 0.06 * dt; if (t.z > t.target.z) t.z = t.target.z;
+    if (t.dead || !t.target || t.target.dead) { t.dead = true; return; } t.z += 0.08 * dt; if (t.z > t.target.z) t.z = t.target.z;
     const targetPoint = getPointOnLane(t.target.laneIndex, t.target.z, t.target.laneOffset); const lanePoint = getPointOnLane(t.laneIndex, t.z, 0); const blend = Math.min(1, t.z / Math.max(0.001, t.target.z));
     t.x = lanePoint.x + (targetPoint.x - lanePoint.x) * blend; t.y = lanePoint.y + (targetPoint.y - lanePoint.y) * blend;
     if (!t.arrived && (distance(t.x, t.y, targetPoint.x, targetPoint.y) < 35 || t.z >= t.target.z - 0.01)) { t.arrived = true; tokenHitsCharacter(t, t.target); } renderHitToken(t);
@@ -550,31 +432,28 @@ function updateHitTokens(dt) {
 }
 
 function tokenHitsCharacter(token, c) {
-  token.dead = true; c.nextPartIndex++; c.slowUntil = performance.now() + 1000; c.scaleKick = 0.25;
+  token.dead = true; c.nextPartIndex++; 
+  c.slowUntil = performance.now() + 2000; // 减速持续 2 秒
+  c.scaleKick = 0.15; // 稍微变大一点，取消暴击夸张效果
+  
   c.el.classList.remove("correct"); void c.el.offsetWidth; c.el.classList.add("correct");
   const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset); createImpactRing(point.x, point.y); playBounceTone();
-  if (c.nextPartIndex >= c.parts.length) { completeCharacter(c); } else { refillUsedSlot(token.laneIndex); renderPiano(); renderTracks(); } renderCharacter(); updateHUD();
-}
-
-function refillUsedSlot(slotIndex) {
-  let pending = null; for (let i = character.nextPartIndex; i < character.parts.length; i++) { if (!keyboardSlots.some(s => s.kind === "part" && s.partIndex === i)) { pending = { partIndex: i, char: character.parts[i] }; break; } }
-  keyboardSlots[slotIndex] = pending ? { kind: "part", char: pending.char, partIndex: pending.partIndex, noteIndex: slotIndex } : { kind: "distractor", char: randomDistractorAvoiding(keyboardSlots.filter(s => s.kind === "part").map(s => s.char)), noteIndex: slotIndex };
+  if (c.nextPartIndex >= c.parts.length) { completeCharacter(c); } else { refreshKeyboardSlots(); renderPiano(); renderTracks(); } renderCharacter(); updateHUD();
 }
 
 function createImpactRing(x, y) {
   const ring = document.createElement("div"); ring.className = "impact-ring"; ring.style.left = `${x}px`; ring.style.top = `${y}px`; arena.appendChild(ring);
-  const core = document.createElement("div"); core.className = "impact-core"; core.style.left = `${x}px`; core.style.top = `${y}px`; arena.appendChild(core);
-  setTimeout(() => { ring.remove(); core.remove(); }, 400);
+  setTimeout(() => { ring.remove(); }, 400);
 }
 
 function completeCharacter(c) {
   c.completed = true; score += 300; clearKeyboardParts(); renderPiano(); renderTracks(); c.el.classList.add("complete"); playCompleteSound();
-  setTimeout(() => { if (character?.el) character.el.remove(); character = null; scheduleNextCharacter(30); }, 300); updateHUD();
+  setTimeout(() => { if (character?.el) character.el.remove(); character = null; scheduleNextCharacter(10); }, 300); updateHUD();
 }
 
 function missCharacter() {
   if (!character) return; character.dead = true; clearKeyboardParts(); renderPiano(); renderTracks(); character.el.style.transition = "opacity 0.18s, transform 0.18s"; character.el.style.opacity = "0";
-  setTimeout(() => { if (character?.el) character.el.remove(); character = null; scheduleNextCharacter(30); }, 180);
+  setTimeout(() => { if (character?.el) character.el.remove(); character = null; scheduleNextCharacter(10); }, 180);
 }
 
 function clearKeyboardParts() { for (let i = 0; i < KEY_COUNT; i++) keyboardSlots[i] = { kind: "distractor", char: randomDistractorAvoiding([]), noteIndex: i }; }
@@ -583,10 +462,8 @@ function cleanupDeadObjects() { hitTokens = hitTokens.filter(t => { if (!t.dead)
 function updateHUD() { scoreEl.textContent = score; }
 function pressVisual(el) { el.classList.add("pressed"); }
 
-function ensureAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } if (audioCtx.state === "suspended") { audioCtx.resume().catch(() => {}); } }
-
 function startSustainNote(noteId, freq) {
-  ensureAudio(); if (activeNotes.has(noteId)) return;
+  unlockAudio(); if (activeNotes.has(noteId)) return;
   const now = audioCtx.currentTime; const output = audioCtx.createGain();
   output.gain.setValueAtTime(0.001, now); output.gain.linearRampToValueAtTime(0.35, now + 0.015); output.gain.exponentialRampToValueAtTime(0.12, now + 0.2); output.connect(audioCtx.destination);
   const oscillators = []; const harmonics = [ { ratio: 1, amp: 1.0, type: "sine" }, { ratio: 2, amp: 0.6, type: "triangle" }, { ratio: 3, amp: 0.3, type: "sine" }, { ratio: 5, amp: 0.1, type: "triangle" } ];
@@ -615,7 +492,7 @@ function playBounceTone() { playSimpleTone(880, 0.08, 0.1, "triangle"); }
 function playCompleteSound() { [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => { setTimeout(() => playSimpleTone(freq, 0.2, 0.1, "sine"), i * 40); }); }
 
 function playSimpleTone(freq, duration, volume, wave) {
-  ensureAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const now = audioCtx.currentTime;
+  unlockAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); const now = audioCtx.currentTime;
   osc.type = wave || "sine"; osc.frequency.setValueAtTime(freq, now);
   gain.gain.setValueAtTime(0.001, now); gain.gain.exponentialRampToValueAtTime(volume, now + 0.018); gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
   osc.connect(gain); gain.connect(audioCtx.destination); osc.start(now); osc.stop(now + duration + 0.03);
