@@ -3,371 +3,372 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>PSLE 汉字连击快线 · 天空部件版</title>
+<title>PSLE 汉字连击快线 · 天空键盘版</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 
 <style>
-  * {
-    box-sizing: border-box;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
 
-  :root {
-    --sky-top: #93c5fd;
-    --sky-mid: #bfdbfe;
-    --sky-bottom: #fef3c7;
-    --purple: #6d28d9;
-    --pink: #fb7185;
-    --green: #22c55e;
-    --yellow: #facc15;
-    --white-glass: rgba(255, 255, 255, 0.62);
-  }
+:root {
+  --purple: #6d28d9;
+  --pink: #fb7185;
+  --green: #22c55e;
+  --yellow: #facc15;
+  --glass: rgba(255,255,255,0.68);
+}
 
-  html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: "Nunito", "Microsoft YaHei", "PingFang SC", sans-serif;
-    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-bottom) 100%);
-  }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Nunito", "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: linear-gradient(180deg, #93c5fd 0%, #bfdbfe 48%, #fef3c7 100%);
+}
 
-  body {
-    touch-action: manipulation;
-  }
+body {
+  touch-action: manipulation;
+}
 
-  #game {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-  }
+#game {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
 
-  #cloud-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0.4;
-    background-image:
-      radial-gradient(circle at 15% 18%, rgba(255,255,255,0.9) 0 28px, transparent 29px),
-      radial-gradient(circle at 25% 15%, rgba(255,255,255,0.75) 0 40px, transparent 41px),
-      radial-gradient(circle at 70% 25%, rgba(255,255,255,0.8) 0 35px, transparent 36px),
-      radial-gradient(circle at 82% 22%, rgba(255,255,255,0.7) 0 48px, transparent 49px);
-    animation: cloudMove 18s linear infinite;
-  }
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  z-index: 50;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
 
-  @keyframes cloudMove {
-    from { background-position: 0 0; }
-    to { background-position: 260px 0; }
-  }
+.hud-box {
+  background: var(--glass);
+  backdrop-filter: blur(6px);
+  border: 2px solid rgba(255,255,255,0.9);
+  border-radius: 18px;
+  padding: 8px 12px;
+  font-size: clamp(16px, 3vw, 24px);
+  font-weight: 900;
+  color: var(--purple);
+  box-shadow: 0 6px 16px rgba(76,29,149,0.15);
+}
 
-  #hud {
-    position: absolute;
-    top: 10px;
-    left: 12px;
-    right: 12px;
-    z-index: 30;
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    pointer-events: none;
-  }
+#lives {
+  color: #e11d48;
+  letter-spacing: 2px;
+}
 
-  .hud-box {
-    background: var(--white-glass);
-    backdrop-filter: blur(6px);
-    border: 2px solid rgba(255,255,255,0.85);
-    box-shadow: 0 6px 16px rgba(76,29,149,0.14);
-    border-radius: 18px;
-    padding: 8px 12px;
-    font-size: clamp(16px, 3vw, 24px);
-    font-weight: 900;
-    color: var(--purple);
-  }
+#arena {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 122px;
+  overflow: hidden;
+  z-index: 5;
+}
 
-  #lives {
-    color: #e11d48;
-    letter-spacing: 2px;
-  }
+#keyboard {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 122px;
+  z-index: 70;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px 14px;
+  background: rgba(255,255,255,0.72);
+  border-top: 3px solid rgba(255,255,255,0.9);
+  backdrop-filter: blur(6px);
+}
 
-  #combo {
-    color: #ea580c;
-  }
+.key-btn {
+  border: 2px solid #ddd6fe;
+  border-bottom: 5px solid #a78bfa;
+  border-radius: 16px;
+  background: #fff;
+  color: #4c1d95;
+  font-size: clamp(24px, 6vw, 36px);
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.06);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
 
+.key-btn:active {
+  transform: translateY(4px);
+  border-bottom-width: 1px;
+  box-shadow: none;
+}
+
+.key-btn.wrong {
+  background: #ffe4e6;
+  border-color: #fb7185;
+  animation: wrongShake 0.2s linear;
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  75% { transform: translateX(7px); }
+}
+
+.target-character {
+  position: absolute;
+  z-index: 20;
+  width: 98px;
+  height: 98px;
+  border-radius: 28px;
+  background: rgba(255,255,255,0.88);
+  border: 4px solid rgba(196,181,253,0.95);
+  color: #4c1d95;
+  font-size: 56px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 10px 0 rgba(124,58,237,0.18),
+    0 16px 26px rgba(76,29,149,0.22);
+  transform: translate(-50%, -50%);
+  will-change: transform, left, top;
+}
+
+.progress {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.8);
+  border: 2px solid rgba(124,58,237,0.7);
+}
+
+.dot.done {
+  background: var(--green);
+  border-color: #16a34a;
+}
+
+.falling-radical,
+.hit-token {
+  position: absolute;
+  z-index: 30;
+  min-width: 62px;
+  height: 62px;
+  padding: 0 10px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.92);
+  border: 3px solid rgba(196,181,253,0.95);
+  color: #5b21b6;
+  font-size: 36px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 6px 0 rgba(124,58,237,0.18),
+    0 10px 18px rgba(76,29,149,0.16);
+  cursor: pointer;
+  will-change: transform, left, top;
+}
+
+.falling-radical {
+  opacity: 0.9;
+}
+
+.falling-radical.correct-glow {
+  border-color: #4ade80;
+  box-shadow:
+    0 0 18px rgba(34,197,94,0.65),
+    0 6px 0 rgba(34,197,94,0.18);
+}
+
+.hit-token {
+  z-index: 60;
+  border-color: #4ade80;
+  box-shadow:
+    0 0 22px rgba(34,197,94,0.65),
+    0 8px 20px rgba(76,29,149,0.22);
+}
+
+.particle {
+  position: absolute;
+  z-index: 80;
+  pointer-events: none;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.float-text {
+  position: absolute;
+  z-index: 90;
+  pointer-events: none;
+  font-size: 28px;
+  font-weight: 900;
+  color: #fef9c3;
+  text-shadow: 0 4px 10px rgba(76,29,149,0.55);
+  animation: floatUp 0.75s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { opacity: 0; transform: translate(-50%, 0) scale(0.85); }
+  20% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -48px) scale(1.05); }
+}
+
+.center-msg {
+  position: absolute;
+  z-index: 95;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  font-size: clamp(30px, 7vw, 60px);
+  font-weight: 900;
+  color: #fef9c3;
+  text-shadow: 0 5px 14px rgba(76,29,149,0.55);
+  animation: centerPulse 0.75s ease-out forwards;
+}
+
+.center-msg.good {
+  color: #22c55e;
+}
+
+.center-msg.bad {
+  color: #fb7185;
+}
+
+@keyframes centerPulse {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.75); }
+  25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -65%) scale(1.05); }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: rgba(76,29,149,0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.overlay h1 {
+  margin: 0 0 10px;
+  color: #fef9c3;
+  font-size: clamp(34px, 8vw, 62px);
+  line-height: 1.05;
+  text-shadow: 0 5px 0 rgba(124,58,237,0.8);
+}
+
+.version-label {
+  margin: 0 0 18px;
+  color: #a7f3d0;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.overlay p {
+  margin: 0 0 28px;
+  max-width: 720px;
+  color: #ede9fe;
+  font-size: clamp(17px, 3vw, 22px);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.btn {
+  border: 3px solid #a7f3d0;
+  background: #34d399;
+  color: #064e3b;
+  padding: 13px 32px;
+  font-size: 24px;
+  font-weight: 900;
+  border-radius: 999px;
+  box-shadow: 0 8px 0 #10b981;
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: translateY(7px);
+  box-shadow: 0 1px 0 #10b981;
+}
+
+#damage-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(251,113,133,0.28);
+}
+
+#damage-flash.show {
+  animation: flash 0.18s ease-out;
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 0; }
+  45% { opacity: 1; }
+}
+
+@media (max-width: 600px) {
   #arena {
-    position: absolute;
-    inset: 0;
-    z-index: 5;
-    overflow: hidden;
+    bottom: 112px;
   }
 
-  #ground {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 18vh;
-    z-index: 6;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 22%),
-      linear-gradient(180deg, rgba(253,230,138,0.72), rgba(251,191,36,0.65));
-    border-top: 4px solid rgba(251, 146, 60, 0.55);
+  #keyboard {
+    height: 112px;
+    gap: 6px;
+    padding: 8px 8px 12px;
   }
 
   .target-character {
-    position: absolute;
-    z-index: 12;
-    width: 96px;
-    height: 96px;
-    border-radius: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 54px;
-    font-weight: 900;
-    color: #4c1d95;
-    background: rgba(255,255,255,0.82);
-    border: 4px solid rgba(196,181,253,0.95);
-    box-shadow:
-      0 10px 0 rgba(124,58,237,0.18),
-      0 16px 24px rgba(76,29,149,0.22);
-    transform: translate(-50%, -50%);
-    will-change: transform, left, top;
+    width: 82px;
+    height: 82px;
+    font-size: 46px;
+    border-radius: 24px;
   }
 
-  .target-character .progress {
-    position: absolute;
-    left: 50%;
-    bottom: -28px;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 4px;
+  .falling-radical,
+  .hit-token {
+    min-width: 54px;
+    height: 54px;
+    font-size: 31px;
+    border-radius: 18px;
   }
-
-  .dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.75);
-    border: 2px solid rgba(124,58,237,0.65);
-  }
-
-  .dot.done {
-    background: var(--green);
-    border-color: #16a34a;
-  }
-
-  .target-character.completed {
-    animation: completePop 0.45s ease-out forwards;
-  }
-
-  @keyframes completePop {
-    0% { opacity: 1; filter: brightness(1); }
-    45% { opacity: 1; filter: brightness(1.5); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6) rotate(30deg); }
-  }
-
-  .falling-radical {
-    position: absolute;
-    z-index: 20;
-    min-width: 58px;
-    height: 58px;
-    padding: 0 10px;
-    border-radius: 20px;
-    background: rgba(255,255,255,0.9);
-    border: 3px solid rgba(196,181,253,0.95);
-    color: #5b21b6;
-    font-size: 34px;
-    font-weight: 900;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow:
-      0 6px 0 rgba(124,58,237,0.18),
-      0 10px 18px rgba(76,29,149,0.16);
-    cursor: pointer;
-    will-change: transform, left, top;
-    touch-action: manipulation;
-  }
-
-  .falling-radical.correct-glow {
-    box-shadow:
-      0 0 18px rgba(34,197,94,0.65),
-      0 6px 0 rgba(34,197,94,0.18),
-      0 10px 18px rgba(76,29,149,0.16);
-    border-color: rgba(74,222,128,0.95);
-  }
-
-  .falling-radical.wrong {
-    background: #ffe4e6;
-    border-color: #fb7185;
-    color: #be123c;
-    animation: wrongShake 0.2s linear;
-  }
-
-  @keyframes wrongShake {
-    0%, 100% { transform: translate(-50%, -50%) translateX(0); }
-    25% { transform: translate(-50%, -50%) translateX(-8px); }
-    75% { transform: translate(-50%, -50%) translateX(8px); }
-  }
-
-  .particle {
-    position: absolute;
-    z-index: 40;
-    pointer-events: none;
-    font-size: 18px;
-    font-weight: 900;
-    will-change: transform, opacity;
-  }
-
-  .floating-text {
-    position: absolute;
-    z-index: 45;
-    pointer-events: none;
-    font-size: 28px;
-    font-weight: 900;
-    color: #fef9c3;
-    text-shadow: 0 4px 10px rgba(76,29,149,0.55);
-    white-space: nowrap;
-    animation: floatUp 0.75s ease-out forwards;
-  }
-
-  @keyframes floatUp {
-    0% { opacity: 0; transform: translate(-50%, 0) scale(0.85); }
-    20% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -48px) scale(1.05); }
-  }
-
-  .center-msg {
-    position: absolute;
-    z-index: 60;
-    left: 50%;
-    top: 42%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    font-size: clamp(30px, 7vw, 64px);
-    font-weight: 900;
-    color: #fef9c3;
-    text-shadow: 0 5px 14px rgba(76,29,149,0.55);
-    animation: centerPulse 0.75s ease-out forwards;
-  }
-
-  .center-msg.bad {
-    color: #fb7185;
-  }
-
-  .center-msg.good {
-    color: #22c55e;
-  }
-
-  @keyframes centerPulse {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.75); }
-    25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -65%) scale(1.05); }
-  }
-
-  .overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 100;
-    background: rgba(76,29,149,0.88);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-  }
-
-  .overlay h1 {
-    margin: 0 0 14px 0;
-    font-size: clamp(36px, 8vw, 64px);
-    line-height: 1.05;
-    color: #fef9c3;
-    text-shadow: 0 5px 0 rgba(124,58,237,0.8);
-  }
-
-  .overlay p {
-    margin: 0 0 28px 0;
-    max-width: 720px;
-    color: #ede9fe;
-    font-size: clamp(17px, 3vw, 22px);
-    font-weight: 800;
-    line-height: 1.45;
-  }
-
-  .btn {
-    border: 3px solid #a7f3d0;
-    background: #34d399;
-    color: #064e3b;
-    padding: 13px 32px;
-    font-size: 24px;
-    font-weight: 900;
-    border-radius: 999px;
-    box-shadow: 0 8px 0 #10b981;
-    cursor: pointer;
-    transition: transform 0.08s, box-shadow 0.08s;
-  }
-
-  .btn:active {
-    transform: translateY(7px);
-    box-shadow: 0 1px 0 #10b981;
-  }
-
-  #damage-flash {
-    position: absolute;
-    inset: 0;
-    z-index: 80;
-    pointer-events: none;
-    opacity: 0;
-    background: rgba(251,113,133,0.28);
-  }
-
-  #damage-flash.show {
-    animation: flash 0.18s ease-out;
-  }
-
-  @keyframes flash {
-    0%, 100% { opacity: 0; }
-    45% { opacity: 1; }
-  }
-
-  @media (max-width: 600px) {
-    .target-character {
-      width: 82px;
-      height: 82px;
-      font-size: 46px;
-      border-radius: 24px;
-    }
-
-    .falling-radical {
-      min-width: 52px;
-      height: 52px;
-      font-size: 30px;
-      border-radius: 18px;
-    }
-
-    #hud {
-      top: 8px;
-      left: 8px;
-      right: 8px;
-    }
-
-    .hud-box {
-      padding: 7px 9px;
-    }
-  }
+}
 </style>
 </head>
 
 <body>
 <div id="game">
-  <div id="cloud-layer"></div>
-
   <div id="hud">
     <div class="hud-box">⭐ <span id="score">0</span></div>
     <div class="hud-box">🔥 Combo <span id="combo">0</span></div>
@@ -375,18 +376,19 @@
   </div>
 
   <div id="arena"></div>
-  <div id="ground"></div>
+  <div id="keyboard"></div>
   <div id="damage-flash"></div>
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
+    <div class="version-label" id="version-label">Version v1.1.0</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 
   <div id="game-over-screen" class="overlay" style="display:none;">
     <h1>Game Over</h1>
+    <div class="version-label">Version v1.1.0</div>
     <p>
-      防线失守！<br>
       最终得分：<span id="final-score" style="color:#facc15;font-size:36px;">0</span>
     </p>
     <button id="restart-btn" class="btn">再来一局 🔄</button>
@@ -394,13 +396,10 @@
 </div>
 
 <script>
-/* =========================================================
-   PSLE 汉字连击快线 · 天空部件版
-   Redesigned from motorcycle/vehicle version into:
-   falling radicals + physics impact + bounce/spin characters
-========================================================= */
+const GAME_VERSION = "v1.1.0";
 
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
+const SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
 const distractors = [
   "扌", "亻", "心", "忄", "月", "虫", "门", "广",
@@ -408,11 +407,13 @@ const distractors = [
   "讠", "辶", "土", "火", "宀", "贝"
 ];
 
+const KEY_POOL_SIZE = 8;
 const MAX_CHARACTERS = 3;
-const MAX_RADICALS = 28;
+const MAX_FALLING_RADICALS = 18;
 const START_LIVES = 3;
 
 const arena = document.getElementById("arena");
+const keyboard = document.getElementById("keyboard");
 const startScreen = document.getElementById("start-screen");
 const gameOverScreen = document.getElementById("game-over-screen");
 const restartBtn = document.getElementById("restart-btn");
@@ -424,21 +425,22 @@ const livesEl = document.getElementById("lives");
 const finalScoreEl = document.getElementById("final-score");
 
 let dictionary = [];
-
 let score = 0;
 let lives = START_LIVES;
 let combo = 0;
+let wrongStreak = 0;
 let isPlaying = false;
 
 let characters = [];
-let radicals = [];
+let fallingRadicals = [];
+let hitTokens = [];
 let particles = [];
-let floatTexts = [];
+
+let keyboardSlots = [];
 
 let animationRef = null;
 let spawnTimer = null;
 let characterTimer = null;
-
 let lastFrameTime = 0;
 let idCounter = 1;
 
@@ -447,14 +449,12 @@ let slowMotionUntil = 0;
 
 let audioCtx = null;
 
-/* =========================
-   Data loading
-========================= */
-
 window.addEventListener("load", loadDictionary);
 restartBtn.addEventListener("click", startGame);
 
 function loadDictionary() {
+  document.getElementById("version-label").textContent = `Version ${GAME_VERSION}`;
+
   Papa.parse(SHEET_URL + "&t=" + Date.now(), {
     download: true,
     header: true,
@@ -482,21 +482,18 @@ function loadDictionary() {
 
         if (parts.length === 0) return;
 
-        dictionary.push({
-          word,
-          parts
-        });
+        dictionary.push({ word, parts });
       });
 
       if (dictionary.length > 0) {
         showReadyScreen();
       } else {
-        showLoadError("题库中没有找到有效数据。请确认有 Question / Parts 列。");
+        showLoadError("没有找到有效题目。请检查 Question / Parts 列。");
       }
     },
     error: err => {
-      showLoadError("Google Sheet 加载失败，请检查网络或表格权限。");
       console.error(err);
+      showLoadError("Google Sheet 加载失败，请检查网络或表格权限。");
     }
   });
 }
@@ -513,17 +510,21 @@ function cleanCell(value) {
 }
 
 function showReadyScreen() {
-  document.getElementById("start-title").textContent = "汉字连击 · 天空部件版";
+  document.getElementById("start-title").textContent = "汉字连击 · 天空键盘版";
   document.getElementById("start-text").innerHTML =
-    `已从 [HYPY] 加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
-    `点击从天而降的正确部件，让它撞向汉字！<br>` +
-    `汉字会弹起旋转，部件会像球一样反弹。`;
+    `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
+    `部件会慢慢从天上掉下来。<br>` +
+    `你也可以直接按下面的键盘。<br>` +
+    `按对部件后，它会飞向汉字，汉字会弹起旋转！`;
+
+  const oldBtn = document.getElementById("start-btn");
+  if (oldBtn) oldBtn.remove();
 
   const btn = document.createElement("button");
+  btn.id = "start-btn";
   btn.className = "btn";
   btn.textContent = "开始游戏 🚀";
   btn.addEventListener("click", startGame);
-
   startScreen.appendChild(btn);
 }
 
@@ -532,85 +533,71 @@ function showLoadError(message) {
   document.getElementById("start-text").textContent = message;
 }
 
-/* =========================
-   Game start / reset
-========================= */
-
 function startGame() {
   if (!dictionary.length) return;
 
   ensureAudio();
-
   clearTimers();
   clearScene();
 
   score = 0;
   lives = START_LIVES;
   combo = 0;
+  wrongStreak = 0;
   isPlaying = true;
   lastFrameTime = performance.now();
-  timeScale = 1;
-  slowMotionUntil = 0;
 
   updateHUD();
 
   startScreen.style.display = "none";
   gameOverScreen.style.display = "none";
 
-  for (let i = 0; i < 2; i++) {
-    spawnCharacter();
-  }
+  spawnCharacter();
+  spawnCharacter();
 
-  scheduleRadicalSpawn();
+  renderKeyboard();
+
+  scheduleFallingRadical();
+
   characterTimer = setInterval(() => {
     if (!isPlaying) return;
-    if (characters.length < MAX_CHARACTERS) spawnCharacter();
-  }, 2600);
+    if (characters.length < MAX_CHARACTERS) {
+      spawnCharacter();
+      renderKeyboard();
+    }
+  }, 3800);
 
   animationRef = requestAnimationFrame(gameLoop);
 }
 
 function clearTimers() {
-  if (spawnTimer) {
-    clearTimeout(spawnTimer);
-    spawnTimer = null;
-  }
+  if (spawnTimer) clearTimeout(spawnTimer);
+  if (characterTimer) clearInterval(characterTimer);
+  if (animationRef) cancelAnimationFrame(animationRef);
 
-  if (characterTimer) {
-    clearInterval(characterTimer);
-    characterTimer = null;
-  }
-
-  if (animationRef) {
-    cancelAnimationFrame(animationRef);
-    animationRef = null;
-  }
+  spawnTimer = null;
+  characterTimer = null;
+  animationRef = null;
 }
 
 function clearScene() {
   characters.forEach(c => c.el.remove());
-  radicals.forEach(r => r.el.remove());
+  fallingRadicals.forEach(r => r.el.remove());
+  hitTokens.forEach(t => t.el.remove());
   particles.forEach(p => p.el.remove());
-  floatTexts.forEach(t => t.el.remove());
 
   characters = [];
-  radicals = [];
+  fallingRadicals = [];
+  hitTokens = [];
   particles = [];
-  floatTexts = [];
+  keyboard.innerHTML = "";
 }
 
-/* =========================
-   Character system
-========================= */
-
 function spawnCharacter() {
-  if (!isPlaying && characters.length > 0) return;
   if (characters.length >= MAX_CHARACTERS) return;
 
   const data = dictionary[Math.floor(Math.random() * dictionary.length)];
-  const safeParts = data.parts.filter(Boolean);
-
-  if (!data.word || safeParts.length === 0) return;
+  if (!data || !data.word || !data.parts.length) return;
 
   const el = document.createElement("div");
   el.className = "target-character";
@@ -622,7 +609,7 @@ function spawnCharacter() {
   const progress = document.createElement("div");
   progress.className = "progress";
 
-  safeParts.forEach(() => {
+  data.parts.forEach(() => {
     const dot = document.createElement("div");
     dot.className = "dot";
     progress.appendChild(dot);
@@ -631,39 +618,33 @@ function spawnCharacter() {
   el.appendChild(progress);
   arena.appendChild(el);
 
-  const index = characters.length;
   const spacing = window.innerWidth / (MAX_CHARACTERS + 1);
-  const baseX = spacing * (index + 1);
+  const index = characters.length;
 
-  const character = {
+  const c = {
     id: nextId(),
     el,
     word: data.word,
-    parts: safeParts,
+    parts: [...data.parts],
     hitIndex: 0,
-
-    x: clamp(baseX + randomBetween(-45, 45), 70, window.innerWidth - 70),
-    y: window.innerHeight * 0.69,
-
-    baseY: window.innerHeight * 0.69,
+    x: clamp(spacing * (index + 1) + randomBetween(-35, 35), 70, window.innerWidth - 70),
+    y: window.innerHeight * 0.58,
+    baseY: window.innerHeight * 0.58,
     vx: 0,
     vy: 0,
-
     rotation: 0,
     rotationVelocity: 0,
-
     scale: 1,
     completed: false
   };
 
-  characters.push(character);
-  renderCharacter(character);
+  characters.push(c);
+  renderCharacter(c);
 }
 
 function renderCharacter(c) {
   c.el.style.left = `${c.x}px`;
   c.el.style.top = `${c.y}px`;
-
   c.el.style.transform =
     `translate(-50%, -50%) rotate(${c.rotation}deg) scale(${c.scale})`;
 
@@ -673,71 +654,79 @@ function renderCharacter(c) {
   });
 }
 
-function completeCharacter(c) {
-  if (c.completed) return;
-  c.completed = true;
+function renderKeyboard() {
+  const needed = getNeededParts();
 
-  score += 300 + combo * 20;
-  combo += 1;
+  const slots = [];
 
-  showCenterMessage(`完成！+${300 + combo * 20}`, "good");
-  particleBurst(c.x, c.y, 26);
-  playSound("complete");
+  needed.forEach(p => {
+    if (slots.length < KEY_POOL_SIZE) slots.push(p);
+  });
 
-  c.el.classList.add("completed");
+  while (slots.length < KEY_POOL_SIZE) {
+    slots.push(distractors[Math.floor(Math.random() * distractors.length)]);
+  }
 
-  setTimeout(() => {
-    c.el.remove();
-    characters = characters.filter(item => item.id !== c.id);
+  shuffle(slots);
+  keyboardSlots = slots;
 
-    if (isPlaying && characters.length < MAX_CHARACTERS) {
-      spawnCharacter();
-    }
-  }, 420);
+  keyboard.innerHTML = "";
+
+  slots.forEach(char => {
+    const btn = document.createElement("button");
+    btn.className = "key-btn";
+    btn.textContent = char;
+    btn.dataset.char = char;
+
+    btn.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      handleInput(char, btn);
+    });
+
+    keyboard.appendChild(btn);
+  });
 }
 
-/* =========================
-   Falling radical system
-========================= */
+function getNeededParts() {
+  const parts = [];
 
-function scheduleRadicalSpawn() {
+  characters.forEach(c => {
+    if (c.completed) return;
+    const nextPart = c.parts[c.hitIndex];
+    if (nextPart) parts.push(nextPart);
+  });
+
+  return parts;
+}
+
+function scheduleFallingRadical() {
   if (!isPlaying) return;
 
-  const delay = getCurrentSpawnDelay();
+  const delay = getFallingSpawnDelay();
+
   spawnTimer = setTimeout(() => {
     if (!isPlaying) return;
-
-    spawnRadical();
-    scheduleRadicalSpawn();
+    spawnFallingRadical();
+    scheduleFallingRadical();
   }, delay);
 }
 
-function getCurrentSpawnDelay() {
-  const base = 920;
-  const difficulty = Math.min(score / 5000, 0.55);
-  return Math.max(430, base * (1 - difficulty) + randomBetween(-120, 140));
+function getFallingSpawnDelay() {
+  const base = 1550;
+  const difficulty = Math.min(score / 7000, 0.35);
+  return Math.max(980, base * (1 - difficulty) + randomBetween(-180, 220));
 }
 
-function spawnRadical() {
-  if (radicals.length >= MAX_RADICALS) return;
+function spawnFallingRadical() {
+  if (fallingRadicals.length >= MAX_FALLING_RADICALS) return;
   if (characters.length === 0) return;
 
-  const shouldSpawnCorrect = Math.random() < getCorrectSpawnChance();
+  const needed = getNeededParts();
+  const useCorrect = needed.length > 0 && Math.random() < 0.65;
 
-  let char;
-  let usefulAtSpawn = false;
-
-  if (shouldSpawnCorrect) {
-    const needed = getNeededParts();
-    if (needed.length > 0) {
-      char = needed[Math.floor(Math.random() * needed.length)];
-      usefulAtSpawn = true;
-    }
-  }
-
-  if (!char) {
-    char = distractors[Math.floor(Math.random() * distractors.length)];
-  }
+  const char = useCorrect
+    ? needed[Math.floor(Math.random() * needed.length)]
+    : distractors[Math.floor(Math.random() * distractors.length)];
 
   const el = document.createElement("div");
   el.className = "falling-radical";
@@ -747,145 +736,129 @@ function spawnRadical() {
     id: nextId(),
     el,
     char,
-
-    x: randomBetween(40, window.innerWidth - 40),
-    y: -60,
-
-    vx: randomBetween(-0.25, 0.25),
-    vy: randomBetween(1.7, 2.7) + Math.min(score / 2600, 1.2),
-
+    x: randomBetween(42, window.innerWidth - 42),
+    y: -70,
+    vx: randomBetween(-0.12, 0.12),
+    vy: randomBetween(0.45, 0.75),
     rotation: randomBetween(-8, 8),
-    rotationVelocity: randomBetween(-1.2, 1.2),
-
-    target: null,
-    state: "falling",
-    usefulAtSpawn,
-    alreadyScoredMiss: false,
+    rotationVelocity: randomBetween(-0.35, 0.35),
     dead: false
   };
 
-  el.addEventListener("pointerdown", event => {
-    event.preventDefault();
-    handleRadicalPress(r);
+  el.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    handleInput(char, null, r);
   });
 
   arena.appendChild(el);
-  radicals.push(r);
-  renderRadical(r);
+  fallingRadicals.push(r);
+  renderFallingRadical(r);
 }
 
-function getCorrectSpawnChance() {
-  if (score < 1200) return 0.66;
-  if (score < 3000) return 0.58;
-  return 0.52;
-}
-
-function getNeededParts() {
-  const parts = [];
-
-  characters.forEach(c => {
-    if (c.completed) return;
-    const next = c.parts[c.hitIndex];
-    if (next) parts.push(next);
-  });
-
-  return parts;
-}
-
-function renderRadical(r) {
+function renderFallingRadical(r) {
   r.el.style.left = `${r.x}px`;
   r.el.style.top = `${r.y}px`;
   r.el.style.transform = `translate(-50%, -50%) rotate(${r.rotation}deg)`;
 }
 
-function handleRadicalPress(r) {
+function handleInput(char, buttonElement = null, fallingSource = null) {
   if (!isPlaying) return;
-  if (r.dead) return;
-  if (r.state !== "falling") return;
 
-  const target = findBestTargetForRadical(r);
+  const target = findTargetForChar(char);
 
-  if (target) {
-    r.target = target;
-    r.state = "homing";
-    r.el.classList.add("correct-glow");
-
-    combo += 1;
-    const gain = 100 + combo * 10;
-    score += gain;
-
-    showFloatingText(`+${gain}`, r.x, r.y);
-    showCenterMessage(`Combo ${combo}`, "good");
-    updateHUD();
-
-    triggerSlowMotion(190);
-    playSound("hit");
-  } else {
+  if (!target) {
     combo = 0;
+    wrongStreak++;
     score = Math.max(0, score - 20);
-    r.vy += 5.5;
-    r.vx += randomBetween(-2, 2);
-    r.rotationVelocity += randomBetween(-8, 8);
 
-    r.el.classList.add("wrong");
-    setTimeout(() => r.el.classList.remove("wrong"), 220);
+    if (buttonElement) {
+      buttonElement.classList.add("wrong");
+      setTimeout(() => buttonElement.classList.remove("wrong"), 220);
+    }
 
     showCenterMessage("-20", "bad");
-    updateHUD();
     playSound("wrong");
+
+    if (wrongStreak >= 4) {
+      wrongStreak = 0;
+      loseLife();
+    }
+
+    updateHUD();
+    return;
   }
-}
 
-function findBestTargetForRadical(r) {
-  const candidates = characters.filter(c => {
-    if (c.completed) return false;
-    return c.parts[c.hitIndex] === r.char;
-  });
+  wrongStreak = 0;
+  combo++;
 
-  if (candidates.length === 0) return null;
+  const gain = 100 + combo * 10;
+  score += gain;
 
-  candidates.sort((a, b) => {
-    const da = Math.abs(a.x - r.x) + Math.abs(a.y - r.y) * 0.35;
-    const db = Math.abs(b.x - r.x) + Math.abs(b.y - r.y) * 0.35;
-    return da - db;
-  });
+  let startX = window.innerWidth / 2;
+  let startY = window.innerHeight - 70;
 
-  return candidates[0];
-}
-
-function radicalHitsCharacter(r, c) {
-  if (r.dead || c.completed) return;
-
-  r.state = "bouncing";
-  r.target = null;
-  r.el.classList.remove("correct-glow");
-
-  c.hitIndex += 1;
-
-  c.vy = -10.5 - Math.min(combo * 0.15, 3);
-  c.vx += clamp((c.x - r.x) * 0.025, -3, 3);
-  c.rotationVelocity += clamp((r.x - c.x) * 0.38, -26, 26);
-  c.scale = 1.08;
-
-  r.vx = clamp((r.x - c.x) * 0.11, -11, 11) + randomBetween(-2.5, 2.5);
-  r.vy = -9.5 - randomBetween(0, 3);
-  r.rotationVelocity = randomBetween(-18, 18);
-
-  score += 50;
-  showFloatingText("+50", c.x, c.y - 45);
-  particleBurst(c.x, c.y, 14);
-  playSound("bounce");
-
-  if (c.hitIndex >= c.parts.length) {
-    completeCharacter(c);
+  if (buttonElement) {
+    const rect = buttonElement.getBoundingClientRect();
+    const arenaRect = arena.getBoundingClientRect();
+    startX = rect.left + rect.width / 2 - arenaRect.left;
+    startY = rect.top + rect.height / 2 - arenaRect.top;
   }
+
+  if (fallingSource) {
+    startX = fallingSource.x;
+    startY = fallingSource.y;
+    fallingSource.dead = true;
+  }
+
+  launchHitToken(char, startX, startY, target);
+
+  showFloatingText(`+${gain}`, startX, startY - 20);
+  showCenterMessage(`Combo ${combo}`, "good");
+  triggerSlowMotion(160);
+  playSound("hit");
 
   updateHUD();
 }
 
-/* =========================
-   Game loop
-========================= */
+function findTargetForChar(char) {
+  const candidates = characters.filter(c => {
+    if (c.completed) return false;
+    return c.parts[c.hitIndex] === char;
+  });
+
+  if (candidates.length === 0) return null;
+
+  candidates.sort((a, b) => a.y - b.y);
+  return candidates[0];
+}
+
+function launchHitToken(char, x, y, target) {
+  const el = document.createElement("div");
+  el.className = "hit-token";
+  el.textContent = char;
+
+  const token = {
+    id: nextId(),
+    el,
+    char,
+    x,
+    y,
+    target,
+    rotation: 0,
+    arrived: false,
+    dead: false
+  };
+
+  arena.appendChild(el);
+  hitTokens.push(token);
+  renderHitToken(token);
+}
+
+function renderHitToken(t) {
+  t.el.style.left = `${t.x}px`;
+  t.el.style.top = `${t.y}px`;
+  t.el.style.transform = `translate(-50%, -50%) rotate(${t.rotation}deg)`;
+}
 
 function gameLoop(now) {
   if (!isPlaying) return;
@@ -893,118 +866,152 @@ function gameLoop(now) {
   const rawDelta = Math.min(32, now - lastFrameTime);
   lastFrameTime = now;
 
-  if (now < slowMotionUntil) {
-    timeScale = 0.48;
-  } else {
-    timeScale = 1;
-  }
-
+  timeScale = now < slowMotionUntil ? 0.5 : 1;
   const dt = (rawDelta / 16.67) * timeScale;
 
   updateCharacters(dt);
-  updateRadicals(dt);
+  updateFallingRadicals(dt);
+  updateHitTokens(dt);
   updateParticles(dt);
-  updateFloatingTexts();
-
   cleanupDeadObjects();
 
   animationRef = requestAnimationFrame(gameLoop);
 }
 
 function updateCharacters(dt) {
-  const gravity = 0.58;
-
   characters.forEach(c => {
     if (c.completed) return;
 
     c.x += c.vx * dt;
     c.y += c.vy * dt;
 
-    c.vy += gravity * dt;
+    c.vy += 0.42 * dt;
     c.vx *= Math.pow(0.94, dt);
 
     c.rotation += c.rotationVelocity * dt;
-    c.rotationVelocity *= Math.pow(0.90, dt);
+    c.rotationVelocity *= Math.pow(0.9, dt);
 
     c.scale += (1 - c.scale) * 0.18 * dt;
 
     if (c.y > c.baseY) {
       c.y = c.baseY;
       if (c.vy > 0) c.vy = -c.vy * 0.18;
-      if (Math.abs(c.vy) < 1.2) c.vy = 0;
-    }
-
-    if (c.x < 55) {
-      c.x = 55;
-      c.vx *= -0.35;
-    }
-
-    if (c.x > window.innerWidth - 55) {
-      c.x = window.innerWidth - 55;
-      c.vx *= -0.35;
+      if (Math.abs(c.vy) < 1.1) c.vy = 0;
     }
 
     renderCharacter(c);
   });
 }
 
-function updateRadicals(dt) {
-  const gravity = 0.31 + Math.min(score / 12000, 0.18);
-
-  radicals.forEach(r => {
+function updateFallingRadicals(dt) {
+  fallingRadicals.forEach(r => {
     if (r.dead) return;
 
-    if (r.state === "homing" && r.target && !r.target.completed) {
-      const attraction = 0.22;
-      r.x += (r.target.x - r.x) * attraction * dt;
-      r.y += (r.target.y - r.y) * attraction * dt;
+    r.x += r.vx * dt;
+    r.y += r.vy * dt;
+    r.vy += 0.006 * dt;
+    r.rotation += r.rotationVelocity * dt;
 
-      r.rotation += 12 * dt;
-
-      const d = distance(r.x, r.y, r.target.x, r.target.y);
-
-      if (d < 32) {
-        radicalHitsCharacter(r, r.target);
-      }
-    } else {
-      r.y += r.vy * dt;
-      r.x += r.vx * dt;
-
-      r.vy += gravity * dt;
-      r.rotation += r.rotationVelocity * dt;
-
-      if (r.x < 25) {
-        r.x = 25;
-        r.vx *= -0.65;
-      }
-
-      if (r.x > window.innerWidth - 25) {
-        r.x = window.innerWidth - 25;
-        r.vx *= -0.65;
-      }
+    if (r.x < 28) {
+      r.x = 28;
+      r.vx *= -0.6;
     }
 
-    renderRadical(r);
+    if (r.x > window.innerWidth - 28) {
+      r.x = window.innerWidth - 28;
+      r.vx *= -0.6;
+    }
 
-    if (r.y > window.innerHeight + 80) {
-      if (r.usefulAtSpawn && !r.alreadyScoredMiss && isStillNeeded(r.char)) {
-        r.alreadyScoredMiss = true;
-        loseLife();
-      }
-
+    if (r.y > arena.clientHeight + 80) {
       r.dead = true;
     }
+
+    renderFallingRadical(r);
   });
 }
 
-function isStillNeeded(char) {
-  return characters.some(c => !c.completed && c.parts[c.hitIndex] === char);
+function updateHitTokens(dt) {
+  hitTokens.forEach(t => {
+    if (t.dead || !t.target || t.target.completed) {
+      t.dead = true;
+      return;
+    }
+
+    t.x += (t.target.x - t.x) * 0.24 * dt;
+    t.y += (t.target.y - t.y) * 0.24 * dt;
+    t.rotation += 18 * dt;
+
+    const d = distance(t.x, t.y, t.target.x, t.target.y);
+
+    if (d < 30 && !t.arrived) {
+      t.arrived = true;
+      tokenHitsCharacter(t, t.target);
+    }
+
+    renderHitToken(t);
+  });
+}
+
+function tokenHitsCharacter(token, c) {
+  token.dead = true;
+
+  c.hitIndex++;
+  c.vy = -10.5 - Math.min(combo * 0.15, 3);
+  c.rotationVelocity += randomBetween(-24, 24);
+  c.scale = 1.1;
+
+  score += 50;
+
+  showFloatingText("+50", c.x, c.y - 46);
+  particleBurst(c.x, c.y, 16);
+  playSound("bounce");
+
+  if (c.hitIndex >= c.parts.length) {
+    completeCharacter(c);
+  }
+
+  renderCharacter(c);
+  renderKeyboard();
+  updateHUD();
+}
+
+function completeCharacter(c) {
+  if (c.completed) return;
+
+  c.completed = true;
+  score += 300 + combo * 20;
+
+  showCenterMessage("完成！", "good");
+  particleBurst(c.x, c.y, 28);
+  playSound("complete");
+
+  c.el.style.transition = "opacity 0.35s, transform 0.35s";
+  c.el.style.opacity = "0";
+  c.el.style.transform =
+    `translate(-50%, -50%) rotate(${c.rotation + 35}deg) scale(1.55)`;
+
+  setTimeout(() => {
+    c.el.remove();
+    characters = characters.filter(item => item.id !== c.id);
+
+    if (isPlaying && characters.length < MAX_CHARACTERS) {
+      spawnCharacter();
+    }
+
+    renderKeyboard();
+  }, 360);
 }
 
 function cleanupDeadObjects() {
-  radicals = radicals.filter(r => {
+  fallingRadicals = fallingRadicals.filter(r => {
     if (!r.dead) return true;
     r.el.remove();
+    return false;
+  });
+
+  hitTokens = hitTokens.filter(t => {
+    if (!t.dead) return true;
+    t.el.remove();
     return false;
   });
 
@@ -1013,20 +1020,40 @@ function cleanupDeadObjects() {
     p.el.remove();
     return false;
   });
-
-  floatTexts = floatTexts.filter(t => {
-    if (!t.dead) return true;
-    t.el.remove();
-    return false;
-  });
 }
 
-/* =========================
-   Feedback effects
-========================= */
+function loseLife() {
+  lives--;
+  combo = 0;
 
-function triggerSlowMotion(ms) {
-  slowMotionUntil = performance.now() + ms;
+  damageFlash.classList.remove("show");
+  void damageFlash.offsetWidth;
+  damageFlash.classList.add("show");
+
+  updateHUD();
+  playSound("damage");
+
+  if (lives <= 0) {
+    gameOver();
+  }
+}
+
+function updateHUD() {
+  scoreEl.textContent = score;
+  comboEl.textContent = combo;
+  livesEl.textContent =
+    "❤️".repeat(Math.max(0, lives)) +
+    "🖤".repeat(Math.max(0, START_LIVES - lives));
+}
+
+function gameOver() {
+  if (!isPlaying) return;
+
+  isPlaying = false;
+  clearTimers();
+
+  finalScoreEl.textContent = score;
+  gameOverScreen.style.display = "flex";
 }
 
 function particleBurst(x, y, count) {
@@ -1043,7 +1070,7 @@ function particleBurst(x, y, count) {
       y,
       vx: randomBetween(-5.5, 5.5),
       vy: randomBetween(-7, 3),
-      gravity: randomBetween(0.18, 0.36),
+      gravity: randomBetween(0.18, 0.34),
       life: randomBetween(24, 42),
       age: 0,
       rotation: randomBetween(0, 360),
@@ -1071,89 +1098,34 @@ function updateParticles(dt) {
     p.el.style.left = `${p.x}px`;
     p.el.style.top = `${p.y}px`;
     p.el.style.opacity = opacity;
-    p.el.style.transform = `translate(-50%, -50%) rotate(${p.rotation}deg) scale(${0.8 + opacity * 0.6})`;
+    p.el.style.transform =
+      `translate(-50%, -50%) rotate(${p.rotation}deg) scale(${0.8 + opacity * 0.6})`;
 
-    if (p.age >= p.life) {
-      p.dead = true;
-    }
+    if (p.age >= p.life) p.dead = true;
   });
 }
 
 function showFloatingText(text, x, y) {
   const el = document.createElement("div");
-  el.className = "floating-text";
+  el.className = "float-text";
   el.textContent = text;
   el.style.left = `${x}px`;
   el.style.top = `${y}px`;
-
   arena.appendChild(el);
-
-  const obj = { el, dead: false };
-  floatTexts.push(obj);
-
-  setTimeout(() => {
-    obj.dead = true;
-  }, 780);
-}
-
-function updateFloatingTexts() {
-  // CSS animation handles movement.
+  setTimeout(() => el.remove(), 780);
 }
 
 function showCenterMessage(text, type) {
   const el = document.createElement("div");
   el.className = `center-msg ${type || ""}`;
   el.textContent = text;
-
   arena.appendChild(el);
-
   setTimeout(() => el.remove(), 780);
 }
 
-/* =========================
-   Lives / HUD / game over
-========================= */
-
-function loseLife() {
-  if (!isPlaying) return;
-
-  lives -= 1;
-  combo = 0;
-
-  damageFlash.classList.remove("show");
-  void damageFlash.offsetWidth;
-  damageFlash.classList.add("show");
-
-  playSound("damage");
-  updateHUD();
-
-  if (lives <= 0) {
-    gameOver();
-  }
+function triggerSlowMotion(ms) {
+  slowMotionUntil = performance.now() + ms;
 }
-
-function updateHUD() {
-  scoreEl.textContent = score;
-  comboEl.textContent = combo;
-  livesEl.textContent = "❤️".repeat(Math.max(0, lives)) + "🖤".repeat(Math.max(0, START_LIVES - lives));
-}
-
-function gameOver() {
-  if (!isPlaying) return;
-
-  isPlaying = false;
-  clearTimers();
-
-  finalScoreEl.textContent = score;
-  gameOverScreen.style.display = "flex";
-
-  radicals.forEach(r => r.el.remove());
-  radicals = [];
-}
-
-/* =========================
-   Audio
-========================= */
 
 function ensureAudio() {
   if (!audioCtx) {
@@ -1168,49 +1140,42 @@ function ensureAudio() {
 function playSound(type) {
   if (!audioCtx) return;
 
-  const now = audioCtx.currentTime;
-
   if (type === "hit") {
     playTone(523.25, 0.07, 0.08, "sine");
     playTone(659.25, 0.09, 0.06, "sine");
   } else if (type === "bounce") {
-    playTone(392.00, 0.12, 0.08, "triangle");
+    playTone(392, 0.12, 0.08, "triangle");
   } else if (type === "complete") {
-    playTone(523.25, 0.12, 0.08, "sine", now);
-    playTone(659.25, 0.12, 0.08, "sine", now + 0.07);
-    playTone(783.99, 0.16, 0.08, "sine", now + 0.14);
+    playTone(523.25, 0.1, 0.08, "sine");
+    setTimeout(() => playTone(659.25, 0.1, 0.08, "sine"), 70);
+    setTimeout(() => playTone(783.99, 0.14, 0.08, "sine"), 140);
   } else if (type === "wrong") {
     playTone(180, 0.18, 0.08, "sawtooth");
   } else if (type === "damage") {
-    playTone(110, 0.28, 0.12, "triangle");
+    playTone(110, 0.26, 0.12, "triangle");
   }
 }
 
-function playTone(freq, duration, volume, wave, startAt) {
+function playTone(freq, duration, volume, wave) {
   if (!audioCtx) return;
 
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
+  const now = audioCtx.currentTime;
 
   osc.type = wave || "sine";
-  osc.frequency.setValueAtTime(freq, startAt || audioCtx.currentTime);
+  osc.frequency.setValueAtTime(freq, now);
 
-  const start = startAt || audioCtx.currentTime;
-
-  gain.gain.setValueAtTime(0.001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + 0.018);
-  gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.exponentialRampToValueAtTime(volume, now + 0.018);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
   osc.connect(gain);
   gain.connect(audioCtx.destination);
 
-  osc.start(start);
-  osc.stop(start + duration + 0.03);
+  osc.start(now);
+  osc.stop(now + duration + 0.03);
 }
-
-/* =========================
-   Helpers
-========================= */
 
 function nextId() {
   return idCounter++;
@@ -1228,11 +1193,18 @@ function distance(x1, y1, x2, y2) {
   return Math.hypot(x2 - x1, y2 - y1);
 }
 
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
 window.addEventListener("resize", () => {
   characters.forEach(c => {
-    c.baseY = window.innerHeight * 0.69;
+    c.baseY = window.innerHeight * 0.58;
     c.y = Math.min(c.y, c.baseY);
-    c.x = clamp(c.x, 55, window.innerWidth - 55);
+    c.x = clamp(c.x, 60, window.innerWidth - 60);
     renderCharacter(c);
   });
 });
