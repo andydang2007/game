@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>PSLE 汉字连击快线 · 录音大师版</title>
+<title>PSLE 汉字连击快线 · 完美录音棚</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -69,7 +69,6 @@ body { touch-action: manipulation; }
 .dot.next { background: #fef08a; border-color: #facc15; box-shadow: 0 0 10px #facc15; animation: pulseDot 0.8s alternate infinite; }
 @keyframes pulseDot { from { transform: scale(1); } to { transform: scale(1.3); } }
 
-/* 底部多功能物理舱架（键盘/软件界面容器） */
 #piano-wrap {
   position: absolute; left: 0; right: 0; bottom: 0; height: var(--keyboard-height); z-index: 100;
   padding: 10px; background: #07070f; border-top: 3px solid var(--neon-cyan); box-shadow: 0 -10px 40px rgba(0,243,255,0.15);
@@ -82,32 +81,28 @@ body { touch-action: manipulation; }
   transition: transform 0.05s, background 0.05s, border-bottom-width 0.05s; box-shadow: inset 0 -5px 10px rgba(0,0,0,0.2); overflow: hidden;
 }
 .white-key.pressed { transform: rotateX(10deg); border-bottom-width: 2px; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); box-shadow: inset 0 20px 20px rgba(0,0,0,0.3); }
-.white-key.wrong { background: #ffe4e6; border-color: #e11d48; border-bottom-color: #9f1239; animation: wrongShake 0.2s both; }
-@keyframes wrongShake { 0%, 100% { transform: rotateX(8deg) translateX(0); } 20%, 60% { transform: rotateX(8deg) translateX(-4px); } 40%, 80% { transform: rotateX(8deg) translateX(4px); } }
 
 .key-radical { position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%); font-size: clamp(24px, 4vw, 48px); font-weight: 900; color: #0f172a; pointer-events: none; }
 .key-note { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); font-size: 14px; font-weight: bold; color: #64748b; pointer-events: none; }
 
 .hit-token { position: absolute; z-index: 95; width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 3px solid var(--neon-cyan); color: #000; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--neon-cyan); pointer-events: none; }
 
-/* 🌟 录音软件播放器界面（Replay Panel） */
+/* 🌟 智能音频回放面板 */
 #audio-player-ui {
   display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center;
   background: radial-gradient(circle at 50% 50%, #0d0d1e 0%, #05050b 100%); border-radius: 12px; border: 1px solid rgba(0,243,255,0.2); padding: 15px;
 }
 .player-title { color: #fff; font-size: 18px; font-weight: bold; letter-spacing: 1px; margin-bottom: 8px; text-shadow: 0 0 8px var(--neon-cyan); }
 
-/* 跳动的霓虹电平灯（Equalizer） */
 .equalizer-box { display: flex; align-items: flex-end; gap: 8px; height: 50px; margin-bottom: 12px; }
 .eq-bar { width: 6px; height: 10px; background: linear-gradient(to top, var(--neon-cyan), var(--neon-pink)); border-radius: 3px; transform-origin: bottom center; }
 .eq-bar.animating { animation: eqJump 0.4s ease-in-out infinite alternate; }
 @keyframes eqJump { 0% { height: 8px; } 100% { height: 48px; } }
 
-/* 进度条轨道 */
-.progress-track { width: 80%; max-width: 600px; height: 6px; background: #1e1e2f; border-radius: 3px; position: relative; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5); }
-.progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)); box-shadow: 0 0 10px var(--neon-pink); transition: width 0.05s linear; }
+.progress-track { width: 80%; max-width: 600px; height: 6px; background: #1e1e2f; border-radius: 3px; position: relative; overflow: hidden; }
+.progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink)); box-shadow: 0 0 10px var(--neon-pink); }
 
-/* 游戏覆盖层 */
+/* 覆盖层 */
 .overlay { position: absolute; inset: 0; z-index: 300; background: rgba(5, 5, 16, 0.9); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
 .overlay h1 { margin: 0 0 10px; color: #fff; font-size: clamp(36px, 6vw, 68px); text-shadow: 0 0 20px var(--neon-cyan); }
 .overlay p { margin: 0 0 30px; color: #e2e8f0; font-size: 20px; font-weight: 800; }
@@ -128,9 +123,8 @@ body { touch-action: manipulation; }
   <div id="miss-line"></div>
   <div id="piano-wrap">
     <div id="piano"></div>
-    
     <div id="audio-player-ui">
-      <div class="player-title">AUDIO MASTER REPLAYING (3x SPEED)</div>
+      <div class="player-title">VALERIE AUDIO STUDIO (3x SPEED & GAP CUT)</div>
       <div class="equalizer-box">
         <div class="eq-bar" style="animation-delay: 0.1s"></div>
         <div class="eq-bar" style="animation-delay: 0.3s"></div>
@@ -139,9 +133,7 @@ body { touch-action: manipulation; }
         <div class="eq-bar" style="animation-delay: 0.2s"></div>
         <div class="eq-bar" style="animation-delay: 0.5s"></div>
       </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="p-fill"></div>
-      </div>
+      <div class="progress-track"><div class="progress-fill" id="p-fill"></div></div>
     </div>
   </div>
   
@@ -152,19 +144,19 @@ body { touch-action: manipulation; }
 
   <div id="replay-screen" class="overlay">
     <h1>编曲挑战完成！</h1>
-    <p>Valerie 的专属电子乐章已录制完毕（支持 3 倍速狂飙回放）</p>
+    <p>空白等待时间已自动剪切压缩，3倍速丝滑回放</p>
     <button class="btn btn-pink" id="btn-replay">🎹 启动录音机回放</button>
     <button class="btn" onclick="location.reload()">🔄 再来一局</button>
   </div>
 </div>
 
 <script>
-// --- 系统配置 ---
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 const KEY_COUNT = 12; 
 const MAX_ACTIVE_CHARS = 4; 
-const GAME_TIME = 120; // 2 分钟
-const SPEED_MULTIPLIER = 3.0; // ⚡ 3倍速播放
+const GAME_TIME = 120; // 2分钟
+const SPEED_MULTIPLIER = 3.0; // 3倍速回放
+const MAX_GAP_MS = 1200; // 空白间隔上限（超过1.2秒的等待自动剪掉）
 
 const PENTA_KEYS = [
   { label: "低5", freq: 196.00 }, { label: "低6", freq: 220.00 }, { label: "1", freq: 261.63 },
@@ -174,23 +166,19 @@ const PENTA_KEYS = [
 ];
 const distractors = ["扌", "亻", "心", "忄", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日", "木", "女", "讠", "辶", "土", "火", "宀", "贝", "王", "纟", "石", "禾", "目", "竹", "页", "刂"];
 
-// --- 游戏变量 ---
 let dictionary = []; let activeChars = []; let keyboardSlots = Array(KEY_COUNT).fill(null);
 let score = 0; let timeLeft = GAME_TIME; let isPlaying = false; 
 let lastFrameTime = 0; let lastSpawnTime = 0; let animationRef = null; let clockTimer = null;
 let idCounter = 1; let hitTokens = []; let trackGeometry = [];
 let audioCtx = null; let activeNotes = new Map();
-let recordedNotes = []; let gameStartTime = 0;
+let rawRecordedNotes = []; let processedNotes = []; 
 let beatTimer = null; let nextBeatTime = 0; let currentBeat = 0;
 
-const arena = document.getElementById("arena");
-const trackSvg = document.getElementById("track-svg");
-const piano = document.getElementById("piano");
-const playerUI = document.getElementById("audio-player-ui");
+const arena = document.getElementById("arena"); const trackSvg = document.getElementById("track-svg");
+const piano = document.getElementById("piano"); const playerUI = document.getElementById("audio-player-ui");
 
 window.addEventListener("load", () => {
   setViewportHeight(); initPianoDOM();
-  
   Papa.parse(SHEET_URL + "&t=" + Date.now(), {
     download: true, header: true, skipEmptyLines: "greedy",
     transformHeader: h => String(h || "").trim().toUpperCase(),
@@ -203,7 +191,7 @@ window.addEventListener("load", () => {
 
       if (dictionary.length) {
         document.getElementById("start-title").textContent = "汉字节奏大师";
-        document.getElementById("start-text").innerHTML = `已加载 ${dictionary.length} 个汉字<br>无序击打 · 2分钟录音大师版`;
+        document.getElementById("start-text").innerHTML = `已加载 ${dictionary.length} 个汉字<br>无序精准替换 · 智能压缩时间轴`;
         const btn = document.createElement("button"); btn.className = "btn"; btn.textContent = "🚀 启动";
         btn.addEventListener("click", startGame); document.getElementById("start-screen").appendChild(btn);
       }
@@ -230,19 +218,19 @@ function initPianoDOM() {
 function startGame() {
   ensureAudio(); 
   document.getElementById("start-screen").style.display = "none";
-  piano.style.display = "flex"; playerUI.style.display = "none"; // 确保显示键盘
-  score = 0; timeLeft = GAME_TIME; isPlaying = true; activeChars = []; recordedNotes = []; hitTokens = [];
-  gameStartTime = Date.now(); lastFrameTime = performance.now(); lastSpawnTime = 0;
+  piano.style.display = "flex"; playerUI.style.display = "none";
+  score = 0; timeLeft = GAME_TIME; isPlaying = true; activeChars = []; rawRecordedNotes = []; hitTokens = [];
+  lastFrameTime = performance.now(); lastSpawnTime = 0;
   
   document.getElementById("score").textContent = score;
   document.getElementById("timer").textContent = timeLeft;
   
   calculateTrack();
-  keyboardSlots.fill(null);
+  initKeyboardSlotsFirstTime(); // 初始化首发键盘布局
   
-  // 基础 110 BPM 律动
+  // 启动背景流光 Pad 和弦流动背景（删除所有鼓点）
   nextBeatTime = audioCtx.currentTime + 0.1; currentBeat = 0;
-  scheduleBeats(110);
+  scheduleAmbientMusic();
 
   clockTimer = setInterval(() => {
     timeLeft--; document.getElementById("timer").textContent = timeLeft;
@@ -255,6 +243,9 @@ function startGame() {
 function endGame() {
   isPlaying = false; clearInterval(clockTimer); cancelAnimationFrame(animationRef); cancelAnimationFrame(beatTimer);
   activeChars.forEach(c => c.el.remove()); activeChars = [];
+  
+  processRecordedNotesWithGapCut(); // 核心：执行空白切割和三倍提速算法
+  
   document.getElementById("replay-screen").style.display = "flex";
   document.getElementById("btn-replay").onclick = () => playRecording();
 }
@@ -263,7 +254,8 @@ function gameLoop(now) {
   if (!isPlaying) return;
   const dt = Math.min(32, now - lastFrameTime) / 16.67; lastFrameTime = now;
 
-  if (activeChars.length < MAX_ACTIVE_CHARS && now - lastSpawnTime > 2000) {
+  // 严格补充新字逻辑，确保同屏存活率
+  if (activeChars.length < MAX_ACTIVE_CHARS && now - lastSpawnTime > 1800) {
     spawnCharacter(); lastSpawnTime = now;
   }
 
@@ -284,10 +276,11 @@ function spawnCharacter() {
     id: idCounter++, el, word: data.word, parts: [...data.parts],
     remainingParts: [...data.parts], visualHitCount: 0,
     laneIndex: Math.floor(Math.random() * KEY_COUNT), z: 0.05, 
-    baseSpeed: 0.0006 + Math.random() * 0.00025, slowUntil: 0, dead: false
+    baseSpeed: 0.0003 + Math.random() * 0.00015, // 速度再次锁定为原版一半慢速
+    dead: false
   };
   activeChars.push(c);
-  refreshKeyboardSlots();
+  fillEmptySlotsWithNewParts(); // 默默把新字塞到现有的空按键上
 }
 
 function calculateTrack() {
@@ -315,19 +308,17 @@ function getPointOnLane(laneIndex, z) {
 function updateCharacters(dt, now) {
   for (let i = activeChars.length - 1; i >= 0; i--) {
     const c = activeChars[i]; if (c.dead) continue;
-    
-    const speed = now < c.slowUntil ? c.baseSpeed * 0.2 : c.baseSpeed;
-    c.z += speed * dt;
+    c.z += c.baseSpeed * dt;
 
-    if (c.z >= 1) { 
+    if (c.z >= 1) { // 越界漏掉
       c.dead = true; c.el.remove(); activeChars.splice(i, 1);
-      refreshKeyboardSlots(); continue;
+      clearDeadTargetFromKeys(c); continue;
     }
 
     const pt = getPointOnLane(c.laneIndex, c.z);
     c.el.style.left = `${pt.x}px`; c.el.style.top = `${pt.y}px`;
-    c.el.style.fontSize = `${20 + c.z * 80}px`; 
-    c.el.style.opacity = c.z < 0.2 ? c.z * 5 : 1;
+    c.el.style.fontSize = `${24 + c.z * 70}px`; 
+    c.el.style.opacity = c.z < 0.15 ? c.z * 6.6 : 1;
 
     c.el.querySelectorAll(".dot").forEach((dot, idx) => {
       dot.className = idx < c.visualHitCount ? "dot done" : "dot next";
@@ -335,48 +326,55 @@ function updateCharacters(dt, now) {
   }
 }
 
-function refreshKeyboardSlots() {
+// 首次铺满键盘
+function initKeyboardSlotsFirstTime() {
+  keyboardSlots.fill(null);
+  let allDistractors = [...distractors]; shuffle(allDistractors);
   for (let i = 0; i < KEY_COUNT; i++) {
-    if (keyboardSlots[i] && keyboardSlots[i].kind === "part") {
-      const c = keyboardSlots[i].target;
-      if (c.dead || !c.remainingParts.includes(keyboardSlots[i].char)) keyboardSlots[i] = null;
-    }
+    keyboardSlots[i] = { kind: "distractor", char: allDistractors.pop() };
   }
+  fillEmptySlotsWithNewParts();
+}
 
-  let needed = [];
+// 🌟 核心算法：只准把新部首填进“空缺”或“干扰项”插槽，未被点击的part绝对不准动！
+function fillEmptySlotsWithNewParts() {
   activeChars.forEach(c => {
     if (c.dead) return;
-    let req = [...c.remainingParts];
-    for (let i = 0; i < KEY_COUNT; i++) {
-      if (keyboardSlots[i] && keyboardSlots[i].kind === "part" && keyboardSlots[i].target === c) {
-        const idx = req.indexOf(keyboardSlots[i].char); if (idx > -1) req.splice(idx, 1);
+    c.remainingParts.forEach(char => {
+      // 检查这个字的这个部件是不是已经在键盘上了，如果在，不需要重复填
+      const alreadyOnKey = keyboardSlots.some(s => s && s.kind === "part" && s.target === c && s.char === char);
+      if (alreadyOnKey) return;
+
+      // 找一个可以被无情替换的槽位（必须是null或者干扰项）
+      let bestSlotIdx = -1;
+      for (let i = 0; i < KEY_COUNT; i++) {
+        if (!keyboardSlots[i] || keyboardSlots[i].kind === "distractor") {
+          bestSlotIdx = i; break; // 拿到一个最左边的可用干扰槽
+        }
       }
-    }
-    req.forEach(char => needed.push({ char, target: c }));
-  });
 
-  let availableSlots = [];
+      if (bestSlotIdx > -1) {
+        keyboardSlots[bestSlotIdx] = { kind: "part", char: char, target: c };
+      }
+    });
+  });
+  renderKeyboardDOMText();
+}
+
+// 当字死掉或者飞走，把属于它的按键温柔地变成干扰项，绝不牵连无辜按键
+function clearDeadTargetFromKeys(deadChar) {
   for (let i = 0; i < KEY_COUNT; i++) {
-    if (!keyboardSlots[i] || keyboardSlots[i].kind === "distractor") availableSlots.push(i);
-  }
-  shuffle(availableSlots);
-
-  needed.forEach(n => {
-    if (availableSlots.length > 0) {
-      const slotIdx = availableSlots.pop();
-      keyboardSlots[slotIdx] = { kind: "part", char: n.char, target: n.target };
+    if (keyboardSlots[i] && keyboardSlots[i].target === deadChar) {
+      keyboardSlots[i] = { kind: "distractor", char: distractors[Math.floor(Math.random() * distractors.length)] };
     }
-  });
+  }
+  fillEmptySlotsWithNewParts();
+}
 
-  const allParts = activeChars.flatMap(c => c.parts);
-  availableSlots.forEach(slotIdx => {
-    keyboardSlots[slotIdx] = { kind: "distractor", char: randomDistractorAvoiding(allParts) };
-  });
-
+function renderKeyboardDOMText() {
   const keys = piano.children;
   for (let i = 0; i < KEY_COUNT; i++) {
-    const slot = keyboardSlots[i];
-    keys[i].querySelector(".key-radical").textContent = slot ? slot.char : "";
+    keys[i].querySelector(".key-radical").textContent = keyboardSlots[i] ? keyboardSlots[i].char : "";
   }
 }
 
@@ -386,91 +384,110 @@ function handleKeyPress(index, btnElement) {
   
   btnElement.classList.add("pressed");
   startSustainNote(`key-${index}`, PENTA_KEYS[index].freq); 
-  recordedNotes.push({ time: Date.now() - gameStartTime, index: index, freq: PENTA_KEYS[index].freq });
+  
+  // 仅记录绝对真实按下的时间点
+  rawRecordedNotes.push({ absTime: Date.now(), index: index, freq: PENTA_KEYS[index].freq });
 
   if (slot.kind === "part") {
     const c = slot.target;
     const pIdx = c.remainingParts.indexOf(slot.char);
     if (pIdx > -1) {
-      c.remainingParts.splice(pIdx, 1);
+      c.remainingParts.splice(pIdx, 1); // 削减部件
       score += 50; document.getElementById("score").textContent = score;
       
+      // 触发瞬间判定（立竿见影，不再等待子弹延迟，破除断流）
+      c.visualHitCount++;
+      if (c.visualHitCount >= c.parts.length) {
+        score += 200; document.getElementById("score").textContent = score;
+        c.dead = true; c.el.classList.add("complete");
+        setTimeout(() => c.el.remove(), 300);
+      }
+
+      // 视觉流效果照旧
       const rect = btnElement.getBoundingClientRect(); const arenaRect = arena.getBoundingClientRect();
       launchHitToken(slot.char, rect.left + rect.width/2 - arenaRect.left, arenaRect.height, c);
       
-      keyboardSlots[index] = null;
-      refreshKeyboardSlots();
+      // 🌟 精准替换：只有点对的这个槽位被洗成新干扰项，并重新触发空槽判定
+      keyboardSlots[index] = { kind: "distractor", char: distractors[Math.floor(Math.random() * distractors.length)] };
+      fillEmptySlotsWithNewParts();
     }
-  } else {
-    btnElement.classList.remove("wrong"); void btnElement.offsetWidth; btnElement.classList.add("wrong");
   }
+  // 按错没有任何惩罚、没有抖动、没有红标，只有琴声发作
 }
 
 function launchHitToken(char, x, y, targetChar) {
   const el = document.createElement("div"); el.className = "hit-token"; el.textContent = char;
   arena.appendChild(el);
-  hitTokens.push({ el, x, y, z: 0.98, target: targetChar, dead: false, arrived: false });
+  hitTokens.push({ el, x, y, z: 0.98, target: targetChar, dead: false });
 }
 
 function updateHitTokens(dt) {
   hitTokens.forEach(t => {
-    if (t.dead || t.target.dead) { t.dead = true; t.el.remove(); return; }
-    t.z -= 0.08 * dt; if (t.z < t.target.z) t.z = t.target.z;
-
+    if (t.dead) return; t.z -= 0.08 * dt;
+    if (t.z <= t.target.z || t.target.dead) { t.dead = true; t.el.remove(); return; }
     const targetPt = getPointOnLane(t.target.laneIndex, t.target.z);
     const blend = (0.98 - t.z) / (0.98 - t.target.z + 0.001);
     t.x = t.x + (targetPt.x - t.x) * blend * 0.2; t.y = t.y + (targetPt.y - t.y) * blend * 0.5;
     t.el.style.left = `${t.x}px`; t.el.style.top = `${t.y}px`; t.el.style.transform = `translate(-50%, -50%) scale(${0.5 + t.z * 0.5})`;
-
-    if (!t.arrived && t.z <= t.target.z + 0.02) {
-      t.arrived = true; t.dead = true; t.el.remove(); hitTarget(t.target);
-    }
   });
   hitTokens = hitTokens.filter(t => !t.dead);
 }
 
-function hitTarget(c) {
-  c.visualHitCount++; c.slowUntil = performance.now() + 1000;
-  c.el.classList.remove("correct"); void c.el.offsetWidth; c.el.classList.add("correct");
-  if (c.visualHitCount >= c.parts.length) {
-    score += 200; document.getElementById("score").textContent = score;
-    c.dead = true; c.el.classList.add("complete"); setTimeout(() => c.el.remove(), 400);
-  }
-}
+// 🌟 智能空白剔除与 3 倍速时间轴压缩算法
+function processRecordedNotesWithGapCut() {
+  if (rawRecordedNotes.length === 0) { processedNotes = []; return; }
+  processedNotes = [];
+  
+  let accumulatedCutTime = 0;
+  // 第一个音符强制作为绝对零点
+  processedNotes.push({
+    relTime: 0,
+    index: rawRecordedNotes[0].index,
+    freq: rawRecordedNotes[0].freq
+  });
 
-// --- 动态背景律动鼓点引擎 ---
-function scheduleBeats(bpm) {
-  if (!isPlaying || !audioCtx) return;
-  const secPerBeat = 60 / bpm; 
-  while (nextBeatTime < audioCtx.currentTime + 0.1) {
-    playDrumStep(nextBeatTime, currentBeat);
-    nextBeatTime += secPerBeat;
-    currentBeat++;
-  }
-  beatTimer = requestAnimationFrame(() => scheduleBeats(bpm));
-}
+  for (let i = 1; i < rawRecordedNotes.length; i++) {
+    const rawGap = rawRecordedNotes[i].absTime - rawRecordedNotes[i-1].absTime;
+    
+    // 如果间隔长于上限，说明在发呆，把多余的空白切掉
+    if (rawGap > MAX_GAP_MS) {
+      const cut = rawGap - MAX_GAP_MS;
+      accumulatedCutTime += cut;
+    }
 
-function playDrumStep(time, beat) {
-  const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  if (beat % 4 === 0 || beat % 4 === 2) {
-    osc.frequency.setValueAtTime(100, time); osc.frequency.exponentialRampToValueAtTime(10, time + 0.2);
-    gain.gain.setValueAtTime(0.35, time); gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-  } else {
-    osc.type = 'triangle'; osc.frequency.setValueAtTime(800, time);
-    gain.gain.setValueAtTime(0.08, time); gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
-  }
-  osc.start(time); osc.stop(time + 0.2);
+    // 计算剔除发呆空白后的紧凑时间点
+    const compactTime = (rawRecordedNotes[i].absTime - rawRecordedNotes[0].absTime) - accumulatedCutTime;
+    
+    // 注入 3 倍提速因子，全曲狂飙
+    const finalSpedUpTime = compactTime / SPEED_MULTIPLIER;
 
-  if (beat % 8 === 0) {
-    [261.63, 329.63, 392.00].forEach(f => {
-      const pOsc = audioCtx.createOscillator(); const pGain = audioCtx.createGain();
-      pOsc.type = 'sine'; pOsc.frequency.value = f / 2;
-      pGain.gain.setValueAtTime(0, time); pGain.gain.linearRampToValueAtTime(0.04, time + 0.8);
-      pGain.gain.setValueAtTime(0.04, time + 2); pGain.gain.linearRampToValueAtTime(0, time + 2.5);
-      pOsc.connect(pGain); pGain.connect(audioCtx.destination); pOsc.start(time); pOsc.stop(time + 2.5);
+    processedNotes.push({
+      relTime: finalSpedUpTime,
+      index: rawRecordedNotes[i].index,
+      freq: rawRecordedNotes[i].freq
     });
   }
+}
+
+// --- 背景高级 Lo-Fi 氛围流动乐章 (替代所有的突兀鼓点) ---
+function scheduleAmbientMusic() {
+  if (!isPlaying || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  if (now >= nextBeatTime - 0.05) {
+    // 产生水波纹一样的铺垫氛围和弦
+    const chords = [220.00, 261.63, 329.63]; // A小调柔和三和弦
+    chords.forEach((f, idx) => {
+      const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+      osc.type = "sine"; osc.frequency.value = f / 2; // 下沉八度
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(0.04, now + 1.5 + idx * 0.2);
+      g.gain.linearRampToValueAtTime(0, now + 4);
+      osc.connect(g); g.connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 4);
+    });
+    nextBeatTime = now + 3.5; // 每3.5秒循环流动一次
+  }
+  beatTimer = requestAnimationFrame(scheduleAmbientMusic);
 }
 
 // --- 音频发声底层 ---
@@ -482,10 +499,10 @@ function startSustainNote(noteId, freq) {
   output.gain.setValueAtTime(0, now); output.gain.linearRampToValueAtTime(0.4, now + 0.02); output.gain.exponentialRampToValueAtTime(0.1, now + 0.3);
   output.connect(audioCtx.destination);
   const oscs = [];
-  [{r:1, a:1, t:'sine'}, {r:2, a:0.5, t:'triangle'}, {r:3, a:0.2, t:'sine'}].forEach(h => {
+  [{r:1, a:1, t:'sine'}, {r:2, a:0.4, t:'triangle'}, {r:3, a:0.15, t:'sine'}].forEach(h => {
     const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
     osc.type = h.t; osc.frequency.value = freq * h.r;
-    g.gain.setValueAtTime(h.a, now); g.gain.exponentialRampToValueAtTime(0.01, now + (h.r===1 ? 0.8 : 0.2));
+    g.gain.setValueAtTime(h.a, now); g.gain.exponentialRampToValueAtTime(0.01, now + (h.r===1 ? 0.7 : 0.2));
     osc.connect(g); g.connect(output); osc.start(now); oscs.push({osc, g});
   });
   activeNotes.set(noteId, { output, oscs });
@@ -500,24 +517,17 @@ function stopSustainNote(noteId) {
   activeNotes.delete(noteId);
 }
 
-// --- 🌟 3倍速录音流回放大师机制 ---
+// --- 录音工作站超级回放机制 ---
 function playRecording() {
-  if (recordedNotes.length === 0) return alert("刚刚没有踩对任何音符哦，再来一把！");
+  if (processedNotes.length === 0) return alert("刚才没有击中汉字哦，重开一局吧！");
   document.getElementById("replay-screen").style.display = "none";
   
-  // 1. 隐藏键盘DOM，换成高科技多轨录音波形灯控制面板
-  piano.style.display = "none";
-  playerUI.style.display = "flex";
-  
-  // 2. 激活音频指示灯上下狂跳动画
-  const bars = playerUI.querySelectorAll('.eq-bar');
-  bars.forEach(b => b.classList.add('animating'));
+  piano.style.display = "none"; playerUI.style.display = "flex";
+  const bars = playerUI.querySelectorAll('.eq-bar'); bars.forEach(b => b.classList.add('animating'));
 
-  // 3. 计算 3 倍提速后的总时长
-  const finalEndTime = recordedNotes[recordedNotes.length - 1].time / SPEED_MULTIPLIER;
-  const totalDurationMs = finalEndTime + 1000;
+  const totalDurationMs = processedNotes[processedNotes.length - 1].relTime + 1200;
 
-  // 4. 动态走进度条
+  // 渲染高科技滚条
   const pFill = document.getElementById("p-fill"); pFill.style.width = "0%";
   const progressStart = Date.now();
   const progressInterval = setInterval(() => {
@@ -525,26 +535,19 @@ function playRecording() {
     const percent = Math.min(100, (elapsed / totalDurationMs) * 100);
     pFill.style.width = `${percent}%`;
     if (elapsed >= totalDurationMs) clearInterval(progressInterval);
-  }, 50);
+  }, 30);
 
-  // 5. 启动提速版的背景节拍（BPM从110飙升到140，配合快节奏旋律）
-  isPlaying = true; nextBeatTime = audioCtx.currentTime + 0.1; currentBeat = 0;
-  scheduleBeats(140);
-
-  // 6. 核心：按 3 倍速度平移时间轴播放音符
-  recordedNotes.forEach(note => {
-    const spedUpTime = note.time / SPEED_MULTIPLIER; // 时间线缩短到 1/3
+  // 释放紧凑节拍的 3 倍速主旋律
+  processedNotes.forEach(note => {
     setTimeout(() => {
-      startSustainNote(`replay-${note.index}`, note.freq);
-      // 在 3 倍速下，每个音符极其急促清脆（释放时间缩短至 100ms）
-      setTimeout(() => stopSustainNote(`replay-${note.index}`), 100);
-    }, spedUpTime);
+      startSustainNote(`replay-${note.relTime}`, note.freq);
+      setTimeout(() => stopSustainNote(`replay-${note.relTime}`), 150); // 3倍速下每个音符错落有致
+    }, note.relTime);
   });
 
-  // 7. 回放曲终，卸载面板，恢复结算遮罩
+  // 曲终谢幕
   setTimeout(() => {
-    isPlaying = false; cancelAnimationFrame(beatTimer); // 关闭底鼓
-    bars.forEach(b => b.classList.remove('animating')); // 关闭动画
+    bars.forEach(b => b.classList.remove('animating'));
     document.getElementById("replay-screen").style.display = "flex";
   }, totalDurationMs);
 }
