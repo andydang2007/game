@@ -1,729 +1,363 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PSLE: 汉字连击快线 (HYPY版)</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; font-family: 'Nunito', "Chalkboard SE", sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
-        :root {
-            --bg-desert-top: #f9d5e5; 
-            --bg-desert-bottom: #cde7ff; 
-            --key-bg: #ffffff; 
-            --key-border: #c4b5fd; 
-            --text-main: #4c1d95; 
-            --defense-line: #fb7185; 
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>汉字连击·天空版 Pro</title>
 
-        body { 
-            margin: 0; 
-            padding: 0; 
-            min-height: 100vh; 
-            background: linear-gradient(180deg, var(--bg-desert-top) 0%, var(--bg-desert-bottom) 100%); 
-            display: flex; 
-            flex-direction: column; 
-            overflow-x: hidden;
-            overflow-y: auto;
-        }
-        
-        @media (orientation: landscape) {
-            #header { padding: 10px 15px; }
-            #keyboard { padding: 10px 15px 18px 15px; }
-        }
-        
-        #sand-storm { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0.22; background-image: radial-gradient(white 1px, transparent 1px); background-size: 60px 60px; animation: windScroll 8s linear infinite; }
-        @keyframes windScroll { from { background-position: 0 0; } to { background-position: 500px 500px; } }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-        #header { width: 100%; display: flex; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.45); z-index: 10; border-bottom: 2px solid rgba(255,255,255,0.85); backdrop-filter: blur(4px); }
-        .score-box { color: #7c3aed; font-size: 24px; font-weight: 900; }
-        .lives-box { color: #f43f5e; font-size: 22px; letter-spacing: 2px; }
+<style>
+body {
+  margin:0;
+  overflow:hidden;
+  background: linear-gradient(#a5d8ff, #e0f7fa);
+  font-family: "Microsoft YaHei", sans-serif;
+}
 
-        #play-area { flex: 1 1 auto; width: 100vw; position: relative; overflow: hidden; z-index: 5; border-bottom: 3px solid #f9a8d4; background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(200,150,255,0.1)); }
-        #defense-wall { position: absolute; top: 0; right: 0; bottom: 0; width: 8px; background: var(--defense-line); box-shadow: -3px 0 10px rgba(251, 113, 133, 0.6); z-index: 6; }
-        #play-area.hurt { animation: screenFlash 0.15s; }
-        @keyframes screenFlash { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(244, 63, 94, 0.3); } }
-        #fx-layer { position: absolute; inset: 0; pointer-events: none; z-index: 20; overflow: visible; }
+#ui {
+  position:absolute;
+  top:10px;
+  left:10px;
+  font-size:20px;
+  font-weight:bold;
+}
 
-        .tank-vehicle { position: absolute; left: -250px; transition: left 0.05s linear; z-index: 7; display: flex; flex-direction: column; align-items: center; justify-content: center;}
-        .vehicle-wrapper { position: relative; display: inline-block; }
-        .vehicle-img { height: 72px; object-fit: contain; transition: transform 0.1s; }
-        .target-char { position: absolute; top: -34px; left: 0; width: 100%; text-align: center; font-size: 26px; color: #ffffff; font-weight: 900; text-shadow: 0px 3px 6px rgba(124,58,237,0.65); }
+.character {
+  position:absolute;
+  font-size:52px;
+  font-weight:bold;
+  transform:translate(-50%,-50%);
+}
 
-        .vehicle-img.hurt { filter: drop-shadow(0 0 10px #fb7185) brightness(1.35); animation: shakeTank 0.2s; }
-        @keyframes shakeTank { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.radical {
+  position:absolute;
+  font-size:32px;
+  cursor:pointer;
+}
 
-        .tank-vehicle.exploded { animation: deadBlink 0.4s forwards; }
-        @keyframes deadBlink { 
-            0% { opacity: 1; transform: scale(1); filter: brightness(2); } 
-            50% { opacity: 0; transform: scale(1.2); }
-            100% { opacity: 0; } 
-        }
-        .float-score {
-            position: absolute;
-            font-weight: 900;
-            font-size: 26px;
-            color: #fef9c3;
-            text-shadow: 0 2px 6px rgba(76, 29, 149, 0.65);
-            animation: scoreRise 0.7s ease-out forwards;
-            white-space: nowrap;
-        }
-        @keyframes scoreRise {
-            0% { opacity: 0; transform: translate(-50%, 0px) scale(0.9); }
-            20% { opacity: 1; transform: translate(-50%, -6px) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -30px) scale(1.05); }
-        }
-        .center-msg {
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            font-weight: 900;
-            font-size: 36px;
-            animation: centerPulse 0.65s ease-out forwards;
-            white-space: nowrap;
-            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
-        }
-        .center-msg.bad { color: #fb7185; }
-        .center-msg.combo { color: #22c55e; }
-        @keyframes centerPulse {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -58%) scale(1.03); }
-        }
+.particle {
+  position:absolute;
+  font-size:14px;
+  pointer-events:none;
+}
 
-        #keyboard { width: 100%; background: rgba(255,255,255,0.55); padding: 10px 12px 14px 12px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; z-index: 5; flex: 0 0 auto; }
-        .key-btn { height: 52px; border-radius: 14px; background: var(--key-bg); color: var(--text-main); font-size: 28px; font-weight: 900; border: 2px solid #ddd6fe; border-bottom: 4px solid var(--key-border); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.05); cursor: pointer; transition: all 0.1s; position: relative; }
-        .key-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0, 0, 0, 0.08); }
-        .key-btn:active { transform: translateY(3px); border-bottom-width: 1px; box-shadow: none; }
-        .key-btn.wrong { background: #ffe4e6; border-color: #fb7185; animation: shakeBtn 0.2s; }
-        @keyframes shakeBtn { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
-
-        .key-btn.empty-slot { opacity: 0.3; cursor: not-allowed; pointer-events: none; background: #f3f4f6; }
-        .key-note { position: absolute; top: 2px; right: 4px; font-size: 10px; color: #a78bfa; font-weight: 600; }
-
-        .overlay { position: absolute; inset: 0; background: rgba(76,29,149,0.86); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; text-align: center; }
-        .overlay h1 { font-size: 46px; margin: 0 0 16px 0; color: #fef9c3; text-shadow: 0 4px 0 #7c3aed; }
-        .overlay p { font-size: 19px; color: #ede9fe; margin-bottom: 34px; font-weight: 900; }
-        .btn-start { background: #34d399; color: #064e3b; font-size: 24px; font-weight: 900; padding: 12px 30px; border-radius: 999px; border: 3px solid #a7f3d0; box-shadow: 0 6px 0 #10b981; cursor: pointer; transition: all 0.1s; }
-        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #10b981; }
-        .btn-start:active { transform: translateY(6px); box-shadow: 0 0 0 transparent; }
-    </style>
+</style>
 </head>
+
 <body>
 
-<div id="sand-storm"></div>
-
-<div id="header">
-    <div class="score-box">⭐️ <span id="score">0</span></div>
-    <div class="lives-box" id="lives">❤️❤️❤️</div>
-</div>
-
-<div id="play-area">
-    <div id="defense-wall"></div>
-    <div id="fx-layer"></div>
-</div>
-
-<div id="keyboard"></div>
-
-<div id="start-screen" class="overlay">
-    <h1 id="loading-msg">题库加载中...</h1>
-    <p>正在连接 Google Sheet [HYPY] 分页</p>
-</div>
-
-<div id="game-over-screen" class="overlay" style="display:none;">
-    <h1>Game Over</h1>
-    <p>防线失守！得分: <span id="final-score" style="color:#facc15; font-size:36px;">0</span></p>
-    <button class="btn-start" style="background:#10b981; border-color:#6ee7b7; box-shadow: 0 8px 0 #059669;" onclick="startGame()">再来一局 🔄</button>
+<div id="ui">
+⭐ <span id="score">0</span> |
+❤️ <span id="lives">3</span> |
+🔥 <span id="combo">0</span>
 </div>
 
 <script>
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
-    let dictionary = [];
-    const distractors = ["扌", "亻", "心", "月", "虫", "门", "广", "走", "雨", "艹", "口", "氵", "日"];
+/////////////////////////////
+// 数据加载（保持你原来的）
+/////////////////////////////
 
-    let score = 0;
-    let lives = 3;
-    let isPlaying = false;
-    let activeVehicles = []; 
-    let spawnTimer = null;
-    let gameLoopRef = null;
-    let lastTime = 0;
-    let keyboardNeedsUpdate = false;
-    const KEY_POOL_SIZE = 8;
-    const PART_EMPTY_DURATION = 500;
-    const PRELOAD_QUESTIONS = 3;
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
-    // 预加载的问题队列
-    let preloadedQuestions = [];
-    let preloadedIndex = 0;
+let dictionary = [];
+const distractors = ["氵","门","心","虫","口","广","艹","日","月"];
 
-    // slot: { kind: 'part'|'distractor'|'empty', char?: string, vehicleId?: number, partIndex?: number, emptyUntil?: number }
-    let keyboardSlots = null;
-    let slotToNoteIndex = null;
-    let spawnOrderCounter = 0;
-    let wrongStreak = 0;
-    let inputLockedUntil = 0;
-    let lastInputTs = 0;
-    let comboCount = 0;
-    let bgmInterval = null;
-    let bgmGain = null;
+/////////////////////////////
+// 游戏状态
+/////////////////////////////
 
-    // 钢琴音符频率
-    const pianoNotes = [
-        { name: 'C', freq: 261.63 },
-        { name: 'D', freq: 293.66 },
-        { name: 'E', freq: 329.63 },
-        { name: 'F', freq: 349.23 },
-        { name: 'G', freq: 392.00 },
-        { name: 'A', freq: 440.00 },
-        { name: 'B', freq: 493.88 },
-        { name: 'C', freq: 523.25 }
-    ];
+let score=0, lives=3, combo=0;
 
-    const playArea = document.getElementById('play-area');
-    const keyboard = document.getElementById('keyboard');
+let radicals = [];
+let characters = [];
 
-    window.onload = function() {
-        Papa.parse(SHEET_URL + "&t=" + Date.now(), {
-            download: true, 
-            header: true, 
-            skipEmptyLines: 'greedy',
-            transformHeader: h => h.replace(/^\uFEFF/, '').trim().toUpperCase(), 
-            complete: function(results) {
-                results.data.forEach(row => {
-                    let targetWord = row['QUESTION'] || row['ANSWER'] || row['CORRECT ANSWER'] || ""; 
-                    let partsStr = row['PARTS'] || row['部件'] || ""; 
-                    
-                    if (targetWord && partsStr) {
-                        const parsedParts = partsStr
-                            .split(/[,，]/)
-                            .map(p => p.trim())
-                            .filter(p => p.length > 0);
-                        if (parsedParts.length === 0) return;
-                        dictionary.push({
-                            word: targetWord.trim(),
-                            parts: parsedParts
-                        });
-                    }
-                });
+let gravity = 0.3;
+let gameSpeed = 1;
 
-                const startScreen = document.getElementById('start-screen');
-                if (dictionary.length > 0) {
-                    startScreen.innerHTML = `
-                        <h1>大漠狂沙特快</h1>
-                        <p>已从 [HYPY] 加载 <b>${dictionary.length}</b> 个战车！<br><br>演奏你的音乐。<br>爆胎会减速，守住防线！<br>按键配钢琴音符，节奏感十足！</p>
-                        <button class="btn-start" onclick="startGame()">全军出击 🚀</button>
-                    `;
-                } else {
-                    startScreen.innerHTML = `<h1>数据加载失败</h1><p>请检查表格 [HYPY] 中是否有 [Question] 和 [Parts] 列。</p>`;
-                }
-            }
+/////////////////////////////
+// 载入题库
+/////////////////////////////
+
+Papa.parse(SHEET_URL, {
+  download:true,
+  header:true,
+  complete: res=>{
+    res.data.forEach(row=>{
+      let word = row['QUESTION'] || "";
+      let parts = row['PARTS'] || "";
+
+      if(word && parts){
+        dictionary.push({
+          word,
+          parts: parts.split(/[,，]/)
         });
-    };
+      }
+    });
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    function playSound(type) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        if (type === 'explode') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(100, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.4);
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        } else if (type === 'wrong') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(200, audioCtx.currentTime); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-        }
+    startGame();
+  }
+});
+
+/////////////////////////////
+// 创建汉字（多个）
+/////////////////////////////
+
+function spawnCharacter(){
+
+  let d = dictionary[Math.floor(Math.random()*dictionary.length)];
+
+  let el = document.createElement("div");
+  el.className = "character";
+  el.innerText = d.word;
+
+  let obj = {
+    el,
+    word:d.word,
+    parts:[...d.parts],
+    hitParts:0,
+    x: Math.random()*window.innerWidth,
+    y: window.innerHeight*0.7,
+    vy:0,
+    rot:0,
+    vr:0
+  };
+
+  el.style.left=obj.x+"px";
+  el.style.top=obj.y+"px";
+
+  document.body.appendChild(el);
+  characters.push(obj);
+}
+
+/////////////////////////////
+// 掉落部件
+/////////////////////////////
+
+function spawnRadical(){
+
+  let randomChar = Math.random()<0.6 ?
+    pickCorrectPart() :
+    distractors[Math.floor(Math.random()*distractors.length)];
+
+  let el = document.createElement("div");
+  el.className="radical";
+  el.innerText=randomChar;
+
+  let r={
+    el,
+    char:randomChar,
+    x:Math.random()*window.innerWidth,
+    y:-30,
+    vx:0,
+    vy:2+Math.random()*2,
+    target:null
+  };
+
+  el.onclick=()=>clickRadical(r);
+
+  document.body.appendChild(el);
+  radicals.push(r);
+}
+
+function pickCorrectPart(){
+  let c = characters[Math.floor(Math.random()*characters.length)];
+  return c.parts[Math.floor(Math.random()*c.parts.length)];
+}
+
+/////////////////////////////
+// 点击逻辑
+/////////////////////////////
+
+function clickRadical(r){
+
+  if(r.target) return;
+
+  let target = characters.find(c=>c.parts.includes(r.char) && c.hitParts < c.parts.length);
+
+  if(target){
+    r.target = target;
+    combo++;
+    score += 100 + combo*10;
+
+    slowMotion();
+
+  }else{
+    r.vy += 5;
+    combo = 0;
+    score = Math.max(0, score-20);
+  }
+
+  updateUI();
+}
+
+/////////////////////////////
+// 命中效果
+/////////////////////////////
+
+function hitTarget(r,c){
+
+  c.hitParts++;
+
+  c.vy = -10;
+  c.vr = 20;
+
+  // 弹开
+  r.vx = (Math.random()-0.5)*12;
+  r.vy = -8;
+  r.target = null;
+
+  particleBurst(c.x, c.y);
+
+  if(c.hitParts >= c.parts.length){
+    score += 300;
+    combo++;
+    removeCharacter(c);
+  }
+}
+
+function removeCharacter(c){
+  c.el.remove();
+  characters = characters.filter(x=>x!==c);
+}
+
+/////////////////////////////
+// 粒子
+/////////////////////////////
+
+function particleBurst(x,y){
+  for(let i=0;i<10;i++){
+    let p=document.createElement("div");
+    p.className="particle";
+    p.innerText="✨";
+
+    let vx=(Math.random()-0.5)*6;
+    let vy=(Math.random()-0.5)*6;
+
+    document.body.appendChild(p);
+
+    let t=0;
+    function anim(){
+      t++;
+      p.style.left = x+vx*t+"px";
+      p.style.top = y+vy*t+"px";
+      if(t<20) requestAnimationFrame(anim);
+      else p.remove();
+    }
+    anim();
+  }
+}
+
+/////////////////////////////
+// 慢动作
+/////////////////////////////
+
+function slowMotion(){
+  gameSpeed = 0.5;
+  setTimeout(()=>gameSpeed=1,200);
+}
+
+/////////////////////////////
+// 主循环
+/////////////////////////////
+
+function loop(){
+
+  // 更新汉字
+  characters.forEach(c=>{
+    c.y += c.vy*gameSpeed;
+    c.vy += 0.5*gameSpeed;
+
+    c.rot += c.vr;
+    c.vr *= 0.9;
+
+    if(c.y > window.innerHeight*0.7){
+      c.y = window.innerHeight*0.7;
+      c.vy = 0;
     }
 
-    // 播放钢琴音符（替代按键音效）
-    function playPianoNote(noteIndex) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const note = pianoNotes[noteIndex % pianoNotes.length];
-        
-        // 使用多个谐波模拟钢琴音色
-        const frequencies = [note.freq, note.freq * 2, note.freq * 3, note.freq * 4];
-        const amplitudes = [0.5, 0.3, 0.15, 0.1];
-        
-        frequencies.forEach((freq, i) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            
-            // 钢琴特有的包络：快速上升，缓慢衰减
-            gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(amplitudes[i] * 0.08, audioCtx.currentTime + 0.08);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.8);
-        });
+    c.el.style.top=c.y+"px";
+    c.el.style.transform=`translate(-50%,-50%) rotate(${c.rot}deg)`;
+  });
+
+  // 更新部件
+  radicals.forEach((r,i)=>{
+
+    if(r.target){
+
+      r.x += (r.target.x-r.x)*0.2;
+      r.y += (r.target.y-r.y)*0.2;
+
+      if(Math.abs(r.x-r.target.x)<20){
+        hitTarget(r,r.target);
+      }
+
+    }else{
+      r.y += r.vy*gameSpeed;
+      r.vy += gravity*gameSpeed;
     }
 
-    // 预加载题目
-    function preloadQuestions() {
-        preloadedQuestions = [];
-        preloadedIndex = 0;
-        for (let i = 0; i < PRELOAD_QUESTIONS && dictionary.length > 0; i++) {
-            const wordData = dictionary[Math.floor(Math.random() * dictionary.length)];
-            preloadedQuestions.push({
-                word: wordData.word,
-                parts: [...wordData.parts]
-            });
-        }
+    r.x += r.vx;
+
+    r.el.style.left=r.x+"px";
+    r.el.style.top=r.y+"px";
+
+    // 掉地
+    if(r.y > window.innerHeight){
+      lives--;
+      r.el.remove();
+      radicals.splice(i,1);
+      combo=0;
+      updateUI();
     }
 
-    // 获取下一题（来自预加载队列）
-    function getNextQuestion() {
-        if (preloadedIndex >= preloadedQuestions.length) {
-            preloadQuestions();
-            preloadedIndex = 0;
-        }
-        return preloadedQuestions[preloadedIndex++];
-    }
+  });
 
-    // 初始化键盘：将预加载的所有部件随机分配到8个按键
-    function initializeKeyboardWithPreloadedQuestions() {
-        const allParts = [];
-        
-        // 收集预加载3题的所有部件
-        for (let q of preloadedQuestions) {
-            for (let part of q.parts) {
-                allParts.push(part);
-            }
-        }
+  // 难度提升
+  if(score>1000) spawnRate=600;
+  if(score>3000) spawnRate=400;
 
-        // 随机打乱顺序
-        for (let i = allParts.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allParts[i], allParts[j]] = [allParts[j], allParts[i]];
-        }
+  requestAnimationFrame(loop);
+}
 
-        // 将部件随机分配到8个位置
-        keyboardSlots = Array.from({ length: KEY_POOL_SIZE }, () => ({
-            kind: 'distractor',
-            char: distractors[Math.floor(Math.random() * distractors.length)],
-        }));
+/////////////////////////////
+// UI
+/////////////////////////////
 
-        // 随机分配预加载部件到按键位置
-        const availableSlots = Array.from({ length: KEY_POOL_SIZE }, (_, i) => i);
-        for (let i = 0; i < Math.min(allParts.length, KEY_POOL_SIZE); i++) {
-            const slotIdx = Math.floor(Math.random() * availableSlots.length);
-            const realSlotIdx = availableSlots.splice(slotIdx, 1)[0];
-            keyboardSlots[realSlotIdx] = {
-                kind: 'part',
-                char: allParts[i],
-                vehicleId: null, // 稍后会赋值
-                partIndex: null
-            };
-        }
+function updateUI(){
+  document.getElementById("score").innerText=score;
+  document.getElementById("lives").innerText=lives;
+  document.getElementById("combo").innerText=combo;
 
-        // 初始化音符索引
-        slotToNoteIndex = Array.from({ length: KEY_POOL_SIZE }, (_, i) => i);
-    }
+  if(lives<=0){
+    alert("Game Over! Score:"+score);
+    location.reload();
+  }
+}
 
-    function startGame() {
-        document.getElementById('start-screen').style.display = 'none';
-        document.getElementById('game-over-screen').style.display = 'none';
-        playArea.innerHTML = '<div id="defense-wall"></div><div id="fx-layer"></div>';
-        activeVehicles = [];
-        spawnOrderCounter = 0;
-        keyboardSlots = null;
-        slotToNoteIndex = null;
-        wrongStreak = 0;
-        inputLockedUntil = 0;
-        lastInputTs = 0;
-        comboCount = 0;
-        score = 0;
-        lives = 3;
-        updateUI();
-        isPlaying = true;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        startBgm();
-        preloadQuestions(); // 预加载题目
-        initializeKeyboardWithPreloadedQuestions(); // 初始化键盘
-        keyboardNeedsUpdate = true;
-        renderKeyboardPool();
-        keyboardNeedsUpdate = false;
-        spawnTimer = setTimeout(spawnVehicleLoop, 1000); 
-        lastTime = performance.now();
-        gameLoopRef = requestAnimationFrame(gameLoop);
-    }
+/////////////////////////////
+// 启动
+/////////////////////////////
 
-    function updateUI() {
-        document.getElementById('score').innerText = score;
-        document.getElementById('lives').innerText = "❤️".repeat(lives) + "🖤".repeat(3-lives);
-    }
+let spawnRate = 800;
 
-    function spawnVehicleLoop() {
-        if (!isPlaying) return;
-        if (activeVehicles.length >= 3) {
-            spawnTimer = setTimeout(spawnVehicleLoop, 1800);
-            return;
-        }
-        spawnVehicle();
-        let interval = 4200 + Math.random() * 2800; 
-        spawnTimer = setTimeout(spawnVehicleLoop, interval);
-    }
+function startGame(){
 
-    function getImagePath(totalParts, currentHits) {
-        let stateNum = currentHits + 1;
-        return `radicalfiles/${totalParts}l${stateNum}.png`;
-    }
+  for(let i=0;i<2;i++) spawnCharacter();
 
-    function spawnVehicle() {
-        if (dictionary.length === 0) return;
-        if (!keyboardSlots || keyboardSlots.length !== KEY_POOL_SIZE) {
-            renderKeyboardPool();
-        }
+  setInterval(()=>{
+    if(characters.length<3) spawnCharacter();
+  },3000);
 
-        const availableSlots = keyboardSlots.reduce((acc, slot) => {
-            return acc + (!slot || slot.kind === 'distractor' || slot.kind === 'empty' ? 1 : 0);
-        }, 0);
+  setInterval(()=>{
+    spawnRadical();
+  },spawnRate);
 
-        let wordData = getNextQuestion();
-        const totalP = wordData.parts.length;
-        
-        if (totalP > availableSlots) return;
+  loop();
+}
 
-        const displayP = totalP;
-        
-        const laneMax = Math.max(36, playArea.clientHeight - 120);
-        let lanePos = 12 + Math.random() * Math.max(1, laneMax - 12);
-
-        const el = document.createElement('div');
-        el.className = 'tank-vehicle';
-        const initialImgSrc = getImagePath(displayP, 0);
-
-        el.innerHTML = `
-            <div class="vehicle-wrapper">
-                <img src="${initialImgSrc}" class="vehicle-img" onerror="this.src=''; this.alt='[${displayP}L]'">
-                <div class="target-char">${wordData.word}</div>
-            </div>
-        `;
-        el.style.top = lanePos + 'px';
-        playArea.appendChild(el);
-        
-        const base_speed_on_start = (1.3 + Math.random() * 0.7) / 3;
-
-        activeVehicles.push({
-            id: Date.now(),
-            spawnOrder: spawnOrderCounter++,
-            el: el,
-            imgEl: el.querySelector('.vehicle-img'),
-            x: -96,
-            totalParts: totalP,
-            displayParts: displayP, 
-            targetParts: [...wordData.parts], 
-            hits: 0,
-            keyboardActive: false,
-            breached: false,
-            baseSpeed: base_speed_on_start, 
-            currentSpeed: base_speed_on_start 
-        });
-
-        keyboardNeedsUpdate = true;
-    }
-
-    function gameLoop(currentTime) {
-        if (!isPlaying) return;
-        let delta = (currentTime - lastTime) / 16.67; 
-        lastTime = currentTime;
-        let defenseWallX = playArea.clientWidth; 
-
-        for (let i = activeVehicles.length - 1; i >= 0; i--) {
-            let v = activeVehicles[i];
-            let partsRemaining = v.totalParts - v.hits;
-            v.currentSpeed = v.baseSpeed * (partsRemaining / v.totalParts);
-            v.x += v.currentSpeed * delta;
-            v.el.style.left = v.x + 'px';
-
-            if (!v.breached && v.x >= defenseWallX - 72) {
-                v.breached = true;
-                lives--;
-                comboCount = 0;
-                updateUI();
-                playArea.classList.add('hurt');
-                setTimeout(() => playArea.classList.remove('hurt'), 150);
-                if (lives <= 0) gameOver();
-                keyboardNeedsUpdate = true;
-            }
-
-            if (v.x >= defenseWallX + 110) {
-                v.el.remove();
-                activeVehicles.splice(i, 1);
-                keyboardNeedsUpdate = true;
-            }
-        }
-
-        if (keyboardNeedsUpdate) {
-            renderKeyboardPool();
-            keyboardNeedsUpdate = false;
-        }
-
-        gameLoopRef = requestAnimationFrame(gameLoop);
-    }
-
-    function handleKeyPress(char, btnElement, slotIndex) {
-        if (!isPlaying) return;
-        
-        if (keyboardSlots[slotIndex] && keyboardSlots[slotIndex].kind === 'empty') {
-            return;
-        }
-
-        const now = Date.now();
-        if (now - lastInputTs < 70) return;
-        lastInputTs = now;
-        if (now < inputLockedUntil) return;
-        
-        let candidateIndices = [];
-
-        for (let i = 0; i < activeVehicles.length; i++) {
-            let v = activeVehicles[i];
-            if (v.targetParts[v.hits] === char) {
-                candidateIndices.push(i);
-            }
-        }
-
-        if (candidateIndices.length > 0) {
-            // 只播放钢琴音符，不播放原来的 'hit' 音效
-            playPianoNote(slotToNoteIndex[slotIndex]);
-            
-            const pickedIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
-            let v = activeVehicles[pickedIndex];
-            v.hits++; 
-            wrongStreak = 0;
-
-            let newImgSrc = getImagePath(v.displayParts, v.hits);
-            v.imgEl.src = newImgSrc;
-            v.imgEl.classList.add('hurt');
-            setTimeout(() => v.imgEl.classList.remove('hurt'), 150);
-            
-            score += 100;
-            showVehicleScore(v, "+100");
-            updateUI();
-            
-            keyboardSlots[slotIndex] = {
-                kind: 'empty',
-                emptyUntil: now + PART_EMPTY_DURATION
-            };
-            
-            keyboardNeedsUpdate = true;
-            if (v.hits >= v.totalParts) {
-                setTimeout(() => killVehicle(v.id), 200); 
-            }
-        } else {
-            playSound('wrong');
-            btnElement.classList.add('wrong');
-            setTimeout(() => btnElement.classList.remove('wrong'), 200);
-            score = Math.max(0, score - 20);
-            comboCount = 0;
-            showCenterMessage("-20", "bad");
-            updateUI();
-            wrongStreak++;
-            inputLockedUntil = now + 220;
-            if (wrongStreak >= 4) {
-                wrongStreak = 0;
-                lives--;
-                updateUI();
-                playArea.classList.add('hurt');
-                setTimeout(() => playArea.classList.remove('hurt'), 150);
-                if (lives <= 0) gameOver();
-            }
-        }
-    }
-
-    function killVehicle(vehicleId) {
-        let index = activeVehicles.findIndex(v => v.id === vehicleId);
-        if(index === -1) return;
-        let v = activeVehicles[index];
-        playSound('explode');
-        v.el.classList.add('exploded');
-        activeVehicles.splice(index, 1);
-        keyboardNeedsUpdate = true;
-        comboCount++;
-        score += 200;
-        showCenterMessage(`Combo ${comboCount} +200`, "combo");
-        updateUI();
-        setTimeout(() => {
-            v.el.remove();
-        }, 400);
-    }
-
-    function showVehicleScore(v, text) {
-        const fxLayer = document.getElementById('fx-layer');
-        if (!fxLayer || !v || !v.el) return;
-        const bubble = document.createElement('div');
-        bubble.className = 'float-score';
-        bubble.innerText = text;
-        bubble.style.left = `${v.x + 42}px`;
-        bubble.style.top = `${parseFloat(v.el.style.top || '0') - 18}px`;
-        fxLayer.appendChild(bubble);
-        setTimeout(() => bubble.remove(), 750);
-    }
-
-    function showCenterMessage(text, type) {
-        const fxLayer = document.getElementById('fx-layer');
-        if (!fxLayer) return;
-        const msg = document.createElement('div');
-        msg.className = `center-msg ${type || ''}`;
-        msg.innerText = text;
-        fxLayer.appendChild(msg);
-        setTimeout(() => msg.remove(), 700);
-    }
-
-    function startBgm() {
-        stopBgm();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        bgmGain = audioCtx.createGain();
-        bgmGain.gain.setValueAtTime(0.035, audioCtx.currentTime);
-        bgmGain.connect(audioCtx.destination);
-
-        const notes = [261.63, 329.63, 392.0, 523.25, 392.0, 329.63];
-        let idx = 0;
-        bgmInterval = setInterval(() => {
-            if (!isPlaying || !bgmGain) return;
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(notes[idx % notes.length], audioCtx.currentTime);
-            g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.04);
-            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
-            osc.connect(g);
-            g.connect(bgmGain);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.46);
-            idx++;
-        }, 360);
-    }
-
-    function stopBgm() {
-        if (bgmInterval) {
-            clearInterval(bgmInterval);
-            bgmInterval = null;
-        }
-        if (bgmGain) {
-            try { bgmGain.disconnect(); } catch (e) {}
-            bgmGain = null;
-        }
-    }
-
-    function renderKeyboardPool() {
-        const randDistractor = () => distractors[Math.floor(Math.random() * distractors.length)];
-        const now = Date.now();
-
-        if (!keyboardSlots || keyboardSlots.length !== KEY_POOL_SIZE) {
-            keyboardSlots = Array.from({ length: KEY_POOL_SIZE }, () => ({
-                kind: 'distractor',
-                char: randDistractor(),
-            }));
-            slotToNoteIndex = Array.from({ length: KEY_POOL_SIZE }, (_, i) => i);
-        }
-
-        const vehicleById = new Map(activeVehicles.map(v => [v.id, v]));
-
-        for (let i = 0; i < keyboardSlots.length; i++) {
-            const slot = keyboardSlots[i];
-            if (!slot || slot.kind !== 'part') continue;
-            const v = vehicleById.get(slot.vehicleId);
-            if (!v) {
-                keyboardSlots[i] = null;
-                continue;
-            }
-            if (slot.partIndex < v.hits) {
-                keyboardSlots[i] = null;
-                continue;
-            }
-            if (slot.partIndex >= v.totalParts || v.hits > v.totalParts) {
-                keyboardSlots[i] = null;
-            }
-        }
-
-        for (let i = 0; i < keyboardSlots.length; i++) {
-            const slot = keyboardSlots[i];
-            if (slot && slot.kind === 'empty' && slot.emptyUntil <= now) {
-                keyboardSlots[i] = null;
-            }
-        }
-
-        const orderedVehicles = [...activeVehicles].sort((a, b) => (a.spawnOrder ?? 0) - (b.spawnOrder ?? 0));
-
-        for (const v of orderedVehicles) {
-            let allPlaced = true;
-            for (let partIndex = v.hits; partIndex < v.totalParts; partIndex++) {
-                const alreadyPlaced = keyboardSlots.some(slot =>
-                    slot &&
-                    slot.kind === 'part' &&
-                    slot.vehicleId === v.id &&
-                    slot.partIndex === partIndex
-                );
-
-                if (alreadyPlaced) continue;
-
-                const slotIndex = keyboardSlots.findIndex(slot => !slot || (slot.kind === 'distractor'));
-                if (slotIndex === -1) {
-                    allPlaced = false;
-                    break;
-                }
-                keyboardSlots[slotIndex] = {
-                    kind: 'part',
-                    char: v.targetParts[partIndex],
-                    vehicleId: v.id,
-                    partIndex,
-                };
-            }
-
-            v.keyboardActive = allPlaced;
-        }
-
-        for (let i = 0; i < keyboardSlots.length; i++) {
-            if (!keyboardSlots[i]) {
-                keyboardSlots[i] = { kind: 'distractor', char: randDistractor() };
-            }
-        }
-
-        keyboard.innerHTML = keyboardSlots.map((slot, index) => {
-            const char = slot.char;
-            const isEmptySlot = slot.kind === 'empty';
-            const noteLabel = pianoNotes[slotToNoteIndex[index] % pianoNotes.length].name;
-            
-            return `
-                <button 
-                    class="key-btn ${isEmptySlot ? 'empty-slot' : ''}" 
-                    onclick="handleKeyPress('${char}', this, ${index})"
-                    ${isEmptySlot ? 'disabled' : ''}
-                >
-                    ${isEmptySlot ? '♪' : char}
-                    <span class="key-note">${noteLabel}</span>
-                </button>
-            `;
-        }).join('');
-    }
-
-    function gameOver() {
-        isPlaying = false;
-        clearTimeout(spawnTimer);
-        cancelAnimationFrame(gameLoopRef);
-        stopBgm();
-        
-        // 完全清屏
-        playArea.innerHTML = '<div id="defense-wall"></div><div id="fx-layer"></div>';
-        keyboard.innerHTML = '';
-        
-        document.getElementById('final-score').innerText = score;
-        document.getElementById('game-over-screen').style.display = 'flex';
-    }
 </script>
+
 </body>
 </html>
