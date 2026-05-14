@@ -2,362 +2,1240 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>汉字连击·天空版 Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>PSLE 汉字连击快线 · 天空部件版</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
 
 <style>
-body {
-  margin:0;
-  overflow:hidden;
-  background: linear-gradient(#a5d8ff, #e0f7fa);
-  font-family: "Microsoft YaHei", sans-serif;
-}
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
 
-#ui {
-  position:absolute;
-  top:10px;
-  left:10px;
-  font-size:20px;
-  font-weight:bold;
-}
+  :root {
+    --sky-top: #93c5fd;
+    --sky-mid: #bfdbfe;
+    --sky-bottom: #fef3c7;
+    --purple: #6d28d9;
+    --pink: #fb7185;
+    --green: #22c55e;
+    --yellow: #facc15;
+    --white-glass: rgba(255, 255, 255, 0.62);
+  }
 
-.character {
-  position:absolute;
-  font-size:52px;
-  font-weight:bold;
-  transform:translate(-50%,-50%);
-}
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: "Nunito", "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-bottom) 100%);
+  }
 
-.radical {
-  position:absolute;
-  font-size:32px;
-  cursor:pointer;
-}
+  body {
+    touch-action: manipulation;
+  }
 
-.particle {
-  position:absolute;
-  font-size:14px;
-  pointer-events:none;
-}
+  #game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
 
+  #cloud-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+    background-image:
+      radial-gradient(circle at 15% 18%, rgba(255,255,255,0.9) 0 28px, transparent 29px),
+      radial-gradient(circle at 25% 15%, rgba(255,255,255,0.75) 0 40px, transparent 41px),
+      radial-gradient(circle at 70% 25%, rgba(255,255,255,0.8) 0 35px, transparent 36px),
+      radial-gradient(circle at 82% 22%, rgba(255,255,255,0.7) 0 48px, transparent 49px);
+    animation: cloudMove 18s linear infinite;
+  }
+
+  @keyframes cloudMove {
+    from { background-position: 0 0; }
+    to { background-position: 260px 0; }
+  }
+
+  #hud {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    right: 12px;
+    z-index: 30;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .hud-box {
+    background: var(--white-glass);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255,255,255,0.85);
+    box-shadow: 0 6px 16px rgba(76,29,149,0.14);
+    border-radius: 18px;
+    padding: 8px 12px;
+    font-size: clamp(16px, 3vw, 24px);
+    font-weight: 900;
+    color: var(--purple);
+  }
+
+  #lives {
+    color: #e11d48;
+    letter-spacing: 2px;
+  }
+
+  #combo {
+    color: #ea580c;
+  }
+
+  #arena {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    overflow: hidden;
+  }
+
+  #ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 18vh;
+    z-index: 6;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.35), transparent 22%),
+      linear-gradient(180deg, rgba(253,230,138,0.72), rgba(251,191,36,0.65));
+    border-top: 4px solid rgba(251, 146, 60, 0.55);
+  }
+
+  .target-character {
+    position: absolute;
+    z-index: 12;
+    width: 96px;
+    height: 96px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 54px;
+    font-weight: 900;
+    color: #4c1d95;
+    background: rgba(255,255,255,0.82);
+    border: 4px solid rgba(196,181,253,0.95);
+    box-shadow:
+      0 10px 0 rgba(124,58,237,0.18),
+      0 16px 24px rgba(76,29,149,0.22);
+    transform: translate(-50%, -50%);
+    will-change: transform, left, top;
+  }
+
+  .target-character .progress {
+    position: absolute;
+    left: 50%;
+    bottom: -28px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+  }
+
+  .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.75);
+    border: 2px solid rgba(124,58,237,0.65);
+  }
+
+  .dot.done {
+    background: var(--green);
+    border-color: #16a34a;
+  }
+
+  .target-character.completed {
+    animation: completePop 0.45s ease-out forwards;
+  }
+
+  @keyframes completePop {
+    0% { opacity: 1; filter: brightness(1); }
+    45% { opacity: 1; filter: brightness(1.5); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6) rotate(30deg); }
+  }
+
+  .falling-radical {
+    position: absolute;
+    z-index: 20;
+    min-width: 58px;
+    height: 58px;
+    padding: 0 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.9);
+    border: 3px solid rgba(196,181,253,0.95);
+    color: #5b21b6;
+    font-size: 34px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      0 6px 0 rgba(124,58,237,0.18),
+      0 10px 18px rgba(76,29,149,0.16);
+    cursor: pointer;
+    will-change: transform, left, top;
+    touch-action: manipulation;
+  }
+
+  .falling-radical.correct-glow {
+    box-shadow:
+      0 0 18px rgba(34,197,94,0.65),
+      0 6px 0 rgba(34,197,94,0.18),
+      0 10px 18px rgba(76,29,149,0.16);
+    border-color: rgba(74,222,128,0.95);
+  }
+
+  .falling-radical.wrong {
+    background: #ffe4e6;
+    border-color: #fb7185;
+    color: #be123c;
+    animation: wrongShake 0.2s linear;
+  }
+
+  @keyframes wrongShake {
+    0%, 100% { transform: translate(-50%, -50%) translateX(0); }
+    25% { transform: translate(-50%, -50%) translateX(-8px); }
+    75% { transform: translate(-50%, -50%) translateX(8px); }
+  }
+
+  .particle {
+    position: absolute;
+    z-index: 40;
+    pointer-events: none;
+    font-size: 18px;
+    font-weight: 900;
+    will-change: transform, opacity;
+  }
+
+  .floating-text {
+    position: absolute;
+    z-index: 45;
+    pointer-events: none;
+    font-size: 28px;
+    font-weight: 900;
+    color: #fef9c3;
+    text-shadow: 0 4px 10px rgba(76,29,149,0.55);
+    white-space: nowrap;
+    animation: floatUp 0.75s ease-out forwards;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translate(-50%, 0) scale(0.85); }
+    20% { opacity: 1; transform: translate(-50%, -8px) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -48px) scale(1.05); }
+  }
+
+  .center-msg {
+    position: absolute;
+    z-index: 60;
+    left: 50%;
+    top: 42%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    font-size: clamp(30px, 7vw, 64px);
+    font-weight: 900;
+    color: #fef9c3;
+    text-shadow: 0 5px 14px rgba(76,29,149,0.55);
+    animation: centerPulse 0.75s ease-out forwards;
+  }
+
+  .center-msg.bad {
+    color: #fb7185;
+  }
+
+  .center-msg.good {
+    color: #22c55e;
+  }
+
+  @keyframes centerPulse {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.75); }
+    25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -65%) scale(1.05); }
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    background: rgba(76,29,149,0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+
+  .overlay h1 {
+    margin: 0 0 14px 0;
+    font-size: clamp(36px, 8vw, 64px);
+    line-height: 1.05;
+    color: #fef9c3;
+    text-shadow: 0 5px 0 rgba(124,58,237,0.8);
+  }
+
+  .overlay p {
+    margin: 0 0 28px 0;
+    max-width: 720px;
+    color: #ede9fe;
+    font-size: clamp(17px, 3vw, 22px);
+    font-weight: 800;
+    line-height: 1.45;
+  }
+
+  .btn {
+    border: 3px solid #a7f3d0;
+    background: #34d399;
+    color: #064e3b;
+    padding: 13px 32px;
+    font-size: 24px;
+    font-weight: 900;
+    border-radius: 999px;
+    box-shadow: 0 8px 0 #10b981;
+    cursor: pointer;
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+
+  .btn:active {
+    transform: translateY(7px);
+    box-shadow: 0 1px 0 #10b981;
+  }
+
+  #damage-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    pointer-events: none;
+    opacity: 0;
+    background: rgba(251,113,133,0.28);
+  }
+
+  #damage-flash.show {
+    animation: flash 0.18s ease-out;
+  }
+
+  @keyframes flash {
+    0%, 100% { opacity: 0; }
+    45% { opacity: 1; }
+  }
+
+  @media (max-width: 600px) {
+    .target-character {
+      width: 82px;
+      height: 82px;
+      font-size: 46px;
+      border-radius: 24px;
+    }
+
+    .falling-radical {
+      min-width: 52px;
+      height: 52px;
+      font-size: 30px;
+      border-radius: 18px;
+    }
+
+    #hud {
+      top: 8px;
+      left: 8px;
+      right: 8px;
+    }
+
+    .hud-box {
+      padding: 7px 9px;
+    }
+  }
 </style>
 </head>
 
 <body>
+<div id="game">
+  <div id="cloud-layer"></div>
 
-<div id="ui">
-⭐ <span id="score">0</span> |
-❤️ <span id="lives">3</span> |
-🔥 <span id="combo">0</span>
+  <div id="hud">
+    <div class="hud-box">⭐ <span id="score">0</span></div>
+    <div class="hud-box">🔥 Combo <span id="combo">0</span></div>
+    <div class="hud-box" id="lives">❤️❤️❤️</div>
+  </div>
+
+  <div id="arena"></div>
+  <div id="ground"></div>
+  <div id="damage-flash"></div>
+
+  <div id="start-screen" class="overlay">
+    <h1 id="start-title">题库加载中...</h1>
+    <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
+  </div>
+
+  <div id="game-over-screen" class="overlay" style="display:none;">
+    <h1>Game Over</h1>
+    <p>
+      防线失守！<br>
+      最终得分：<span id="final-score" style="color:#facc15;font-size:36px;">0</span>
+    </p>
+    <button id="restart-btn" class="btn">再来一局 🔄</button>
+  </div>
 </div>
 
 <script>
-
-/////////////////////////////
-// 数据加载（保持你原来的）
-/////////////////////////////
+/* =========================================================
+   PSLE 汉字连击快线 · 天空部件版
+   Redesigned from motorcycle/vehicle version into:
+   falling radicals + physics impact + bounce/spin characters
+========================================================= */
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
+const distractors = [
+  "扌", "亻", "心", "忄", "月", "虫", "门", "广",
+  "走", "雨", "艹", "口", "氵", "日", "木", "女",
+  "讠", "辶", "土", "火", "宀", "贝"
+];
+
+const MAX_CHARACTERS = 3;
+const MAX_RADICALS = 28;
+const START_LIVES = 3;
+
+const arena = document.getElementById("arena");
+const startScreen = document.getElementById("start-screen");
+const gameOverScreen = document.getElementById("game-over-screen");
+const restartBtn = document.getElementById("restart-btn");
+const damageFlash = document.getElementById("damage-flash");
+
+const scoreEl = document.getElementById("score");
+const comboEl = document.getElementById("combo");
+const livesEl = document.getElementById("lives");
+const finalScoreEl = document.getElementById("final-score");
+
 let dictionary = [];
-const distractors = ["氵","门","心","虫","口","广","艹","日","月"];
 
-/////////////////////////////
-// 游戏状态
-/////////////////////////////
+let score = 0;
+let lives = START_LIVES;
+let combo = 0;
+let isPlaying = false;
 
-let score=0, lives=3, combo=0;
-
-let radicals = [];
 let characters = [];
+let radicals = [];
+let particles = [];
+let floatTexts = [];
 
-let gravity = 0.3;
-let gameSpeed = 1;
+let animationRef = null;
+let spawnTimer = null;
+let characterTimer = null;
 
-/////////////////////////////
-// 载入题库
-/////////////////////////////
+let lastFrameTime = 0;
+let idCounter = 1;
 
-Papa.parse(SHEET_URL, {
-  download:true,
-  header:true,
-  complete: res=>{
-    res.data.forEach(row=>{
-      let word = row['QUESTION'] || "";
-      let parts = row['PARTS'] || "";
+let timeScale = 1;
+let slowMotionUntil = 0;
 
-      if(word && parts){
+let audioCtx = null;
+
+/* =========================
+   Data loading
+========================= */
+
+window.addEventListener("load", loadDictionary);
+restartBtn.addEventListener("click", startGame);
+
+function loadDictionary() {
+  Papa.parse(SHEET_URL + "&t=" + Date.now(), {
+    download: true,
+    header: true,
+    skipEmptyLines: "greedy",
+    transformHeader: h => normalizeHeader(h),
+    complete: results => {
+      dictionary = [];
+
+      results.data.forEach(row => {
+        const word =
+          cleanCell(row["QUESTION"]) ||
+          cleanCell(row["ANSWER"]) ||
+          cleanCell(row["CORRECT ANSWER"]);
+
+        const partsStr =
+          cleanCell(row["PARTS"]) ||
+          cleanCell(row["部件"]);
+
+        if (!word || !partsStr) return;
+
+        const parts = partsStr
+          .split(/[,，、|/]/)
+          .map(p => p.trim())
+          .filter(Boolean);
+
+        if (parts.length === 0) return;
+
         dictionary.push({
           word,
-          parts: parts.split(/[,，]/)
+          parts
         });
+      });
+
+      if (dictionary.length > 0) {
+        showReadyScreen();
+      } else {
+        showLoadError("题库中没有找到有效数据。请确认有 Question / Parts 列。");
       }
-    });
-
-    startGame();
-  }
-});
-
-/////////////////////////////
-// 创建汉字（多个）
-/////////////////////////////
-
-function spawnCharacter(){
-
-  let d = dictionary[Math.floor(Math.random()*dictionary.length)];
-
-  let el = document.createElement("div");
-  el.className = "character";
-  el.innerText = d.word;
-
-  let obj = {
-    el,
-    word:d.word,
-    parts:[...d.parts],
-    hitParts:0,
-    x: Math.random()*window.innerWidth,
-    y: window.innerHeight*0.7,
-    vy:0,
-    rot:0,
-    vr:0
-  };
-
-  el.style.left=obj.x+"px";
-  el.style.top=obj.y+"px";
-
-  document.body.appendChild(el);
-  characters.push(obj);
-}
-
-/////////////////////////////
-// 掉落部件
-/////////////////////////////
-
-function spawnRadical(){
-
-  let randomChar = Math.random()<0.6 ?
-    pickCorrectPart() :
-    distractors[Math.floor(Math.random()*distractors.length)];
-
-  let el = document.createElement("div");
-  el.className="radical";
-  el.innerText=randomChar;
-
-  let r={
-    el,
-    char:randomChar,
-    x:Math.random()*window.innerWidth,
-    y:-30,
-    vx:0,
-    vy:2+Math.random()*2,
-    target:null
-  };
-
-  el.onclick=()=>clickRadical(r);
-
-  document.body.appendChild(el);
-  radicals.push(r);
-}
-
-function pickCorrectPart(){
-  let c = characters[Math.floor(Math.random()*characters.length)];
-  return c.parts[Math.floor(Math.random()*c.parts.length)];
-}
-
-/////////////////////////////
-// 点击逻辑
-/////////////////////////////
-
-function clickRadical(r){
-
-  if(r.target) return;
-
-  let target = characters.find(c=>c.parts.includes(r.char) && c.hitParts < c.parts.length);
-
-  if(target){
-    r.target = target;
-    combo++;
-    score += 100 + combo*10;
-
-    slowMotion();
-
-  }else{
-    r.vy += 5;
-    combo = 0;
-    score = Math.max(0, score-20);
-  }
-
-  updateUI();
-}
-
-/////////////////////////////
-// 命中效果
-/////////////////////////////
-
-function hitTarget(r,c){
-
-  c.hitParts++;
-
-  c.vy = -10;
-  c.vr = 20;
-
-  // 弹开
-  r.vx = (Math.random()-0.5)*12;
-  r.vy = -8;
-  r.target = null;
-
-  particleBurst(c.x, c.y);
-
-  if(c.hitParts >= c.parts.length){
-    score += 300;
-    combo++;
-    removeCharacter(c);
-  }
-}
-
-function removeCharacter(c){
-  c.el.remove();
-  characters = characters.filter(x=>x!==c);
-}
-
-/////////////////////////////
-// 粒子
-/////////////////////////////
-
-function particleBurst(x,y){
-  for(let i=0;i<10;i++){
-    let p=document.createElement("div");
-    p.className="particle";
-    p.innerText="✨";
-
-    let vx=(Math.random()-0.5)*6;
-    let vy=(Math.random()-0.5)*6;
-
-    document.body.appendChild(p);
-
-    let t=0;
-    function anim(){
-      t++;
-      p.style.left = x+vx*t+"px";
-      p.style.top = y+vy*t+"px";
-      if(t<20) requestAnimationFrame(anim);
-      else p.remove();
+    },
+    error: err => {
+      showLoadError("Google Sheet 加载失败，请检查网络或表格权限。");
+      console.error(err);
     }
-    anim();
+  });
+}
+
+function normalizeHeader(h) {
+  return String(h || "")
+    .replace(/^\uFEFF/, "")
+    .trim()
+    .toUpperCase();
+}
+
+function cleanCell(value) {
+  return String(value || "").trim();
+}
+
+function showReadyScreen() {
+  document.getElementById("start-title").textContent = "汉字连击 · 天空部件版";
+  document.getElementById("start-text").innerHTML =
+    `已从 [HYPY] 加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
+    `点击从天而降的正确部件，让它撞向汉字！<br>` +
+    `汉字会弹起旋转，部件会像球一样反弹。`;
+
+  const btn = document.createElement("button");
+  btn.className = "btn";
+  btn.textContent = "开始游戏 🚀";
+  btn.addEventListener("click", startGame);
+
+  startScreen.appendChild(btn);
+}
+
+function showLoadError(message) {
+  document.getElementById("start-title").textContent = "数据加载失败";
+  document.getElementById("start-text").textContent = message;
+}
+
+/* =========================
+   Game start / reset
+========================= */
+
+function startGame() {
+  if (!dictionary.length) return;
+
+  ensureAudio();
+
+  clearTimers();
+  clearScene();
+
+  score = 0;
+  lives = START_LIVES;
+  combo = 0;
+  isPlaying = true;
+  lastFrameTime = performance.now();
+  timeScale = 1;
+  slowMotionUntil = 0;
+
+  updateHUD();
+
+  startScreen.style.display = "none";
+  gameOverScreen.style.display = "none";
+
+  for (let i = 0; i < 2; i++) {
+    spawnCharacter();
+  }
+
+  scheduleRadicalSpawn();
+  characterTimer = setInterval(() => {
+    if (!isPlaying) return;
+    if (characters.length < MAX_CHARACTERS) spawnCharacter();
+  }, 2600);
+
+  animationRef = requestAnimationFrame(gameLoop);
+}
+
+function clearTimers() {
+  if (spawnTimer) {
+    clearTimeout(spawnTimer);
+    spawnTimer = null;
+  }
+
+  if (characterTimer) {
+    clearInterval(characterTimer);
+    characterTimer = null;
+  }
+
+  if (animationRef) {
+    cancelAnimationFrame(animationRef);
+    animationRef = null;
   }
 }
 
-/////////////////////////////
-// 慢动作
-/////////////////////////////
+function clearScene() {
+  characters.forEach(c => c.el.remove());
+  radicals.forEach(r => r.el.remove());
+  particles.forEach(p => p.el.remove());
+  floatTexts.forEach(t => t.el.remove());
 
-function slowMotion(){
-  gameSpeed = 0.5;
-  setTimeout(()=>gameSpeed=1,200);
+  characters = [];
+  radicals = [];
+  particles = [];
+  floatTexts = [];
 }
 
-/////////////////////////////
-// 主循环
-/////////////////////////////
+/* =========================
+   Character system
+========================= */
 
-function loop(){
+function spawnCharacter() {
+  if (!isPlaying && characters.length > 0) return;
+  if (characters.length >= MAX_CHARACTERS) return;
 
-  // 更新汉字
-  characters.forEach(c=>{
-    c.y += c.vy*gameSpeed;
-    c.vy += 0.5*gameSpeed;
+  const data = dictionary[Math.floor(Math.random() * dictionary.length)];
+  const safeParts = data.parts.filter(Boolean);
 
-    c.rot += c.vr;
-    c.vr *= 0.9;
+  if (!data.word || safeParts.length === 0) return;
 
-    if(c.y > window.innerHeight*0.7){
-      c.y = window.innerHeight*0.7;
-      c.vy = 0;
-    }
+  const el = document.createElement("div");
+  el.className = "target-character";
 
-    c.el.style.top=c.y+"px";
-    c.el.style.transform=`translate(-50%,-50%) rotate(${c.rot}deg)`;
+  const wordSpan = document.createElement("span");
+  wordSpan.textContent = data.word;
+  el.appendChild(wordSpan);
+
+  const progress = document.createElement("div");
+  progress.className = "progress";
+
+  safeParts.forEach(() => {
+    const dot = document.createElement("div");
+    dot.className = "dot";
+    progress.appendChild(dot);
   });
 
-  // 更新部件
-  radicals.forEach((r,i)=>{
+  el.appendChild(progress);
+  arena.appendChild(el);
 
-    if(r.target){
+  const index = characters.length;
+  const spacing = window.innerWidth / (MAX_CHARACTERS + 1);
+  const baseX = spacing * (index + 1);
 
-      r.x += (r.target.x-r.x)*0.2;
-      r.y += (r.target.y-r.y)*0.2;
+  const character = {
+    id: nextId(),
+    el,
+    word: data.word,
+    parts: safeParts,
+    hitIndex: 0,
 
-      if(Math.abs(r.x-r.target.x)<20){
-        hitTarget(r,r.target);
-      }
+    x: clamp(baseX + randomBetween(-45, 45), 70, window.innerWidth - 70),
+    y: window.innerHeight * 0.69,
 
-    }else{
-      r.y += r.vy*gameSpeed;
-      r.vy += gravity*gameSpeed;
-    }
+    baseY: window.innerHeight * 0.69,
+    vx: 0,
+    vy: 0,
 
-    r.x += r.vx;
+    rotation: 0,
+    rotationVelocity: 0,
 
-    r.el.style.left=r.x+"px";
-    r.el.style.top=r.y+"px";
+    scale: 1,
+    completed: false
+  };
 
-    // 掉地
-    if(r.y > window.innerHeight){
-      lives--;
-      r.el.remove();
-      radicals.splice(i,1);
-      combo=0;
-      updateUI();
-    }
+  characters.push(character);
+  renderCharacter(character);
+}
 
+function renderCharacter(c) {
+  c.el.style.left = `${c.x}px`;
+  c.el.style.top = `${c.y}px`;
+
+  c.el.style.transform =
+    `translate(-50%, -50%) rotate(${c.rotation}deg) scale(${c.scale})`;
+
+  const dots = c.el.querySelectorAll(".dot");
+  dots.forEach((dot, i) => {
+    dot.classList.toggle("done", i < c.hitIndex);
   });
-
-  // 难度提升
-  if(score>1000) spawnRate=600;
-  if(score>3000) spawnRate=400;
-
-  requestAnimationFrame(loop);
 }
 
-/////////////////////////////
-// UI
-/////////////////////////////
+function completeCharacter(c) {
+  if (c.completed) return;
+  c.completed = true;
 
-function updateUI(){
-  document.getElementById("score").innerText=score;
-  document.getElementById("lives").innerText=lives;
-  document.getElementById("combo").innerText=combo;
+  score += 300 + combo * 20;
+  combo += 1;
 
-  if(lives<=0){
-    alert("Game Over! Score:"+score);
-    location.reload();
-  }
+  showCenterMessage(`完成！+${300 + combo * 20}`, "good");
+  particleBurst(c.x, c.y, 26);
+  playSound("complete");
+
+  c.el.classList.add("completed");
+
+  setTimeout(() => {
+    c.el.remove();
+    characters = characters.filter(item => item.id !== c.id);
+
+    if (isPlaying && characters.length < MAX_CHARACTERS) {
+      spawnCharacter();
+    }
+  }, 420);
 }
 
-/////////////////////////////
-// 启动
-/////////////////////////////
+/* =========================
+   Falling radical system
+========================= */
 
-let spawnRate = 800;
+function scheduleRadicalSpawn() {
+  if (!isPlaying) return;
 
-function startGame(){
+  const delay = getCurrentSpawnDelay();
+  spawnTimer = setTimeout(() => {
+    if (!isPlaying) return;
 
-  for(let i=0;i<2;i++) spawnCharacter();
-
-  setInterval(()=>{
-    if(characters.length<3) spawnCharacter();
-  },3000);
-
-  setInterval(()=>{
     spawnRadical();
-  },spawnRate);
-
-  loop();
+    scheduleRadicalSpawn();
+  }, delay);
 }
 
-</script>
+function getCurrentSpawnDelay() {
+  const base = 920;
+  const difficulty = Math.min(score / 5000, 0.55);
+  return Math.max(430, base * (1 - difficulty) + randomBetween(-120, 140));
+}
 
+function spawnRadical() {
+  if (radicals.length >= MAX_RADICALS) return;
+  if (characters.length === 0) return;
+
+  const shouldSpawnCorrect = Math.random() < getCorrectSpawnChance();
+
+  let char;
+  let usefulAtSpawn = false;
+
+  if (shouldSpawnCorrect) {
+    const needed = getNeededParts();
+    if (needed.length > 0) {
+      char = needed[Math.floor(Math.random() * needed.length)];
+      usefulAtSpawn = true;
+    }
+  }
+
+  if (!char) {
+    char = distractors[Math.floor(Math.random() * distractors.length)];
+  }
+
+  const el = document.createElement("div");
+  el.className = "falling-radical";
+  el.textContent = char;
+
+  const r = {
+    id: nextId(),
+    el,
+    char,
+
+    x: randomBetween(40, window.innerWidth - 40),
+    y: -60,
+
+    vx: randomBetween(-0.25, 0.25),
+    vy: randomBetween(1.7, 2.7) + Math.min(score / 2600, 1.2),
+
+    rotation: randomBetween(-8, 8),
+    rotationVelocity: randomBetween(-1.2, 1.2),
+
+    target: null,
+    state: "falling",
+    usefulAtSpawn,
+    alreadyScoredMiss: false,
+    dead: false
+  };
+
+  el.addEventListener("pointerdown", event => {
+    event.preventDefault();
+    handleRadicalPress(r);
+  });
+
+  arena.appendChild(el);
+  radicals.push(r);
+  renderRadical(r);
+}
+
+function getCorrectSpawnChance() {
+  if (score < 1200) return 0.66;
+  if (score < 3000) return 0.58;
+  return 0.52;
+}
+
+function getNeededParts() {
+  const parts = [];
+
+  characters.forEach(c => {
+    if (c.completed) return;
+    const next = c.parts[c.hitIndex];
+    if (next) parts.push(next);
+  });
+
+  return parts;
+}
+
+function renderRadical(r) {
+  r.el.style.left = `${r.x}px`;
+  r.el.style.top = `${r.y}px`;
+  r.el.style.transform = `translate(-50%, -50%) rotate(${r.rotation}deg)`;
+}
+
+function handleRadicalPress(r) {
+  if (!isPlaying) return;
+  if (r.dead) return;
+  if (r.state !== "falling") return;
+
+  const target = findBestTargetForRadical(r);
+
+  if (target) {
+    r.target = target;
+    r.state = "homing";
+    r.el.classList.add("correct-glow");
+
+    combo += 1;
+    const gain = 100 + combo * 10;
+    score += gain;
+
+    showFloatingText(`+${gain}`, r.x, r.y);
+    showCenterMessage(`Combo ${combo}`, "good");
+    updateHUD();
+
+    triggerSlowMotion(190);
+    playSound("hit");
+  } else {
+    combo = 0;
+    score = Math.max(0, score - 20);
+    r.vy += 5.5;
+    r.vx += randomBetween(-2, 2);
+    r.rotationVelocity += randomBetween(-8, 8);
+
+    r.el.classList.add("wrong");
+    setTimeout(() => r.el.classList.remove("wrong"), 220);
+
+    showCenterMessage("-20", "bad");
+    updateHUD();
+    playSound("wrong");
+  }
+}
+
+function findBestTargetForRadical(r) {
+  const candidates = characters.filter(c => {
+    if (c.completed) return false;
+    return c.parts[c.hitIndex] === r.char;
+  });
+
+  if (candidates.length === 0) return null;
+
+  candidates.sort((a, b) => {
+    const da = Math.abs(a.x - r.x) + Math.abs(a.y - r.y) * 0.35;
+    const db = Math.abs(b.x - r.x) + Math.abs(b.y - r.y) * 0.35;
+    return da - db;
+  });
+
+  return candidates[0];
+}
+
+function radicalHitsCharacter(r, c) {
+  if (r.dead || c.completed) return;
+
+  r.state = "bouncing";
+  r.target = null;
+  r.el.classList.remove("correct-glow");
+
+  c.hitIndex += 1;
+
+  c.vy = -10.5 - Math.min(combo * 0.15, 3);
+  c.vx += clamp((c.x - r.x) * 0.025, -3, 3);
+  c.rotationVelocity += clamp((r.x - c.x) * 0.38, -26, 26);
+  c.scale = 1.08;
+
+  r.vx = clamp((r.x - c.x) * 0.11, -11, 11) + randomBetween(-2.5, 2.5);
+  r.vy = -9.5 - randomBetween(0, 3);
+  r.rotationVelocity = randomBetween(-18, 18);
+
+  score += 50;
+  showFloatingText("+50", c.x, c.y - 45);
+  particleBurst(c.x, c.y, 14);
+  playSound("bounce");
+
+  if (c.hitIndex >= c.parts.length) {
+    completeCharacter(c);
+  }
+
+  updateHUD();
+}
+
+/* =========================
+   Game loop
+========================= */
+
+function gameLoop(now) {
+  if (!isPlaying) return;
+
+  const rawDelta = Math.min(32, now - lastFrameTime);
+  lastFrameTime = now;
+
+  if (now < slowMotionUntil) {
+    timeScale = 0.48;
+  } else {
+    timeScale = 1;
+  }
+
+  const dt = (rawDelta / 16.67) * timeScale;
+
+  updateCharacters(dt);
+  updateRadicals(dt);
+  updateParticles(dt);
+  updateFloatingTexts();
+
+  cleanupDeadObjects();
+
+  animationRef = requestAnimationFrame(gameLoop);
+}
+
+function updateCharacters(dt) {
+  const gravity = 0.58;
+
+  characters.forEach(c => {
+    if (c.completed) return;
+
+    c.x += c.vx * dt;
+    c.y += c.vy * dt;
+
+    c.vy += gravity * dt;
+    c.vx *= Math.pow(0.94, dt);
+
+    c.rotation += c.rotationVelocity * dt;
+    c.rotationVelocity *= Math.pow(0.90, dt);
+
+    c.scale += (1 - c.scale) * 0.18 * dt;
+
+    if (c.y > c.baseY) {
+      c.y = c.baseY;
+      if (c.vy > 0) c.vy = -c.vy * 0.18;
+      if (Math.abs(c.vy) < 1.2) c.vy = 0;
+    }
+
+    if (c.x < 55) {
+      c.x = 55;
+      c.vx *= -0.35;
+    }
+
+    if (c.x > window.innerWidth - 55) {
+      c.x = window.innerWidth - 55;
+      c.vx *= -0.35;
+    }
+
+    renderCharacter(c);
+  });
+}
+
+function updateRadicals(dt) {
+  const gravity = 0.31 + Math.min(score / 12000, 0.18);
+
+  radicals.forEach(r => {
+    if (r.dead) return;
+
+    if (r.state === "homing" && r.target && !r.target.completed) {
+      const attraction = 0.22;
+      r.x += (r.target.x - r.x) * attraction * dt;
+      r.y += (r.target.y - r.y) * attraction * dt;
+
+      r.rotation += 12 * dt;
+
+      const d = distance(r.x, r.y, r.target.x, r.target.y);
+
+      if (d < 32) {
+        radicalHitsCharacter(r, r.target);
+      }
+    } else {
+      r.y += r.vy * dt;
+      r.x += r.vx * dt;
+
+      r.vy += gravity * dt;
+      r.rotation += r.rotationVelocity * dt;
+
+      if (r.x < 25) {
+        r.x = 25;
+        r.vx *= -0.65;
+      }
+
+      if (r.x > window.innerWidth - 25) {
+        r.x = window.innerWidth - 25;
+        r.vx *= -0.65;
+      }
+    }
+
+    renderRadical(r);
+
+    if (r.y > window.innerHeight + 80) {
+      if (r.usefulAtSpawn && !r.alreadyScoredMiss && isStillNeeded(r.char)) {
+        r.alreadyScoredMiss = true;
+        loseLife();
+      }
+
+      r.dead = true;
+    }
+  });
+}
+
+function isStillNeeded(char) {
+  return characters.some(c => !c.completed && c.parts[c.hitIndex] === char);
+}
+
+function cleanupDeadObjects() {
+  radicals = radicals.filter(r => {
+    if (!r.dead) return true;
+    r.el.remove();
+    return false;
+  });
+
+  particles = particles.filter(p => {
+    if (!p.dead) return true;
+    p.el.remove();
+    return false;
+  });
+
+  floatTexts = floatTexts.filter(t => {
+    if (!t.dead) return true;
+    t.el.remove();
+    return false;
+  });
+}
+
+/* =========================
+   Feedback effects
+========================= */
+
+function triggerSlowMotion(ms) {
+  slowMotionUntil = performance.now() + ms;
+}
+
+function particleBurst(x, y, count) {
+  const icons = ["✨", "⭐", "💫", "✦"];
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement("div");
+    el.className = "particle";
+    el.textContent = icons[Math.floor(Math.random() * icons.length)];
+
+    const p = {
+      el,
+      x,
+      y,
+      vx: randomBetween(-5.5, 5.5),
+      vy: randomBetween(-7, 3),
+      gravity: randomBetween(0.18, 0.36),
+      life: randomBetween(24, 42),
+      age: 0,
+      rotation: randomBetween(0, 360),
+      rotationVelocity: randomBetween(-14, 14),
+      dead: false
+    };
+
+    arena.appendChild(el);
+    particles.push(p);
+  }
+}
+
+function updateParticles(dt) {
+  particles.forEach(p => {
+    if (p.dead) return;
+
+    p.age += dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vy += p.gravity * dt;
+    p.rotation += p.rotationVelocity * dt;
+
+    const opacity = Math.max(0, 1 - p.age / p.life);
+
+    p.el.style.left = `${p.x}px`;
+    p.el.style.top = `${p.y}px`;
+    p.el.style.opacity = opacity;
+    p.el.style.transform = `translate(-50%, -50%) rotate(${p.rotation}deg) scale(${0.8 + opacity * 0.6})`;
+
+    if (p.age >= p.life) {
+      p.dead = true;
+    }
+  });
+}
+
+function showFloatingText(text, x, y) {
+  const el = document.createElement("div");
+  el.className = "floating-text";
+  el.textContent = text;
+  el.style.left = `${x}px`;
+  el.style.top = `${y}px`;
+
+  arena.appendChild(el);
+
+  const obj = { el, dead: false };
+  floatTexts.push(obj);
+
+  setTimeout(() => {
+    obj.dead = true;
+  }, 780);
+}
+
+function updateFloatingTexts() {
+  // CSS animation handles movement.
+}
+
+function showCenterMessage(text, type) {
+  const el = document.createElement("div");
+  el.className = `center-msg ${type || ""}`;
+  el.textContent = text;
+
+  arena.appendChild(el);
+
+  setTimeout(() => el.remove(), 780);
+}
+
+/* =========================
+   Lives / HUD / game over
+========================= */
+
+function loseLife() {
+  if (!isPlaying) return;
+
+  lives -= 1;
+  combo = 0;
+
+  damageFlash.classList.remove("show");
+  void damageFlash.offsetWidth;
+  damageFlash.classList.add("show");
+
+  playSound("damage");
+  updateHUD();
+
+  if (lives <= 0) {
+    gameOver();
+  }
+}
+
+function updateHUD() {
+  scoreEl.textContent = score;
+  comboEl.textContent = combo;
+  livesEl.textContent = "❤️".repeat(Math.max(0, lives)) + "🖤".repeat(Math.max(0, START_LIVES - lives));
+}
+
+function gameOver() {
+  if (!isPlaying) return;
+
+  isPlaying = false;
+  clearTimers();
+
+  finalScoreEl.textContent = score;
+  gameOverScreen.style.display = "flex";
+
+  radicals.forEach(r => r.el.remove());
+  radicals = [];
+}
+
+/* =========================
+   Audio
+========================= */
+
+function ensureAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+}
+
+function playSound(type) {
+  if (!audioCtx) return;
+
+  const now = audioCtx.currentTime;
+
+  if (type === "hit") {
+    playTone(523.25, 0.07, 0.08, "sine");
+    playTone(659.25, 0.09, 0.06, "sine");
+  } else if (type === "bounce") {
+    playTone(392.00, 0.12, 0.08, "triangle");
+  } else if (type === "complete") {
+    playTone(523.25, 0.12, 0.08, "sine", now);
+    playTone(659.25, 0.12, 0.08, "sine", now + 0.07);
+    playTone(783.99, 0.16, 0.08, "sine", now + 0.14);
+  } else if (type === "wrong") {
+    playTone(180, 0.18, 0.08, "sawtooth");
+  } else if (type === "damage") {
+    playTone(110, 0.28, 0.12, "triangle");
+  }
+}
+
+function playTone(freq, duration, volume, wave, startAt) {
+  if (!audioCtx) return;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = wave || "sine";
+  osc.frequency.setValueAtTime(freq, startAt || audioCtx.currentTime);
+
+  const start = startAt || audioCtx.currentTime;
+
+  gain.gain.setValueAtTime(0.001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.018);
+  gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(start);
+  osc.stop(start + duration + 0.03);
+}
+
+/* =========================
+   Helpers
+========================= */
+
+function nextId() {
+  return idCounter++;
+}
+
+function randomBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function distance(x1, y1, x2, y2) {
+  return Math.hypot(x2 - x1, y2 - y1);
+}
+
+window.addEventListener("resize", () => {
+  characters.forEach(c => {
+    c.baseY = window.innerHeight * 0.69;
+    c.y = Math.min(c.y, c.baseY);
+    c.x = clamp(c.x, 55, window.innerWidth - 55);
+    renderCharacter(c);
+  });
+});
+</script>
 </body>
 </html>
