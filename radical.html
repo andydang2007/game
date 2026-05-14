@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>PSLE 汉字连击快线 · 3D钢琴测试版</title>
+<title>PSLE 汉字连击快线 · 3D轨道钢琴版</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
@@ -16,9 +16,12 @@
 
 :root {
   --purple: #5b21b6;
+  --deep-purple: #3b0764;
   --green: #22c55e;
   --pink: #fb7185;
+  --yellow: #facc15;
   --glass: rgba(255,255,255,0.72);
+  --keyboard-height: 176px;
 }
 
 html, body {
@@ -27,7 +30,9 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: "Microsoft YaHei", "PingFang SC", "Nunito", sans-serif;
-  background: linear-gradient(180deg, #93c5fd 0%, #bfdbfe 45%, #fef3c7 100%);
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255,255,255,0.45), transparent 24%),
+    linear-gradient(180deg, #7dd3fc 0%, #bfdbfe 42%, #fef3c7 100%);
 }
 
 body {
@@ -46,7 +51,7 @@ body {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.32;
   background-image:
     radial-gradient(circle at 14% 18%, rgba(255,255,255,0.95) 0 28px, transparent 29px),
     radial-gradient(circle at 25% 15%, rgba(255,255,255,0.75) 0 42px, transparent 43px),
@@ -65,7 +70,7 @@ body {
   top: 10px;
   left: 12px;
   right: 12px;
-  z-index: 60;
+  z-index: 80;
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -89,21 +94,88 @@ body {
   left: 0;
   right: 0;
   top: 0;
-  bottom: 154px;
+  bottom: var(--keyboard-height);
   z-index: 5;
   overflow: hidden;
-  perspective: 760px;
-  perspective-origin: 50% 45%;
+  perspective: 850px;
+  perspective-origin: 50% 36%;
 }
 
-#song-panel {
+#track-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 8;
+  pointer-events: none;
+}
+
+.track-line {
+  stroke: rgba(91, 33, 182, 0.22);
+  stroke-width: 3;
+  fill: none;
+}
+
+.track-line.required-track {
+  stroke: rgba(34, 197, 94, 0.68);
+  stroke-width: 5;
+  filter: drop-shadow(0 0 8px rgba(34,197,94,0.45));
+}
+
+.track-fill {
+  fill: rgba(255,255,255,0.08);
+  stroke: rgba(255,255,255,0.24);
+  stroke-width: 1;
+}
+
+#horizon-dot {
+  position: absolute;
+  z-index: 10;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.88);
+  border: 3px solid rgba(91,33,182,0.36);
+  box-shadow: 0 0 18px rgba(255,255,255,0.85);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#miss-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--keyboard-height);
+  height: 6px;
+  z-index: 60;
+  background: rgba(251,113,133,0.9);
+  box-shadow: 0 -4px 16px rgba(251,113,133,0.5);
+  pointer-events: none;
+}
+
+#miss-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--keyboard-height) + 9px);
+  transform: translateX(-50%);
+  z-index: 61;
+  background: rgba(251,113,133,0.92);
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+#guide-panel {
   position: absolute;
   left: 50%;
   top: 62px;
   transform: translateX(-50%);
-  z-index: 55;
-  background: rgba(255,255,255,0.66);
-  border: 2px solid rgba(255,255,255,0.9);
+  z-index: 70;
+  background: rgba(255,255,255,0.68);
+  border: 2px solid rgba(255,255,255,0.92);
   border-radius: 999px;
   padding: 7px 16px;
   color: #4c1d95;
@@ -113,54 +185,47 @@ body {
   box-shadow: 0 6px 16px rgba(76,29,149,0.12);
 }
 
-.falling-character {
+.depth-character {
   position: absolute;
-  z-index: 20;
-  width: auto;
-  height: auto;
-  min-width: 88px;
-  min-height: 88px;
+  z-index: 30;
+  min-width: 86px;
+  min-height: 86px;
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: transparent;
   border: none;
   box-shadow: none;
-
   color: #4c1d95;
-  font-size: clamp(64px, 11vw, 108px);
   font-weight: 900;
   line-height: 1;
-
   text-shadow:
-    0 4px 0 rgba(255,255,255,0.9),
-    0 9px 18px rgba(76,29,149,0.32);
-
+    0 4px 0 rgba(255,255,255,0.88),
+    0 10px 20px rgba(76,29,149,0.36);
   transform-style: preserve-3d;
-  will-change: left, top, transform, filter;
+  will-change: left, top, transform, opacity, filter;
 }
 
-.falling-character.hit {
-  filter: brightness(1.18) drop-shadow(0 0 14px rgba(34,197,94,0.75));
+.depth-character.hit {
+  filter: brightness(1.22) drop-shadow(0 0 16px rgba(34,197,94,0.8));
 }
 
-.falling-character.complete {
+.depth-character.complete {
   animation: completePop 0.42s ease-out forwards;
 }
 
 @keyframes completePop {
   0% { opacity: 1; }
-  50% { opacity: 1; filter: brightness(1.45); }
+  55% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 20px rgba(250,204,21,0.9)); }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) rotateX(360deg) rotateY(360deg) rotateZ(35deg) scale(1.8);
+    transform: translate(-50%, -50%) rotateX(420deg) rotateY(360deg) rotateZ(35deg) scale(2.2);
   }
 }
 
 .progress {
   position: absolute;
-  bottom: -22px;
+  bottom: -24px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -171,7 +236,7 @@ body {
   width: 11px;
   height: 11px;
   border-radius: 99px;
-  background: rgba(255,255,255,0.78);
+  background: rgba(255,255,255,0.82);
   border: 2px solid rgba(124,58,237,0.7);
 }
 
@@ -180,58 +245,67 @@ body {
   border-color: #16a34a;
 }
 
-#piano {
+#piano-wrap {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 154px;
-  z-index: 80;
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 2px;
-  padding: 8px 10px 12px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(226,232,240,0.94));
+  height: var(--keyboard-height);
+  z-index: 100;
+  background:
+    linear-gradient(180deg, rgba(15,23,42,0.22), rgba(15,23,42,0) 20%),
+    linear-gradient(180deg, rgba(255,255,255,0.88), rgba(226,232,240,0.96));
   border-top: 4px solid rgba(255,255,255,0.95);
-  box-shadow: 0 -8px 20px rgba(76,29,149,0.13);
+  box-shadow: 0 -8px 24px rgba(76,29,149,0.18);
+  padding: 12px 12px 14px;
 }
 
-.piano-key {
+#piano {
   position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.white-key {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
   border: 2px solid #cbd5e1;
-  border-bottom: 8px solid #94a3b8;
+  border-bottom: 9px solid #94a3b8;
   border-radius: 0 0 18px 18px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 72%, #e2e8f0 100%);
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 70%, #e2e8f0 100%);
   color: #4c1d95;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: inset 0 -10px 18px rgba(15,23,42,0.06);
+  box-shadow:
+    inset 0 -12px 18px rgba(15,23,42,0.06),
+    0 2px 2px rgba(15,23,42,0.08);
   transition: transform 0.07s, border-bottom-width 0.07s, filter 0.07s;
 }
 
-.piano-key:active,
-.piano-key.pressed {
-  transform: translateY(5px);
+.white-key.required {
+  border-color: #a78bfa;
+}
+
+.white-key.required::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 0 0 14px 14px;
+  border: 3px solid rgba(34,197,94,0.24);
+  pointer-events: none;
+}
+
+.white-key.pressed {
+  transform: translateY(6px);
   border-bottom-width: 2px;
   filter: brightness(0.96);
 }
 
-.piano-key.required {
-  border-color: #c4b5fd;
-}
-
-.piano-key.song-next {
-  border-color: #86efac;
-  box-shadow:
-    inset 0 -10px 18px rgba(15,23,42,0.06),
-    0 0 18px rgba(34,197,94,0.36);
-}
-
-.piano-key.empty-key {
-  opacity: 0.45;
-}
-
-.piano-key.wrong {
+.white-key.wrong {
   background: #ffe4e6;
   border-color: #fb7185;
   animation: wrongShake 0.2s linear;
@@ -243,13 +317,39 @@ body {
   75% { transform: translateX(7px); }
 }
 
+.black-key {
+  position: absolute;
+  top: 0;
+  height: 60%;
+  width: 7.5%;
+  border: 2px solid #020617;
+  border-bottom: 7px solid #020617;
+  border-radius: 0 0 12px 12px;
+  background:
+    linear-gradient(180deg, #334155 0%, #0f172a 70%, #020617 100%);
+  color: #f8fafc;
+  z-index: 5;
+  cursor: pointer;
+  box-shadow:
+    0 6px 10px rgba(15,23,42,0.35),
+    inset 0 -8px 12px rgba(0,0,0,0.38);
+  transition: transform 0.07s, border-bottom-width 0.07s, filter 0.07s;
+}
+
+.black-key.pressed {
+  transform: translateY(5px);
+  border-bottom-width: 2px;
+  filter: brightness(1.2);
+}
+
 .key-radical {
   position: absolute;
   left: 50%;
-  top: 47%;
+  top: 45%;
   transform: translate(-50%, -50%);
-  font-size: clamp(28px, 6vw, 42px);
+  font-size: clamp(28px, 5.2vw, 44px);
   font-weight: 900;
+  z-index: 3;
 }
 
 .key-note {
@@ -260,19 +360,26 @@ body {
   font-size: 13px;
   font-weight: 900;
   color: #64748b;
+  z-index: 3;
+}
+
+.black-key .key-note {
+  color: #cbd5e1;
+  bottom: 8px;
+  font-size: 11px;
 }
 
 .hit-token {
   position: absolute;
-  z-index: 100;
-  min-width: 58px;
-  height: 58px;
+  z-index: 90;
+  min-width: 56px;
+  height: 56px;
   padding: 0 10px;
-  border-radius: 20px;
+  border-radius: 18px;
   background: rgba(255,255,255,0.95);
   border: 3px solid #4ade80;
   color: #5b21b6;
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 900;
   display: flex;
   align-items: center;
@@ -281,6 +388,7 @@ body {
     0 0 22px rgba(34,197,94,0.65),
     0 8px 20px rgba(76,29,149,0.22);
   pointer-events: none;
+  transform-style: preserve-3d;
 }
 
 .particle {
@@ -339,7 +447,7 @@ body {
 .overlay {
   position: absolute;
   inset: 0;
-  z-index: 220;
+  z-index: 300;
   background: rgba(76,29,149,0.9);
   display: flex;
   flex-direction: column;
@@ -366,7 +474,7 @@ body {
 
 .overlay p {
   margin: 0 0 28px;
-  max-width: 760px;
+  max-width: 820px;
   color: #ede9fe;
   font-size: clamp(17px, 3vw, 22px);
   font-weight: 800;
@@ -390,29 +498,32 @@ body {
   box-shadow: 0 1px 0 #10b981;
 }
 
-@media (max-width: 650px) {
-  #arena {
-    bottom: 140px;
+@media (max-width: 700px) {
+  :root {
+    --keyboard-height: 156px;
   }
 
-  #piano {
-    height: 140px;
-    padding: 7px 7px 10px;
+  #piano-wrap {
+    padding: 8px 8px 10px;
   }
 
-  .falling-character {
-    font-size: clamp(58px, 14vw, 86px);
+  .depth-character {
+    font-size: clamp(54px, 15vw, 92px);
   }
 
   .hit-token {
-    min-width: 52px;
-    height: 52px;
-    font-size: 30px;
+    min-width: 50px;
+    height: 50px;
+    font-size: 28px;
   }
 
   .key-note {
     bottom: 7px;
     font-size: 11px;
+  }
+
+  .black-key .key-note {
+    font-size: 9px;
   }
 }
 </style>
@@ -424,33 +535,42 @@ body {
 
   <div id="hud">
     <div class="hud-box">⭐ <span id="score">0</span></div>
-    <div class="hud-box">🎵 <span id="song-name">Twinkle</span> <span id="song-progress">0/0</span></div>
     <div class="hud-box">🔥 Combo <span id="combo">0</span></div>
+    <div class="hud-box">🎹 Free Play</div>
     <div class="hud-box">🧪 Testing Mode</div>
   </div>
 
-  <div id="song-panel">3D透明汉字测试版：没有生命限制，可一直测试 🎹</div>
+  <div id="guide-panel">汉字从轨道深处靠近。按正确部件，把它推回去！</div>
 
-  <div id="arena"></div>
-  <div id="piano"></div>
+  <div id="arena">
+    <svg id="track-svg"></svg>
+    <div id="horizon-dot"></div>
+  </div>
+
+  <div id="miss-line"></div>
+  <div id="miss-label">MISS LINE</div>
+
+  <div id="piano-wrap">
+    <div id="piano"></div>
+  </div>
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v1.4.1</div>
+    <div class="version-label" id="version-label">Version v1.5.0</div>
     <p id="start-text">正在连接 Google Sheet [HYPY] 分页</p>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v1.4.1";
+const GAME_VERSION = "v1.5.0";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
 
-const MAX_CHARACTERS = 4;
 const KEY_COUNT = 8;
+const MAX_ACTIVE_CHARACTERS = 1;
 
-const PIANO_KEYS = [
+const WHITE_KEYS = [
   { note: "C4", label: "C", freq: 261.63 },
   { note: "D4", label: "D", freq: 293.66 },
   { note: "E4", label: "E", freq: 329.63 },
@@ -461,56 +581,44 @@ const PIANO_KEYS = [
   { note: "C5", label: "C", freq: 523.25 }
 ];
 
-const NOTE_TO_KEY_INDEX = {
-  C4: 0,
-  D4: 1,
-  E4: 2,
-  F4: 3,
-  G4: 4,
-  A4: 5,
-  B4: 6,
-  C5: 7
-};
-
-const PRELOADED_SONG = {
-  name: "Twinkle",
-  notes: [
-    "C4","C4","G4","G4","A4","A4","G4",
-    "F4","F4","E4","E4","D4","D4","C4",
-    "G4","G4","F4","F4","E4","E4","D4",
-    "G4","G4","F4","F4","E4","E4","D4",
-    "C4","C4","G4","G4","A4","A4","G4",
-    "F4","F4","E4","E4","D4","D4","C4"
-  ]
-};
+const BLACK_KEYS = [
+  { afterWhite: 0, note: "C#4", label: "C#", freq: 277.18 },
+  { afterWhite: 1, note: "D#4", label: "D#", freq: 311.13 },
+  { afterWhite: 3, note: "F#4", label: "F#", freq: 369.99 },
+  { afterWhite: 4, note: "G#4", label: "G#", freq: 415.30 },
+  { afterWhite: 5, note: "A#4", label: "A#", freq: 466.16 }
+];
 
 const distractors = [
   "扌", "亻", "心", "忄", "月", "虫", "门", "广",
   "走", "雨", "艹", "口", "氵", "日", "木", "女",
-  "讠", "辶", "土", "火", "宀", "贝", "王", "纟"
+  "讠", "辶", "土", "火", "宀", "贝", "王", "纟",
+  "石", "禾", "目", "竹", "页", "刂"
 ];
 
 const arena = document.getElementById("arena");
+const trackSvg = document.getElementById("track-svg");
+const horizonDot = document.getElementById("horizon-dot");
 const piano = document.getElementById("piano");
 const startScreen = document.getElementById("start-screen");
 
 const scoreEl = document.getElementById("score");
 const comboEl = document.getElementById("combo");
-const songNameEl = document.getElementById("song-name");
-const songProgressEl = document.getElementById("song-progress");
 
 let dictionary = [];
 let score = 0;
 let combo = 0;
 let wrongStreak = 0;
-let songIndex = 0;
 
 let isPlaying = false;
-let characters = [];
+let character = null;
 let hitTokens = [];
 let particles = [];
 
 let keyboardSlots = [];
+let keyCenters = [];
+let trackGeometry = [];
+
 let animationRef = null;
 let spawnTimer = null;
 let lastFrameTime = 0;
@@ -521,6 +629,7 @@ let slowMotionUntil = 0;
 let timeScale = 1;
 
 window.addEventListener("load", loadDictionary);
+window.addEventListener("resize", handleResize);
 
 function loadDictionary() {
   document.getElementById("version-label").textContent = `Version ${GAME_VERSION}`;
@@ -580,15 +689,14 @@ function cleanCell(value) {
 }
 
 function showReadyScreen() {
-  document.getElementById("start-title").textContent = "汉字连击 · 3D钢琴测试版";
+  document.getElementById("start-title").textContent = "汉字连击 · 3D轨道钢琴版";
   document.getElementById("start-text").innerHTML =
     `已加载 <b>${dictionary.length}</b> 个汉字。<br><br>` +
-    `新版变化：<br>` +
-    `1. 汉字透明背景，只显示文字。<br>` +
-    `2. 汉字被击中后进行 3D 旋转。<br>` +
-    `3. 已移除生命和 Game Over，方便连续测试。<br>` +
-    `4. 汉字下落速度已明显放慢。<br><br>` +
-    `预载歌曲：<b>Twinkle Twinkle Little Star</b>。`;
+    `Free Play Mode：已移除歌曲系统。<br>` +
+    `汉字会从轨道深处向玩家靠近。<br>` +
+    `每个钢琴白键对应一条轨道和一个部件。<br>` +
+    `按正确部件，部件会沿轨道飞出并把汉字推回深处。<br><br>` +
+    `测试模式：没有生命、没有 Game Over。`;
 
   const oldBtn = document.getElementById("start-btn");
   if (oldBtn) oldBtn.remove();
@@ -616,7 +724,6 @@ function startGame() {
   score = 0;
   combo = 0;
   wrongStreak = 0;
-  songIndex = 0;
 
   isPlaying = true;
   lastFrameTime = performance.now();
@@ -626,16 +733,12 @@ function startGame() {
   startScreen.style.display = "none";
 
   initKeyboardSlots();
+  renderPiano();
+  calculateKeyCenters();
+  renderTracks();
+
   updateHUD();
-  renderPianoKeyboard();
-
   spawnCharacter();
-
-  setTimeout(() => {
-    if (isPlaying) spawnCharacter();
-  }, 1200);
-
-  scheduleCharacterSpawn();
 
   animationRef = requestAnimationFrame(gameLoop);
 }
@@ -649,17 +752,20 @@ function clearTimers() {
 }
 
 function clearScene() {
-  characters.forEach(c => c.el.remove());
+  if (character && character.el) character.el.remove();
+
   hitTokens.forEach(t => t.el.remove());
   particles.forEach(p => p.el.remove());
 
-  characters = [];
+  character = null;
   hitTokens = [];
   particles = [];
   keyboardSlots = [];
+  keyCenters = [];
+  trackGeometry = [];
 
-  arena.innerHTML = "";
   piano.innerHTML = "";
+  trackSvg.innerHTML = "";
 }
 
 function initKeyboardSlots() {
@@ -670,34 +776,18 @@ function initKeyboardSlots() {
   }));
 }
 
-function scheduleCharacterSpawn() {
-  if (!isPlaying) return;
-
-  const delay = getSpawnDelay();
-
-  spawnTimer = setTimeout(() => {
-    if (!isPlaying) return;
-
-    if (characters.length < MAX_CHARACTERS) {
-      spawnCharacter();
-    }
-
-    scheduleCharacterSpawn();
-  }, delay);
-}
-
-function getSpawnDelay() {
-  return randomBetween(3600, 5200);
-}
-
 function spawnCharacter() {
-  if (characters.length >= MAX_CHARACTERS) return;
+  if (!isPlaying) return;
+  if (character) return;
 
   const data = dictionary[Math.floor(Math.random() * dictionary.length)];
-  if (!data || !data.word || !data.parts.length) return;
+  if (!data || !data.word || !data.parts.length) {
+    scheduleNextCharacter(800);
+    return;
+  }
 
   const el = document.createElement("div");
-  el.className = "falling-character";
+  el.className = "depth-character";
 
   const wordSpan = document.createElement("span");
   wordSpan.textContent = data.word;
@@ -715,119 +805,115 @@ function spawnCharacter() {
   el.appendChild(progress);
   arena.appendChild(el);
 
-  const c = {
+  character = {
     id: nextId(),
     el,
     word: data.word,
     parts: [...data.parts],
     hitParts: new Set(),
 
-    x: randomBetween(80, window.innerWidth - 80),
-    y: -100,
+    laneIndex: Math.floor(Math.random() * KEY_COUNT),
 
-    vx: randomBetween(-0.12, 0.12),
-    vy: randomBetween(0.16, 0.24),
-    gravity: 0.0011,
+    z: 0.96,
+    zVelocity: -0.0024,
+
+    laneOffset: randomBetween(-0.08, 0.08),
+    sideWobble: randomBetween(0, Math.PI * 2),
 
     rotX: randomBetween(-18, 18),
     rotY: randomBetween(-18, 18),
-    rotZ: randomBetween(-5, 5),
+    rotZ: randomBetween(-6, 6),
+    rotVX: randomBetween(-0.08, 0.08),
+    rotVY: randomBetween(-0.08, 0.08),
+    rotVZ: randomBetween(-0.06, 0.06),
 
-    rotVX: randomBetween(-0.12, 0.12),
-    rotVY: randomBetween(-0.12, 0.12),
-    rotVZ: randomBetween(-0.08, 0.08),
-
-    scale: 1,
+    scaleKick: 0,
     completed: false,
     dead: false,
-    juggledUntil: 0
+    pushedBackUntil: 0
   };
 
-  characters.push(c);
-  renderCharacter(c);
-
-  placeAllPartsForCharacter(c);
-  refillOpenSlots();
-  renderPianoKeyboard();
+  placePartsForCurrentCharacter();
+  renderPiano();
+  renderTracks();
+  renderCharacter();
 }
 
-function placeAllPartsForCharacter(c) {
-  for (let i = 0; i < c.parts.length; i++) {
-    if (isPartAlreadyOnKeyboard(c.id, i)) continue;
+function scheduleNextCharacter(delay) {
+  if (!isPlaying) return;
+  clearTimeout(spawnTimer);
 
-    const slotIndex = findFreeKeyboardSlot();
-    if (slotIndex === -1) break;
+  spawnTimer = setTimeout(() => {
+    if (!isPlaying) return;
+    if (!character) spawnCharacter();
+  }, delay);
+}
 
+function placePartsForCurrentCharacter() {
+  if (!character) return;
+
+  initKeyboardSlots();
+
+  const parts = character.parts.slice(0, KEY_COUNT);
+  const indices = Array.from({ length: KEY_COUNT }, (_, i) => i);
+  shuffle(indices);
+
+  for (let i = 0; i < parts.length; i++) {
+    const slotIndex = indices[i];
     keyboardSlots[slotIndex] = {
       kind: "part",
-      char: c.parts[i],
-      ownerId: c.id,
+      char: parts[i],
       partIndex: i,
       noteIndex: slotIndex
     };
   }
-}
 
-function isPartAlreadyOnKeyboard(ownerId, partIndex) {
-  return keyboardSlots.some(slot =>
-    slot &&
-    slot.kind === "part" &&
-    slot.ownerId === ownerId &&
-    slot.partIndex === partIndex
-  );
-}
-
-function findFreeKeyboardSlot() {
-  let idx = keyboardSlots.findIndex(slot => !slot || slot.kind === "empty");
-  if (idx !== -1) return idx;
-
-  idx = keyboardSlots.findIndex(slot => slot.kind === "distractor");
-  if (idx !== -1) return idx;
-
-  return -1;
-}
-
-function refillOpenSlots() {
   for (let i = 0; i < KEY_COUNT; i++) {
-    if (!keyboardSlots[i] || keyboardSlots[i].kind === "empty") {
-      fillSingleSlot(i);
+    if (!keyboardSlots[i] || keyboardSlots[i].kind !== "part") {
+      keyboardSlots[i] = {
+        kind: "distractor",
+        char: randomDistractorAvoiding(parts),
+        noteIndex: i
+      };
     }
   }
 }
 
-function fillSingleSlot(slotIndex) {
+function refillUsedSlot(slotIndex) {
   const pending = findPendingPartNotOnKeyboard();
 
   if (pending) {
     keyboardSlots[slotIndex] = {
       kind: "part",
       char: pending.char,
-      ownerId: pending.ownerId,
       partIndex: pending.partIndex,
       noteIndex: slotIndex
     };
-    return;
+  } else {
+    keyboardSlots[slotIndex] = {
+      kind: "distractor",
+      char: randomDistractorAvoiding(getRequiredCharsOnKeyboard()),
+      noteIndex: slotIndex
+    };
   }
-
-  keyboardSlots[slotIndex] = {
-    kind: "distractor",
-    char: randomDistractorAvoiding(getVisibleRequiredChars()),
-    noteIndex: slotIndex
-  };
 }
 
 function findPendingPartNotOnKeyboard() {
-  for (const c of characters) {
-    if (c.completed || c.dead) continue;
+  if (!character || character.completed || character.dead) return null;
 
-    for (let i = 0; i < c.parts.length; i++) {
-      if (c.hitParts.has(i)) continue;
-      if (isPartAlreadyOnKeyboard(c.id, i)) continue;
+  for (let i = 0; i < character.parts.length; i++) {
+    if (character.hitParts.has(i)) continue;
 
+    const alreadyVisible = keyboardSlots.some(slot =>
+      slot &&
+      slot.kind === "part" &&
+      slot.partIndex === i
+    );
+
+    if (!alreadyVisible) {
       return {
-        ownerId: c.id,
         partIndex: i,
-        char: c.parts[i]
+        char: character.parts[i]
       };
     }
   }
@@ -835,63 +921,33 @@ function findPendingPartNotOnKeyboard() {
   return null;
 }
 
-function getVisibleRequiredChars() {
+function getRequiredCharsOnKeyboard() {
   return keyboardSlots
     .filter(slot => slot && slot.kind === "part")
     .map(slot => slot.char);
 }
 
-function removeSlotsForCharacter(characterId) {
-  for (let i = 0; i < keyboardSlots.length; i++) {
-    const slot = keyboardSlots[i];
-
-    if (slot && slot.kind === "part" && slot.ownerId === characterId) {
-      keyboardSlots[i] = { kind: "empty", char: "", noteIndex: i };
-      fillSingleSlot(i);
-    }
-  }
-
-  renderPianoKeyboard();
-}
-
-function renderCharacter(c) {
-  c.el.style.left = `${c.x}px`;
-  c.el.style.top = `${c.y}px`;
-
-  c.el.style.transform =
-    `translate(-50%, -50%) ` +
-    `rotateX(${c.rotX}deg) ` +
-    `rotateY(${c.rotY}deg) ` +
-    `rotateZ(${c.rotZ}deg) ` +
-    `scale(${c.scale})`;
-
-  const dots = c.el.querySelectorAll(".dot");
-  dots.forEach((dot, i) => {
-    dot.classList.toggle("done", c.hitParts.has(i));
-  });
-}
-
-function renderPianoKeyboard() {
+function renderPiano() {
   piano.innerHTML = "";
 
-  const currentSongNote = getCurrentSongNote();
-  const songKeyIndex = NOTE_TO_KEY_INDEX[currentSongNote] ?? 0;
+  const whiteWidth = 100 / KEY_COUNT;
 
   keyboardSlots.forEach((slot, index) => {
-    const keyInfo = PIANO_KEYS[index];
+    const keyInfo = WHITE_KEYS[index];
 
     const btn = document.createElement("button");
-    btn.className = "piano-key";
+    btn.className = "white-key";
 
     if (slot.kind === "part") btn.classList.add("required");
-    if (index === songKeyIndex && slot.kind === "part") btn.classList.add("song-next");
-    if (slot.kind === "empty") btn.classList.add("empty-key");
+
+    btn.style.left = `${index * whiteWidth}%`;
+    btn.style.width = `${whiteWidth}%`;
 
     btn.dataset.index = String(index);
 
     const radicalSpan = document.createElement("div");
     radicalSpan.className = "key-radical";
-    radicalSpan.textContent = slot.char || " ";
+    radicalSpan.textContent = slot.char || "";
 
     const noteSpan = document.createElement("div");
     noteSpan.className = "key-note";
@@ -902,18 +958,172 @@ function renderPianoKeyboard() {
 
     btn.addEventListener("pointerdown", e => {
       e.preventDefault();
-      handlePianoPress(index, btn);
+      handleWhiteKeyPress(index, btn);
     });
 
     piano.appendChild(btn);
   });
+
+  BLACK_KEYS.forEach((black, blackIndex) => {
+    const btn = document.createElement("button");
+    btn.className = "black-key";
+
+    const leftPercent = ((black.afterWhite + 1) * whiteWidth) - 3.75;
+    btn.style.left = `${leftPercent}%`;
+
+    const noteSpan = document.createElement("div");
+    noteSpan.className = "key-note";
+    noteSpan.textContent = black.label;
+    btn.appendChild(noteSpan);
+
+    btn.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      pressVisual(btn);
+      playTonePiano(black.freq, 0.55);
+    });
+
+    piano.appendChild(btn);
+  });
+
+  requestAnimationFrame(() => {
+    calculateKeyCenters();
+    renderTracks();
+  });
 }
 
-function getCurrentSongNote() {
-  return PRELOADED_SONG.notes[songIndex % PRELOADED_SONG.notes.length];
+function calculateKeyCenters() {
+  keyCenters = [];
+
+  const pianoRect = piano.getBoundingClientRect();
+  const arenaRect = arena.getBoundingClientRect();
+  const whiteKeys = piano.querySelectorAll(".white-key");
+
+  whiteKeys.forEach(key => {
+    const rect = key.getBoundingClientRect();
+
+    keyCenters.push({
+      x: rect.left + rect.width / 2 - arenaRect.left,
+      y: arenaRect.height + 2,
+      screenX: rect.left + rect.width / 2,
+      screenY: rect.top + rect.height * 0.18
+    });
+  });
 }
 
-function handlePianoPress(slotIndex, buttonElement) {
+function getHorizon() {
+  return {
+    x: arena.clientWidth / 2,
+    y: Math.max(110, arena.clientHeight * 0.22)
+  };
+}
+
+function renderTracks() {
+  if (!keyCenters.length) return;
+
+  const horizon = getHorizon();
+
+  horizonDot.style.left = `${horizon.x}px`;
+  horizonDot.style.top = `${horizon.y}px`;
+
+  trackSvg.innerHTML = "";
+  trackSvg.setAttribute("viewBox", `0 0 ${arena.clientWidth} ${arena.clientHeight}`);
+
+  trackGeometry = [];
+
+  const requiredLanes = new Set(
+    keyboardSlots
+      .map((slot, i) => slot && slot.kind === "part" ? i : null)
+      .filter(i => i !== null)
+  );
+
+  for (let i = 0; i < KEY_COUNT; i++) {
+    const base = keyCenters[i];
+    const nextBase = keyCenters[Math.min(KEY_COUNT - 1, i + 1)];
+    const prevBase = keyCenters[Math.max(0, i - 1)];
+
+    const laneWidthNear = Math.min(90, arena.clientWidth / KEY_COUNT * 0.78);
+    const nearLeft = base.x - laneWidthNear / 2;
+    const nearRight = base.x + laneWidthNear / 2;
+
+    const farSpread = 14;
+    const farLeft = horizon.x - farSpread + (i - (KEY_COUNT - 1) / 2) * 3;
+    const farRight = horizon.x + farSpread + (i - (KEY_COUNT - 1) / 2) * 3;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute(
+      "d",
+      `M ${nearLeft} ${arena.clientHeight} L ${farLeft} ${horizon.y} L ${farRight} ${horizon.y} L ${nearRight} ${arena.clientHeight} Z`
+    );
+    path.setAttribute("class", "track-fill");
+    trackSvg.appendChild(path);
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", base.x);
+    line.setAttribute("y1", arena.clientHeight);
+    line.setAttribute("x2", horizon.x + (i - (KEY_COUNT - 1) / 2) * 4);
+    line.setAttribute("y2", horizon.y);
+
+    line.setAttribute("class", requiredLanes.has(i) ? "track-line required-track" : "track-line");
+    trackSvg.appendChild(line);
+
+    trackGeometry[i] = {
+      nearX: base.x,
+      nearY: arena.clientHeight,
+      farX: horizon.x + (i - (KEY_COUNT - 1) / 2) * 4,
+      farY: horizon.y
+    };
+  }
+}
+
+function getPointOnLane(laneIndex, z, offset = 0) {
+  const lane = trackGeometry[laneIndex] || trackGeometry[0];
+  if (!lane) {
+    return { x: arena.clientWidth / 2, y: arena.clientHeight / 2 };
+  }
+
+  const t = 1 - z;
+
+  const x = lane.farX + (lane.nearX - lane.farX) * t;
+  const y = lane.farY + (lane.nearY - lane.farY) * t;
+
+  const laneWidth = 18 + t * 70;
+  return {
+    x: x + offset * laneWidth,
+    y
+  };
+}
+
+function renderCharacter() {
+  if (!character || character.dead) return;
+
+  const wobble = Math.sin(character.sideWobble) * 0.04;
+  const point = getPointOnLane(character.laneIndex, character.z, character.laneOffset + wobble);
+
+  const closeness = 1 - character.z;
+  const scale = 0.32 + closeness * 1.55 + character.scaleKick;
+  const opacity = 0.35 + closeness * 0.65;
+  const fontSize = 72 + closeness * 52;
+
+  character.el.style.left = `${point.x}px`;
+  character.el.style.top = `${point.y}px`;
+  character.el.style.opacity = opacity;
+  character.el.style.fontSize = `${fontSize}px`;
+  character.el.style.zIndex = String(30 + Math.floor(closeness * 45));
+
+  character.el.style.transform =
+    `translate(-50%, -50%) ` +
+    `rotateX(${character.rotX}deg) ` +
+    `rotateY(${character.rotY}deg) ` +
+    `rotateZ(${character.rotZ}deg) ` +
+    `scale(${scale})`;
+
+  const dots = character.el.querySelectorAll(".dot");
+  dots.forEach((dot, i) => {
+    dot.classList.toggle("done", character.hitParts.has(i));
+  });
+}
+
+function handleWhiteKeyPress(slotIndex, buttonElement) {
   if (!isPlaying) return;
 
   const slot = keyboardSlots[slotIndex];
@@ -922,52 +1132,49 @@ function handlePianoPress(slotIndex, buttonElement) {
   pressVisual(buttonElement);
   playPianoKey(slotIndex);
 
-  if (slot.kind !== "part") {
+  if (!character || character.dead || character.completed || slot.kind !== "part") {
     handleWrongPress(buttonElement);
     return;
   }
 
-  const target = characters.find(c =>
-    c.id === slot.ownerId &&
-    !c.completed &&
-    !c.dead &&
-    !c.hitParts.has(slot.partIndex)
-  );
-
-  if (!target) {
+  if (character.hitParts.has(slot.partIndex)) {
     handleWrongPress(buttonElement);
     return;
   }
 
-  wrongStreak = 0;
   combo++;
+  wrongStreak = 0;
 
   const gain = 100 + combo * 10;
   score += gain;
 
-  const rect = buttonElement.getBoundingClientRect();
   const arenaRect = arena.getBoundingClientRect();
+  const keyRect = buttonElement.getBoundingClientRect();
 
-  const startX = rect.left + rect.width / 2 - arenaRect.left;
-  const startY = rect.top + rect.height / 2 - arenaRect.top;
+  const startX = keyRect.left + keyRect.width / 2 - arenaRect.left;
+  const startY = arena.clientHeight + 2;
 
-  launchHitToken(slot.char, startX, startY, target, slot.partIndex);
+  launchHitToken(slot.char, startX, startY, character, slot.partIndex, slotIndex);
 
-  keyboardSlots[slotIndex] = { kind: "empty", char: "", noteIndex: slotIndex };
-  fillSingleSlot(slotIndex);
-  renderPianoKeyboard();
+  keyboardSlots[slotIndex] = {
+    kind: "empty",
+    char: "",
+    noteIndex: slotIndex
+  };
 
-  showFloatingText(`+${gain}`, startX, startY - 24);
+  refillUsedSlot(slotIndex);
+  renderPiano();
+
+  showFloatingText(`+${gain}`, startX, arena.clientHeight - 20);
   showCenterMessage(`Combo ${combo}`, "good");
-  triggerSlowMotion(150);
+  triggerSlowMotion(130);
 
-  songIndex++;
   updateHUD();
 }
 
 function handleWrongPress(buttonElement) {
-  wrongStreak++;
   combo = 0;
+  wrongStreak++;
   score = Math.max(0, score - 20);
 
   buttonElement.classList.add("wrong");
@@ -979,7 +1186,7 @@ function handleWrongPress(buttonElement) {
   updateHUD();
 }
 
-function launchHitToken(char, x, y, target, partIndex) {
+function launchHitToken(char, x, y, target, partIndex, laneIndex) {
   const el = document.createElement("div");
   el.className = "hit-token";
   el.textContent = char;
@@ -989,9 +1196,11 @@ function launchHitToken(char, x, y, target, partIndex) {
     el,
     char,
     partIndex,
+    laneIndex,
+    target,
+    z: 0.02,
     x,
     y,
-    target,
     rotation: 0,
     arrived: false,
     dead: false
@@ -1005,7 +1214,11 @@ function launchHitToken(char, x, y, target, partIndex) {
 function renderHitToken(t) {
   t.el.style.left = `${t.x}px`;
   t.el.style.top = `${t.y}px`;
-  t.el.style.transform = `translate(-50%, -50%) rotate(${t.rotation}deg)`;
+
+  const scale = 1.05 - t.z * 0.45;
+
+  t.el.style.transform =
+    `translate(-50%, -50%) rotate(${t.rotation}deg) scale(${scale})`;
 }
 
 function gameLoop(now) {
@@ -1014,10 +1227,10 @@ function gameLoop(now) {
   const rawDelta = Math.min(32, now - lastFrameTime);
   lastFrameTime = now;
 
-  timeScale = now < slowMotionUntil ? 0.52 : 1;
+  timeScale = now < slowMotionUntil ? 0.55 : 1;
   const dt = (rawDelta / 16.67) * timeScale;
 
-  updateCharacters(dt, now);
+  updateCharacter(dt, now);
   updateHitTokens(dt);
   updateParticles(dt);
   cleanupDeadObjects();
@@ -1025,81 +1238,93 @@ function gameLoop(now) {
   animationRef = requestAnimationFrame(gameLoop);
 }
 
-function updateCharacters(dt, now) {
-  const bottomLimit = arena.clientHeight + 120;
-  const juggleCeiling = Math.max(96, arena.clientHeight * 0.16);
-  const juggleFloor = Math.max(190, arena.clientHeight * 0.62);
+function updateCharacter(dt, now) {
+  if (!character || character.dead || character.completed) return;
 
-  characters.forEach(c => {
-    if (c.completed || c.dead) return;
+  character.z += character.zVelocity * dt;
 
-    c.x += c.vx * dt;
-    c.y += c.vy * dt;
+  character.sideWobble += 0.018 * dt;
 
-    c.vy += c.gravity * dt;
-    c.vx *= Math.pow(0.997, dt);
+  character.rotX += character.rotVX * dt;
+  character.rotY += character.rotVY * dt;
+  character.rotZ += character.rotVZ * dt;
 
-    c.rotX += c.rotVX * dt;
-    c.rotY += c.rotVY * dt;
-    c.rotZ += c.rotVZ * dt;
+  character.rotVX *= Math.pow(0.993, dt);
+  character.rotVY *= Math.pow(0.993, dt);
+  character.rotVZ *= Math.pow(0.993, dt);
 
-    c.rotVX *= Math.pow(0.992, dt);
-    c.rotVY *= Math.pow(0.992, dt);
-    c.rotVZ *= Math.pow(0.992, dt);
+  character.scaleKick *= Math.pow(0.88, dt);
 
-    c.scale += (1 - c.scale) * 0.13 * dt;
+  if (character.z > 0.98) {
+    character.z = 0.98;
+    character.zVelocity = -Math.abs(character.zVelocity);
+  }
 
-    if (c.x < 54) {
-      c.x = 54;
-      c.vx = Math.abs(c.vx) * 0.7;
-    }
+  if (character.z <= 0.02) {
+    missCharacter();
+    return;
+  }
 
-    if (c.x > window.innerWidth - 54) {
-      c.x = window.innerWidth - 54;
-      c.vx = -Math.abs(c.vx) * 0.7;
-    }
+  renderCharacter();
+}
 
-    if (now < c.juggledUntil) {
-      if (c.y < juggleCeiling) {
-        c.y = juggleCeiling;
-        c.vy = Math.abs(c.vy) * 0.4;
-      }
+function missCharacter() {
+  if (!character || character.dead) return;
 
-      if (c.y > juggleFloor) {
-        c.y = juggleFloor;
-        c.vy = -Math.abs(c.vy) * 0.58;
-      }
-    }
+  showCenterMessage("Miss", "bad");
+  combo = 0;
+  updateHUD();
 
-    if (c.y > bottomLimit) {
-      c.dead = true;
-      removeSlotsForCharacter(c.id);
+  character.dead = true;
+  character.el.style.transition = "opacity 0.25s, transform 0.25s";
+  character.el.style.opacity = "0";
 
-      setTimeout(() => {
-        if (isPlaying && characters.length < MAX_CHARACTERS) {
-          spawnCharacter();
-        }
-      }, 300);
-    }
+  clearKeyboardParts();
 
-    renderCharacter(c);
-  });
+  setTimeout(() => {
+    if (character && character.el) character.el.remove();
+    character = null;
+    renderPiano();
+    renderTracks();
+    scheduleNextCharacter(500);
+  }, 260);
+}
+
+function clearKeyboardParts() {
+  for (let i = 0; i < KEY_COUNT; i++) {
+    keyboardSlots[i] = {
+      kind: "distractor",
+      char: randomDistractorAvoiding([]),
+      noteIndex: i
+    };
+  }
 }
 
 function updateHitTokens(dt) {
   hitTokens.forEach(t => {
-    if (t.dead || !t.target || t.target.completed || t.target.dead) {
+    if (t.dead || !t.target || t.target.dead || t.target.completed) {
       t.dead = true;
       return;
     }
 
-    t.x += (t.target.x - t.x) * 0.25 * dt;
-    t.y += (t.target.y - t.y) * 0.25 * dt;
+    t.z += 0.045 * dt;
+
+    if (t.z > t.target.z) {
+      t.z = t.target.z;
+    }
+
+    const targetPoint = getPointOnLane(t.target.laneIndex, t.target.z, t.target.laneOffset);
+    const lanePoint = getPointOnLane(t.laneIndex, t.z, 0);
+
+    const blend = Math.min(1, t.z / Math.max(0.001, t.target.z));
+    t.x = lanePoint.x + (targetPoint.x - lanePoint.x) * blend;
+    t.y = lanePoint.y + (targetPoint.y - lanePoint.y) * blend;
+
     t.rotation += 18 * dt;
 
-    const d = distance(t.x, t.y, t.target.x, t.target.y);
+    const d = distance(t.x, t.y, targetPoint.x, targetPoint.y);
 
-    if (d < 30 && !t.arrived) {
+    if ((d < 34 || t.z >= t.target.z - 0.01) && !t.arrived) {
       t.arrived = true;
       tokenHitsCharacter(t, t.target);
     }
@@ -1113,78 +1338,70 @@ function tokenHitsCharacter(token, c) {
 
   c.hitParts.add(token.partIndex);
   c.el.classList.add("hit");
-  setTimeout(() => c.el.classList.remove("hit"), 150);
+  setTimeout(() => {
+    if (c.el) c.el.classList.remove("hit");
+  }, 150);
 
-  const now = performance.now();
-  c.juggledUntil = now + 2200;
+  c.z = Math.min(0.96, c.z + 0.18);
+  c.zVelocity = -0.0021;
 
-  const centerX = window.innerWidth / 2;
-  const pushToCenter = (centerX - c.x) * 0.018;
+  const centerLane = (KEY_COUNT - 1) / 2;
+  const lanePush = (centerLane - c.laneIndex) * 0.002;
 
-  c.vy = -5.9 - Math.min(combo * 0.06, 1.2);
-  c.vx += clamp(pushToCenter + randomBetween(-0.55, 0.55), -1.8, 1.8);
+  c.laneOffset += randomBetween(-0.05, 0.05) + lanePush;
+  c.laneOffset = clamp(c.laneOffset, -0.35, 0.35);
 
-  c.rotVX += randomBetween(-7.5, 7.5);
-  c.rotVY += randomBetween(-10, 10);
-  c.rotVZ += randomBetween(-5, 5);
-
-  c.scale = 1.14;
-
-  const safeTop = Math.max(100, arena.clientHeight * 0.18);
-  const safeBottom = Math.max(190, arena.clientHeight * 0.62);
-
-  if (c.y < safeTop) {
-    c.y = safeTop;
-    c.vy = Math.abs(c.vy) * 0.3;
-  }
-
-  if (c.y > safeBottom) {
-    c.y = safeBottom;
-  }
+  c.rotVX += randomBetween(-8, 8);
+  c.rotVY += randomBetween(-12, 12);
+  c.rotZ += randomBetween(-6, 6);
+  c.scaleKick = 0.18;
 
   score += 50;
 
-  showFloatingText("+50", c.x, c.y - 45);
-  particleBurst(c.x, c.y, 16);
+  const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
+  showFloatingText("+50", point.x, point.y - 50);
+  particleBurst(point.x, point.y, 18);
+  playBounceTone();
 
   if (c.hitParts.size >= c.parts.length) {
     completeCharacter(c);
   }
 
-  renderCharacter(c);
+  renderCharacter();
   updateHUD();
 }
 
 function completeCharacter(c) {
-  if (c.completed) return;
+  if (!c || c.completed) return;
 
   c.completed = true;
-  score += 300 + combo * 20;
+
+  const bonus = 300 + combo * 20;
+  score += bonus;
+
+  const point = getPointOnLane(c.laneIndex, c.z, c.laneOffset);
 
   showCenterMessage("完成！", "good");
-  particleBurst(c.x, c.y, 30);
+  showFloatingText(`+${bonus}`, point.x, point.y - 70);
+  particleBurst(point.x, point.y, 32);
   playCompleteSound();
 
-  removeSlotsForCharacter(c.id);
+  clearKeyboardParts();
+  renderPiano();
+  renderTracks();
+
   c.el.classList.add("complete");
 
   setTimeout(() => {
-    c.el.remove();
-    characters = characters.filter(item => item.id !== c.id);
-
-    if (isPlaying && characters.length < MAX_CHARACTERS) {
-      spawnCharacter();
-    }
+    if (character && character.el) character.el.remove();
+    character = null;
+    scheduleNextCharacter(650);
   }, 430);
+
+  updateHUD();
 }
 
 function cleanupDeadObjects() {
-  characters = characters.filter(c => {
-    if (!c.dead) return true;
-    c.el.remove();
-    return false;
-  });
-
   hitTokens = hitTokens.filter(t => {
     if (!t.dead) return true;
     t.el.remove();
@@ -1201,9 +1418,6 @@ function cleanupDeadObjects() {
 function updateHUD() {
   scoreEl.textContent = score;
   comboEl.textContent = combo;
-  songNameEl.textContent = PRELOADED_SONG.name;
-  songProgressEl.textContent =
-    `${songIndex % PRELOADED_SONG.notes.length}/${PRELOADED_SONG.notes.length}`;
 }
 
 function particleBurst(x, y, count) {
@@ -1279,7 +1493,7 @@ function triggerSlowMotion(ms) {
 
 function pressVisual(buttonElement) {
   buttonElement.classList.add("pressed");
-  setTimeout(() => buttonElement.classList.remove("pressed"), 110);
+  setTimeout(() => buttonElement.classList.remove("pressed"), 120);
 }
 
 function ensureAudio() {
@@ -1294,14 +1508,19 @@ function ensureAudio() {
 
 function playPianoKey(keyIndex) {
   ensureAudio();
+  playTonePiano(WHITE_KEYS[keyIndex].freq, 0.75);
+}
 
-  const freq = PIANO_KEYS[keyIndex].freq;
+function playTonePiano(freq, duration) {
+  ensureAudio();
+
   const now = audioCtx.currentTime;
 
   const harmonics = [
     { ratio: 1, amp: 0.42 },
     { ratio: 2, amp: 0.18 },
-    { ratio: 3, amp: 0.08 }
+    { ratio: 3, amp: 0.08 },
+    { ratio: 4, amp: 0.035 }
   ];
 
   harmonics.forEach(h => {
@@ -1313,18 +1532,22 @@ function playPianoKey(keyIndex) {
 
     gain.gain.setValueAtTime(0.001, now);
     gain.gain.linearRampToValueAtTime(h.amp * 0.18, now + 0.018);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.72);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
     osc.start(now);
-    osc.stop(now + 0.75);
+    osc.stop(now + duration + 0.04);
   });
 }
 
 function playBadTone() {
   playSimpleTone(180, 0.18, 0.08, "sawtooth");
+}
+
+function playBounceTone() {
+  playSimpleTone(392, 0.12, 0.08, "triangle");
 }
 
 function playCompleteSound() {
@@ -1355,6 +1578,14 @@ function playSimpleTone(freq, duration, volume, wave) {
   osc.stop(now + duration + 0.03);
 }
 
+function handleResize() {
+  if (!isPlaying) return;
+
+  calculateKeyCenters();
+  renderTracks();
+  renderCharacter();
+}
+
 function randomDistractorAvoiding(avoidList) {
   const safe = distractors.filter(d => !avoidList.includes(d));
   const pool = safe.length ? safe : distractors;
@@ -1377,12 +1608,12 @@ function distance(x1, y1, x2, y2) {
   return Math.hypot(x2 - x1, y2 - y1);
 }
 
-window.addEventListener("resize", () => {
-  characters.forEach(c => {
-    c.x = Math.max(60, Math.min(window.innerWidth - 60, c.x));
-    renderCharacter(c);
-  });
-});
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
 </script>
 </body>
 </html>
