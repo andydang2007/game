@@ -484,13 +484,13 @@ body {
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v1.10.0</div>
+    <div class="version-label" id="version-label">Version v1.10.1</div>
     <p id="start-text">请稍候，正在获取云端题库</p>
   </div>
 
   <div id="replay-screen" class="overlay">
     <h1>编曲挑战完成！</h1>
-    <div class="version-label">Version v1.10.0</div>
+    <div class="version-label">Version v1.10.1</div>
     <p>空白等待时间已自动剪切压缩，3倍速丝滑回放</p>
     <button class="btn btn-pink" id="btn-replay">🎹 启动录音机回放</button>
     <button class="btn" onclick="location.reload()">🔄 再来一局</button>
@@ -498,7 +498,7 @@ body {
 </div>
 
 <script>
-const GAME_VERSION = "v1.10.0";
+const GAME_VERSION = "v1.10.1";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
@@ -623,7 +623,7 @@ function loadDictionary() {
       if (dictionary.length) {
         document.getElementById("start-title").textContent = "汉字节奏大师";
         document.getElementById("start-text").innerHTML =
-          `已加载 ${dictionary.length} 个汉字<br>单字彩虹桥模式 · 长按电子琴 · 智能录音回放`;
+          `已加载 ${dictionary.length} 个汉字<br>单字彩虹桥模式 · 每字随机键位 · 智能录音回放`;
 
         const oldBtn = document.getElementById("start-btn");
         if (oldBtn) oldBtn.remove();
@@ -739,6 +739,7 @@ function endGame() {
 
   activeChars.forEach(c => c.el.remove());
   activeChars = [];
+
   hitTokens.forEach(t => t.el.remove());
   hitTokens = [];
 
@@ -754,7 +755,7 @@ function gameLoop(now) {
   const dt = Math.min(32, now - lastFrameTime) / 16.67;
   lastFrameTime = now;
 
-  if (activeChars.length < MAX_ACTIVE_CHARS && now - lastSpawnTime > 350) {
+  if (activeChars.length < MAX_ACTIVE_CHARS && now - lastSpawnTime > 120) {
     spawnCharacter();
     lastSpawnTime = now;
   }
@@ -794,18 +795,19 @@ function spawnCharacter() {
     id: idCounter++,
     el,
     word: data.word,
+
     parts: data.parts.map((char, idx) => ({
-      partId: `${idCounter}-${idx}-${char}`,
+      partId: `${idCounter}-${idx}-${char}-${Math.random()}`,
       char,
       idx
     })),
+
     remainingParts: [],
     visualHitCount: 0,
     laneIndex: Math.floor(Math.random() * KEY_COUNT),
 
-    // ✅ 修复方向：0.98 是远处，逐渐减小到 0 是靠近玩家
     z: 0.98,
-    baseSpeed: -(0.00022 + Math.random() * 0.00008),
+    baseSpeed: -(0.00022 + Math.random() * 0.00006),
     slowUntil: 0,
 
     dead: false
@@ -814,7 +816,40 @@ function spawnCharacter() {
   c.remainingParts = [...c.parts];
 
   activeChars.push(c);
-  fillEmptySlotsWithNewParts();
+
+  resetKeyboardForCharacter(c);
+}
+
+function resetKeyboardForCharacter(c) {
+  keyboardSlots = Array(KEY_COUNT).fill(null);
+
+  const avoidParts = c.parts.map(p => p.char);
+
+  for (let i = 0; i < KEY_COUNT; i++) {
+    keyboardSlots[i] = {
+      kind: "distractor",
+      char: randomDistractorAvoiding(avoidParts)
+    };
+  }
+
+  const availableIndices = Array.from({ length: KEY_COUNT }, (_, i) => i);
+  shuffle(availableIndices);
+
+  const visibleParts = c.remainingParts.slice(0, KEY_COUNT);
+
+  visibleParts.forEach((partObj, idx) => {
+    const slotIndex = availableIndices[idx];
+
+    keyboardSlots[slotIndex] = {
+      kind: "part",
+      char: partObj.char,
+      partId: partObj.partId,
+      target: c,
+      targetId: c.id
+    };
+  });
+
+  renderKeyboardDOMText();
 }
 
 function calculateTrack() {
@@ -928,6 +963,7 @@ function calculateTrack() {
 
 function getPointOnLane(laneIndex, z) {
   const lane = trackGeometry[laneIndex];
+
   if (!lane) {
     return {
       x: arena.clientWidth / 2,
@@ -935,7 +971,6 @@ function getPointOnLane(laneIndex, z) {
     };
   }
 
-  // z = 1 远处，z = 0 近处
   const t = 1 - z;
 
   return {
@@ -959,10 +994,19 @@ function updateCharacters(dt) {
     c.z += speed * dt;
 
     if (c.z <= 0.02) {
-      clearDeadTargetFromKeys(c);
       c.dead = true;
       c.el.remove();
       activeChars.splice(i, 1);
+
+      initKeyboardSlotsFirstTime();
+
+      setTimeout(() => {
+        if (isPlaying && activeChars.length < MAX_ACTIVE_CHARS) {
+          spawnCharacter();
+          lastSpawnTime = performance.now();
+        }
+      }, 120);
+
       continue;
     }
 
@@ -982,70 +1026,16 @@ function updateCharacters(dt) {
 }
 
 function initKeyboardSlotsFirstTime() {
-  keyboardSlots.fill(null);
-
-  let allDistractors = [...distractors];
-  shuffle(allDistractors);
+  keyboardSlots = Array(KEY_COUNT).fill(null);
 
   for (let i = 0; i < KEY_COUNT; i++) {
     keyboardSlots[i] = {
       kind: "distractor",
-      char: allDistractors.pop() || distractors[0]
+      char: distractors[Math.floor(Math.random() * distractors.length)]
     };
   }
 
-  fillEmptySlotsWithNewParts();
-}
-
-function fillEmptySlotsWithNewParts() {
-  activeChars.forEach(c => {
-    if (c.dead) return;
-
-    c.remainingParts.forEach(partObj => {
-      const alreadyOnKey = keyboardSlots.some(s =>
-        s &&
-        s.kind === "part" &&
-        s.targetId === c.id &&
-        s.partId === partObj.partId
-      );
-
-      if (alreadyOnKey) return;
-
-      let bestSlotIdx = -1;
-
-      for (let i = 0; i < KEY_COUNT; i++) {
-        if (!keyboardSlots[i] || keyboardSlots[i].kind === "distractor") {
-          bestSlotIdx = i;
-          break;
-        }
-      }
-
-      if (bestSlotIdx > -1) {
-        keyboardSlots[bestSlotIdx] = {
-          kind: "part",
-          char: partObj.char,
-          partId: partObj.partId,
-          target: c,
-          targetId: c.id
-        };
-      }
-    });
-  });
-
   renderKeyboardDOMText();
-}
-
-function clearDeadTargetFromKeys(deadChar) {
-  for (let i = 0; i < KEY_COUNT; i++) {
-    if (keyboardSlots[i] && keyboardSlots[i].targetId === deadChar.id) {
-      keyboardSlots[i] = {
-        kind: "distractor",
-        char: distractors[Math.floor(Math.random() * distractors.length)]
-      };
-    }
-  }
-
-  fillEmptySlotsWithNewParts();
 }
 
 function renderKeyboardDOMText() {
@@ -1095,21 +1085,6 @@ function handleKeyPress(index, btnElement) {
         if (c.el) c.el.classList.remove("correct");
       }, 150);
 
-      if (c.visualHitCount >= c.parts.length) {
-        score += 200;
-        document.getElementById("score").textContent = score;
-
-        clearDeadTargetFromKeys(c);
-
-        c.dead = true;
-        c.el.classList.add("complete");
-
-        setTimeout(() => {
-          if (c.el) c.el.remove();
-          activeChars = activeChars.filter(item => item.id !== c.id);
-        }, 300);
-      }
-
       const rect = btnElement.getBoundingClientRect();
       const arenaRect = arena.getBoundingClientRect();
 
@@ -1120,12 +1095,37 @@ function handleKeyPress(index, btnElement) {
         c
       );
 
+      if (c.visualHitCount >= c.parts.length) {
+        score += 200;
+        document.getElementById("score").textContent = score;
+
+        c.dead = true;
+        c.el.classList.add("complete");
+
+        activeChars = activeChars.filter(item => item.id !== c.id);
+
+        initKeyboardSlotsFirstTime();
+
+        setTimeout(() => {
+          if (c.el) c.el.remove();
+        }, 260);
+
+        setTimeout(() => {
+          if (isPlaying && activeChars.length < MAX_ACTIVE_CHARS) {
+            spawnCharacter();
+            lastSpawnTime = performance.now();
+          }
+        }, 120);
+
+        return;
+      }
+
       keyboardSlots[index] = {
         kind: "distractor",
-        char: distractors[Math.floor(Math.random() * distractors.length)]
+        char: randomDistractorAvoiding(c.remainingParts.map(p => p.char))
       };
 
-      fillEmptySlotsWithNewParts();
+      renderKeyboardDOMText();
     }
   }
 }
