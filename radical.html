@@ -148,6 +148,12 @@ body {
   animation-duration: 0.75s;
 }
 
+#game.replay-mode #miss-line {
+  box-shadow:
+    0 0 14px rgba(255,0,255,0.75),
+    0 0 28px rgba(0,243,255,0.28);
+}
+
 @keyframes rainbowRun {
   from { stroke-dashoffset: 0; }
   to { stroke-dashoffset: -76; }
@@ -341,6 +347,50 @@ body {
   pointer-events: none;
 }
 
+.replay-orb {
+  position: absolute;
+  z-index: 82;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 35% 35%, #fff 0%, #a7f3d0 22%, #00f3ff 55%, #ff00ff 100%);
+  box-shadow:
+    0 0 10px rgba(0,243,255,0.8),
+    0 0 20px rgba(255,0,255,0.35);
+  opacity: 0.95;
+  will-change: left, top, transform, opacity;
+}
+
+.replay-spark {
+  position: absolute;
+  z-index: 84;
+  pointer-events: none;
+  color: #fff;
+  font-weight: 900;
+  font-size: 18px;
+  text-shadow:
+    0 0 8px rgba(0,243,255,0.9),
+    0 0 16px rgba(255,0,255,0.5);
+  animation: sparkFade 0.52s ease-out forwards;
+}
+
+@keyframes sparkFade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -60%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -100%) scale(1.25);
+  }
+}
+
 #audio-player-ui {
   display: none;
   width: 100%;
@@ -427,7 +477,7 @@ body {
 }
 
 .overlay p {
-  margin: 0 0 30px;
+  margin: 0 0 20px;
   color: #e2e8f0;
   font-size: clamp(16px, 3vw, 20px);
   font-weight: 800;
@@ -439,6 +489,41 @@ body {
   font-size: 18px;
   font-weight: 900;
   text-shadow: 0 0 8px #22c55e;
+}
+
+.remix-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 12px;
+  width: min(820px, 92vw);
+  margin: 4px 0 18px;
+}
+
+.control-card {
+  background: rgba(15,23,42,0.74);
+  border: 1.5px solid rgba(0,243,255,0.35);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 0 12px rgba(0,243,255,0.12);
+}
+
+.control-card label {
+  display: block;
+  color: #a7f3d0;
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.control-card select {
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: #020617;
+  color: #fff;
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-weight: 900;
+  outline: none;
 }
 
 .btn {
@@ -488,6 +573,26 @@ body {
   .key-radical {
     font-size: clamp(18px, 5vh, 38px);
   }
+
+  .remix-controls {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .control-card {
+    padding: 8px;
+  }
+
+  .control-card label {
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .control-card select {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
 }
 
 @media (max-width: 720px) {
@@ -512,13 +617,19 @@ body {
     height: 34px;
     font-size: 20px;
   }
+
+  .remix-controls {
+    grid-template-columns: 1fr;
+    width: min(520px, 90vw);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .track-line,
   .track-rung,
   .dot.next,
-  .eq-bar.animating {
+  .eq-bar.animating,
+  .replay-spark {
     animation: none !important;
   }
 }
@@ -562,21 +673,52 @@ body {
 
   <div id="start-screen" class="overlay">
     <h1 id="start-title">题库加载中...</h1>
-    <div class="version-label" id="version-label">Version v1.11.0</div>
+    <div class="version-label" id="version-label">Version v1.12.0</div>
     <p id="start-text">请稍候，正在获取云端题库</p>
   </div>
 
   <div id="replay-screen" class="overlay">
     <h1>Magic Remix 完成！</h1>
-    <div class="version-label">Version v1.11.0</div>
-    <p>已自动量化节奏、剪切空白、加入低音伴奏</p>
+    <div class="version-label">Version v1.12.0</div>
+    <p>选择 Remix 风格，然后播放你的作品</p>
+
+    <div class="remix-controls">
+      <div class="control-card">
+        <label for="tempo-select">速度</label>
+        <select id="tempo-select">
+          <option value="96">慢速 Groove</option>
+          <option value="112" selected>标准 Remix</option>
+          <option value="132">快速冲刺</option>
+        </select>
+      </div>
+
+      <div class="control-card">
+        <label for="drum-select">鼓点</label>
+        <select id="drum-select">
+          <option value="none">无鼓点</option>
+          <option value="soft" selected>柔和节拍</option>
+          <option value="electro">电子鼓点</option>
+          <option value="clap">拍手律动</option>
+        </select>
+      </div>
+
+      <div class="control-card">
+        <label for="bass-select">低音</label>
+        <select id="bass-select">
+          <option value="none">无低音</option>
+          <option value="warm" selected>温暖低音</option>
+          <option value="bright">明亮低音</option>
+        </select>
+      </div>
+    </div>
+
     <button class="btn btn-pink" id="btn-replay">🎹 播放 Remix</button>
     <button class="btn" onclick="location.reload()">🔄 再来一局</button>
   </div>
 </div>
 
 <script>
-const GAME_VERSION = "v1.11.0";
+const GAME_VERSION = "v1.12.0";
 
 const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1MJHkk7HaKRJgY3LQ-Y3IeHemC-keJJWtH7zh-5K_eec/export?format=csv&gid=573238154";
@@ -587,8 +729,6 @@ const GAME_TIME = 120;
 
 const SPEED_MULTIPLIER = 2.2;
 const MAX_GAP_MS = 900;
-const REMIX_BPM = 112;
-const QUANTIZE_STEP_MS = (60000 / REMIX_BPM) / 2;
 
 const PENTA_KEYS = [
   { label: "低5", freq: 196.00 },
@@ -634,6 +774,9 @@ let rawRecordedNotes = [];
 let processedNotes = [];
 
 let nextBeatTime = 0;
+
+let replayOrbs = [];
+let replayVisualRef = null;
 
 const gameEl = document.getElementById("game");
 const arena = document.getElementById("arena");
@@ -706,7 +849,7 @@ function loadDictionary() {
       if (dictionary.length) {
         document.getElementById("start-title").textContent = "汉字节奏大师";
         document.getElementById("start-text").innerHTML =
-          `已加载 ${dictionary.length} 个汉字<br>Magic Remix · 平板低闪烁优化版`;
+          `已加载 ${dictionary.length} 个汉字<br>Magic Remix · 动画增强版`;
 
         const oldBtn = document.getElementById("start-btn");
         if (oldBtn) oldBtn.remove();
@@ -828,8 +971,6 @@ function endGame() {
 
   hitTokens.forEach(t => t.el.remove());
   hitTokens = [];
-
-  processRecordedNotesWithGapCut();
 
   document.getElementById("replay-screen").style.display = "flex";
   document.getElementById("btn-replay").onclick = () => playRecording();
@@ -1269,7 +1410,20 @@ function updateHitTokens(dt) {
   hitTokens = hitTokens.filter(t => !t.dead);
 }
 
-function processRecordedNotesWithGapCut() {
+function getRemixSettings() {
+  const bpm = Number(document.getElementById("tempo-select")?.value || 112);
+  const drum = document.getElementById("drum-select")?.value || "soft";
+  const bass = document.getElementById("bass-select")?.value || "warm";
+
+  return {
+    bpm,
+    drum,
+    bass,
+    quantizeStepMs: (60000 / bpm) / 2
+  };
+}
+
+function processRecordedNotesWithGapCut(settings) {
   if (rawRecordedNotes.length === 0) {
     processedNotes = [];
     return;
@@ -1278,7 +1432,7 @@ function processRecordedNotesWithGapCut() {
   processedNotes = [];
 
   let accumulatedCutTime = 0;
-  let lastQuantizedTime = -QUANTIZE_STEP_MS;
+  let lastQuantizedTime = -settings.quantizeStepMs;
 
   for (let i = 0; i < rawRecordedNotes.length; i++) {
     if (i > 0) {
@@ -1295,10 +1449,10 @@ function processRecordedNotesWithGapCut() {
       accumulatedCutTime;
 
     const spedTime = compactTime / SPEED_MULTIPLIER;
-    let quantized = Math.round(spedTime / QUANTIZE_STEP_MS) * QUANTIZE_STEP_MS;
+    let quantized = Math.round(spedTime / settings.quantizeStepMs) * settings.quantizeStepMs;
 
     if (quantized <= lastQuantizedTime) {
-      quantized = lastQuantizedTime + QUANTIZE_STEP_MS;
+      quantized = lastQuantizedTime + settings.quantizeStepMs;
     }
 
     lastQuantizedTime = quantized;
@@ -1312,7 +1466,7 @@ function processRecordedNotesWithGapCut() {
 
   if (processedNotes.length >= 2) {
     processedNotes.push({
-      relTime: lastQuantizedTime + QUANTIZE_STEP_MS,
+      relTime: lastQuantizedTime + settings.quantizeStepMs,
       index: 7,
       freq: PENTA_KEYS[7].freq
     });
@@ -1440,6 +1594,9 @@ function releaseAllKeys() {
 }
 
 function playRecording() {
+  const settings = getRemixSettings();
+  processRecordedNotesWithGapCut(settings);
+
   if (processedNotes.length === 0) {
     alert("刚才没有击中汉字哦，重开一局吧！");
     return;
@@ -1449,12 +1606,15 @@ function playRecording() {
 
   document.getElementById("replay-screen").style.display = "none";
 
-  piano.style.display = "none";
+  piano.style.display = "flex";
   playerUI.style.display = "flex";
   gameEl.classList.add("replay-mode");
 
   const bars = playerUI.querySelectorAll(".eq-bar");
   bars.forEach(b => b.classList.add("animating"));
+
+  calculateTrack();
+  startReplayVisualLoop();
 
   const totalDurationMs = processedNotes[processedNotes.length - 1].relTime + 1600;
 
@@ -1475,7 +1635,7 @@ function playRecording() {
 
   const startAt = audioCtx.currentTime + 0.2;
 
-  scheduleReplayBacking(startAt, totalDurationMs / 1000);
+  scheduleReplayBacking(startAt, totalDurationMs / 1000, settings);
 
   processedNotes.forEach(note => {
     const when = startAt + note.relTime / 1000;
@@ -1483,12 +1643,15 @@ function playRecording() {
 
     setTimeout(() => {
       flashReplayKey(note.index);
+      spawnReplayOrb(note.index);
+      spawnReplaySpark(note.index);
     }, note.relTime);
   });
 
   setTimeout(() => {
     bars.forEach(b => b.classList.remove("animating"));
     gameEl.classList.remove("replay-mode");
+    stopReplayVisualLoop();
     document.getElementById("replay-screen").style.display = "flex";
   }, totalDurationMs);
 }
@@ -1504,19 +1667,94 @@ function flashReplayKey(index) {
   }, 180);
 }
 
-function scheduleReplayBacking(startAt, totalSeconds) {
-  const beatSec = 60 / REMIX_BPM;
-  const bassProgression = [130.81, 196.00, 220.00, 174.61];
+function spawnReplayOrb(index) {
+  const el = document.createElement("div");
+  el.className = "replay-orb";
+  arena.appendChild(el);
 
-  for (let t = 0; t < totalSeconds + 1; t += beatSec) {
-    const beatIndex = Math.floor(t / beatSec);
-    const bassFreq = bassProgression[Math.floor(beatIndex / 4) % bassProgression.length];
+  replayOrbs.push({
+    el,
+    laneIndex: index,
+    z: 0.04,
+    life: 0,
+    duration: 42
+  });
+}
 
-    if (beatIndex % 2 === 0) {
-      playBassAt(bassFreq, startAt + t, beatSec * 1.5);
+function spawnReplaySpark(index) {
+  const pt = getPointOnLane(index, 0.18);
+  const el = document.createElement("div");
+  el.className = "replay-spark";
+  el.textContent = "✦";
+  el.style.left = `${pt.x}px`;
+  el.style.top = `${pt.y}px`;
+  arena.appendChild(el);
+  setTimeout(() => el.remove(), 560);
+}
+
+function startReplayVisualLoop() {
+  stopReplayVisualLoop();
+
+  function loop() {
+    replayOrbs.forEach(o => {
+      o.life++;
+      o.z += 0.026;
+
+      const pt = getPointOnLane(o.laneIndex, Math.min(0.84, o.z));
+      const scale = 0.8 + o.z * 1.1;
+
+      o.el.style.left = `${pt.x}px`;
+      o.el.style.top = `${pt.y}px`;
+      o.el.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      o.el.style.opacity = Math.max(0, 1 - o.life / o.duration);
+    });
+
+    replayOrbs = replayOrbs.filter(o => {
+      if (o.life < o.duration) return true;
+      o.el.remove();
+      return false;
+    });
+
+    replayVisualRef = requestAnimationFrame(loop);
+  }
+
+  replayVisualRef = requestAnimationFrame(loop);
+}
+
+function stopReplayVisualLoop() {
+  if (replayVisualRef) {
+    cancelAnimationFrame(replayVisualRef);
+    replayVisualRef = null;
+  }
+
+  replayOrbs.forEach(o => o.el.remove());
+  replayOrbs = [];
+}
+
+function scheduleReplayBacking(startAt, totalSeconds, settings) {
+  const beatSec = 60 / settings.bpm;
+
+  if (settings.bass !== "none") {
+    const bassProgression =
+      settings.bass === "bright"
+        ? [261.63, 392.00, 440.00, 329.63]
+        : [130.81, 196.00, 220.00, 174.61];
+
+    for (let t = 0; t < totalSeconds + 1; t += beatSec) {
+      const beatIndex = Math.floor(t / beatSec);
+      const bassFreq = bassProgression[Math.floor(beatIndex / 4) % bassProgression.length];
+
+      if (beatIndex % 2 === 0) {
+        playBassAt(bassFreq, startAt + t, beatSec * 1.55, settings.bass);
+      }
     }
+  }
 
-    playTickAt(startAt + t, beatIndex % 4 === 0);
+  if (settings.drum !== "none") {
+    for (let t = 0; t < totalSeconds + 1; t += beatSec) {
+      const beatIndex = Math.floor(t / beatSec);
+      playDrumAt(startAt + t, beatIndex, settings.drum);
+    }
   }
 }
 
@@ -1546,15 +1784,15 @@ function playPianoNoteAt(freq, startAt, duration, volume) {
   });
 }
 
-function playBassAt(freq, startAt, duration) {
+function playBassAt(freq, startAt, duration, bassStyle) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
 
-  osc.type = "triangle";
+  osc.type = bassStyle === "bright" ? "sawtooth" : "triangle";
   osc.frequency.setValueAtTime(freq, startAt);
 
   gain.gain.setValueAtTime(0.001, startAt);
-  gain.gain.linearRampToValueAtTime(0.09, startAt + 0.03);
+  gain.gain.linearRampToValueAtTime(bassStyle === "bright" ? 0.06 : 0.09, startAt + 0.03);
   gain.gain.exponentialRampToValueAtTime(0.001, startAt + duration);
 
   osc.connect(gain);
@@ -1564,7 +1802,20 @@ function playBassAt(freq, startAt, duration) {
   osc.stop(startAt + duration + 0.04);
 }
 
-function playTickAt(startAt, strong) {
+function playDrumAt(startAt, beatIndex, style) {
+  if (style === "soft") {
+    playTickAt(startAt, beatIndex % 4 === 0, 0.028);
+  } else if (style === "electro") {
+    if (beatIndex % 4 === 0) playKickAt(startAt);
+    if (beatIndex % 4 === 2) playSnareAt(startAt);
+    playHatAt(startAt + 0.01);
+  } else if (style === "clap") {
+    if (beatIndex % 2 === 0) playClapAt(startAt);
+    else playHatAt(startAt);
+  }
+}
+
+function playTickAt(startAt, strong, volume) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
 
@@ -1572,7 +1823,7 @@ function playTickAt(startAt, strong) {
   osc.frequency.setValueAtTime(strong ? 880 : 660, startAt);
 
   gain.gain.setValueAtTime(0.001, startAt);
-  gain.gain.linearRampToValueAtTime(strong ? 0.04 : 0.025, startAt + 0.006);
+  gain.gain.linearRampToValueAtTime(strong ? volume * 1.4 : volume, startAt + 0.006);
   gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.045);
 
   osc.connect(gain);
@@ -1580,6 +1831,66 @@ function playTickAt(startAt, strong) {
 
   osc.start(startAt);
   osc.stop(startAt + 0.06);
+}
+
+function playKickAt(startAt) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(110, startAt);
+  osc.frequency.exponentialRampToValueAtTime(48, startAt + 0.11);
+
+  gain.gain.setValueAtTime(0.001, startAt);
+  gain.gain.linearRampToValueAtTime(0.12, startAt + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.16);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(startAt);
+  osc.stop(startAt + 0.18);
+}
+
+function playSnareAt(startAt) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(220, startAt);
+
+  gain.gain.setValueAtTime(0.001, startAt);
+  gain.gain.linearRampToValueAtTime(0.055, startAt + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.09);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(startAt);
+  osc.stop(startAt + 0.1);
+}
+
+function playHatAt(startAt) {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "square";
+  osc.frequency.setValueAtTime(2400, startAt);
+
+  gain.gain.setValueAtTime(0.001, startAt);
+  gain.gain.linearRampToValueAtTime(0.018, startAt + 0.004);
+  gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.035);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start(startAt);
+  osc.stop(startAt + 0.045);
+}
+
+function playClapAt(startAt) {
+  playSnareAt(startAt);
+  playSnareAt(startAt + 0.025);
 }
 
 function shuffle(arr) {
