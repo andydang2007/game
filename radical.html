@@ -39,9 +39,26 @@ function initControls(){function bind(id,fn){let e=document.getElementById(id);i
 function loadDict(){if(typeof Papa==="undefined")return;Papa.parse(SHEET_URL+"&t="+Date.now(),{download:true,header:true,skipEmptyLines:"greedy",transformHeader:h=>String(h||"").replace(/^\uFEFF/,"").trim().toUpperCase(),complete:r=>{allDictionary=r.data.filter(x=>x["QUESTION"]||x["ANSWER"]||x["CORRECT ANSWER"]).map(x=>{let word=String(x["QUESTION"]||x["ANSWER"]||x["CORRECT ANSWER"]||"").trim(),parts=String(x["PARTS"]||x["部件"]||"").split(/[,，、|/]/).map(p=>p.trim()).filter(Boolean),grade=getRowGrade(x);return word&&parts.length?{word,parts,grade}:null}).filter(Boolean);applyUserGradeFilter();if(dictionary.length){startBtn.disabled=false;startBtn.onclick=startGame;startBtn.style.opacity=1}else startBtn.textContent="⚠️"},error:e=>{console.error(e);startBtn.textContent="⚠️"}})}
 function initKeys(){piano.innerHTML="";for(let i=0;i<KEY_COUNT;i++){let k=document.createElement("div");k.className="key";k.innerHTML=`<div class="rad"></div><div class="note-label">${PENTA[i].label}</div>`;k.addEventListener("pointerdown",e=>{e.preventDefault();pressKey(i,k)});["pointerup","pointercancel","pointerleave"].forEach(ev=>k.addEventListener(ev,e=>{e.preventDefault();k.classList.remove("pressed");stopSustainNote(`key-${i}`)}));piano.appendChild(k)}}
 function startGame(){enterFullscreen();ensureAudio();applyUserGradeFilter();document.getElementById("start").style.display="none";piano.style.display="flex";piano.classList.remove("hide");player.style.display="none";game.classList.remove("replay");score=0;combo=0;timeLeft=GAME_TIME;isPlaying=true;activeChars=[];rawNotes=[];processed=[];replayPlays=0;againBtn.classList.remove("dim");document.getElementById("score").textContent=score;document.getElementById("timer").textContent=timeLeft;calcTrack();initSlots();clock=setInterval(()=>{timeLeft--;document.getElementById("timer").textContent=timeLeft;if(timeLeft<=0)endGame()},1000);spawnChar();anim=requestAnimationFrame(loop)}
-function endGame(){isPlaying=false;clearInterval(clock);cancelAnimationFrame(anim);stopAllNotes();activeChars.forEach(c=>c.el.remove());activeChars=[];initSlots();piano.classList.add("hide");if(score>MIN_REPLAY_SCORE)showTeaserThenReplay();else showNoReplay()}
-function resetStartTitle(){document.querySelector(".title").innerHTML="<span><b class='initial'>P</b>arts</span><span><b class='initial'>S</b>trike</span><span><b class='initial'>L</b>iteracy</span><span><b class='initial'>E</b>xpress</span>";startBtn.disabled=false;startBtn.textContent="🚀";startBtn.onclick=startGame}
-function showNoReplay(){document.getElementById("start").style.display="flex";document.querySelector(".title").innerHTML=`${score} 分<br><span style="font-size:.42em">未解锁 Replay</span>`;startBtn.disabled=false;startBtn.textContent="🔄";startBtn.onclick=()=>location.reload()}
+
+function endGame(){
+    isPlaying = false;
+    clearInterval(clock);
+    cancelAnimationFrame(anim);
+    stopAllNotes();
+
+    activeChars.forEach(c => c.el.remove());
+    activeChars = [];
+    initSlots();
+    piano.classList.add("hide");
+
+    if(score > MIN_REPLAY_SCORE){
+        showTeaserThenReplay();
+    }else{
+        returnToStart();
+    }
+}
+
+ function resetStartTitle(){document.querySelector(".title").innerHTML="<span><b class='initial'>P</b>arts</span><span><b class='initial'>S</b>trike</span><span><b class='initial'>L</b>iteracy</span><span><b class='initial'>E</b>xpress</span>";startBtn.disabled=false;startBtn.textContent="🚀";startBtn.onclick=startGame}
 function showTeaserThenReplay(){teaser.style.display="flex";clearTimeout(autoReplayTimer);autoReplayTimer=setTimeout(()=>{teaser.style.display="none";prepareReplay()},3000)}
 function loop(t){if(!isPlaying)return;activeChars.forEach(renderChar);if(t-lastStar>650){lastStar=t;spawnStar()}anim=requestAnimationFrame(loop)}
 function spawnChar(){let d=dictionary[Math.floor(Math.random()*dictionary.length)];if(!d)return;let el=document.createElement("div");el.className="char";let s=document.createElement("span");s.textContent=d.word;el.appendChild(s);let pr=document.createElement("div");pr.className="prog";d.parts.forEach(()=>{let dot=document.createElement("div");dot.className="dot";pr.appendChild(dot)});el.appendChild(pr);arena.appendChild(el);let c={id:idCounter++,el,word:d.word,parts:d.parts.map((char,idx)=>({char,idx,partId:`${idCounter}-${idx}-${char}-${Math.random()}`})),nextPartIndex:0,visualHitCount:0,dead:false};activeChars=[c];resetFor(c);renderChar(c)}
