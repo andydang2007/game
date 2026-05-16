@@ -15,21 +15,21 @@
         * { box-sizing: border-box; font-family: 'Nunito', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        .container { width: 100%; max-width: 800px; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); text-align: center; border: 4px solid #ffffff; backdrop-filter: blur(12px); display: flex; flex-direction: column; align-items: center; margin-top: 2vh; }
+        .container { width: 100%; max-width: 850px; background: rgba(255,255,255,0.95); padding: 30px; border-radius: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); text-align: center; border: 4px solid #ffffff; backdrop-filter: blur(12px); display: flex; flex-direction: column; align-items: center; margin-top: 2vh; }
         
         .header-tag { background: #ecfdf5; color: #059669; padding: 8px 25px; border-radius: 30px; font-weight: 900; font-size: 18px; border: 3px solid #a7f3d0; box-shadow: 0 3px 0 #6ee7b7; margin-bottom: 15px; }
 
-        .timer-badge { display: none; background: #fffbeb; color: #d97706; font-size: 20px; font-weight: 900; padding: 6px 20px; border-radius: 30px; border: 3px solid #fde68a; box-shadow: 0 3px 0 #fcd34d; margin-bottom: 20px; letter-spacing: 1px; }
+        .timer-badge { display: none; background: #fffbeb; color: #d97706; font-size: 20px; font-weight: 900; padding: 8px 25px; border-radius: 30px; border: 3px solid #fde68a; box-shadow: 0 3px 0 #fcd34d; margin-bottom: 20px; letter-spacing: 1px; }
 
         .game-layout { display: flex; flex-direction: row; width: 100%; gap: 25px; align-items: flex-start; justify-content: center; margin-bottom: 25px; }
 
-        .word-list { display: flex; flex-direction: column; gap: 10px; width: 30%; min-width: 140px; }
+        .word-list { display: flex; flex-direction: column; gap: 10px; width: 30%; min-width: 150px; }
         .word-item { background: #f1f5f9; color: #475569; padding: 12px 15px; border-radius: 15px; font-weight: 900; font-size: 18px; border: 2px dashed #cbd5e1; transition: 0.3s; text-align: center; }
         .word-item.found { background: #d1fae5; color: #059669; border-style: solid; border-color: #34d399; text-decoration: line-through; opacity: 0.7; }
 
         #ws-grid { flex: 1; display: grid; gap: 6px; touch-action: none; background: #e2e8f0; padding: 8px; border-radius: 20px; max-width: 550px; width: 100%; }
         
-        .ws-cell { background: white; border-radius: 12px; font-size: 30px; font-weight: 900; color: #1e293b; display: flex; align-items: center; justify-content: center; text-transform: uppercase; border: 2px solid #cbd5e1; box-shadow: 0 4px 0 #94a3b8; transition: 0.1s; cursor: pointer; aspect-ratio: 1/1; }
+        .ws-cell { background: white; border-radius: 12px; font-size: 26px; font-weight: 900; color: #1e293b; display: flex; align-items: center; justify-content: center; text-transform: uppercase; border: 2px solid #cbd5e1; box-shadow: 0 4px 0 #94a3b8; transition: 0.1s; cursor: pointer; aspect-ratio: 1/1; }
         
         .ws-cell.highlight { background: #fef08a; border-color: #eab308; box-shadow: 0 4px 0 #ca8a04; color: #854d0e; transform: translateY(3px); }
         .ws-cell.found { background: #34d399; border-color: #10b981; box-shadow: 0 4px 0 #059669; color: white; transform: translateY(3px); }
@@ -40,24 +40,21 @@
         #loading { font-size: 20px; font-weight: 900; color: #3b82f6; padding: 50px; }
         #game-area { display: none; width: 100%; flex-direction: column; align-items: center; }
 
-        /* ======== 手机端极限适配优化 ======== */
         @media (max-width: 600px) {
-            body { padding: 10px 5px; } /* 缩小页面两边留白 */
-            .container { padding: 20px 15px; border-radius: 25px; border-width: 3px; } /* 缩小主容器内边距 */
+            body { padding: 10px 5px; }
+            .container { padding: 20px 15px; border-radius: 25px; border-width: 3px; }
             
             .game-layout { flex-direction: column-reverse; align-items: center; gap: 15px; margin-bottom: 15px; }
             
-            /* 顶部单词提示改为紧凑的横向药丸排版 */
             .word-list { flex-direction: row; flex-wrap: wrap; width: 100%; justify-content: center; gap: 6px; }
-            .word-item { padding: 6px 12px; font-size: 15px; border-radius: 12px; border-width: 2px; }
+            .word-item { padding: 6px 12px; font-size: 14px; border-radius: 12px; border-width: 2px; }
             
-            /* 矩阵缝隙压缩，格子字号缩小防挤爆 */
             #ws-grid { gap: 3px; padding: 5px; border-radius: 12px; }
-            .ws-cell { font-size: 22px; border-radius: 8px; border-width: 2px; box-shadow: 0 3px 0 #94a3b8; }
-            .ws-cell.highlight { transform: translateY(2px); box-shadow: 0 3px 0 #ca8a04; }
-            .ws-cell.found { transform: translateY(2px); box-shadow: 0 3px 0 #059669; }
+            .ws-cell { font-size: 16px; border-radius: 6px; border-width: 1.5px; box-shadow: 0 2px 0 #94a3b8; }
+            .ws-cell.highlight { transform: translateY(2px); box-shadow: 0 2px 0 #ca8a04; }
+            .ws-cell.found { transform: translateY(2px); box-shadow: 0 2px 0 #059669; }
 
-            .timer-badge { margin-bottom: 15px; font-size: 18px; padding: 5px 15px; }
+            .timer-badge { margin-bottom: 15px; font-size: 15px; padding: 6px 15px; width: 100%; }
             .header-tag { font-size: 16px; margin-bottom: 10px; }
         }
     </style>
@@ -65,12 +62,12 @@
 <body>
 
 <div class="container">
-    <div class="header-tag">🔍 Word Search</div>
+    <div class="header-tag" id="player-tag">🔍 Word Search</div>
     
     <div id="loading">📚 Loading words from library...</div>
     
     <div id="game-area">
-        <div id="timer-display" class="timer-badge">⏱️ 00:00</div>
+        <div id="timer-display" class="timer-badge">⏱️ 00:00 | 🏆 PB: --:--</div>
 
         <div class="game-layout">
             <div class="word-list" id="word-list"></div>
@@ -85,7 +82,14 @@
     const SHEET_ID = "1vQlpdRHnR9ybEHHgX6fouRI-vXOh8KQNLSjsbt0TYh9R3No_9i7QNv_4ELwJZJGQpTe3oZVXaZijaW4";
     const ENG_GID = "1893311738"; 
 
-    const gridSize = 8; 
+    let curUser = localStorage.getItem('currentPlayer') || 'Valerie';
+    let curGrade = localStorage.getItem('currentGrade') || 'P3';
+    
+    // 🌟 动态计算姐姐和妹妹的难度档位
+    const isValerie = (curUser === 'Valerie' || curUser === 'Velarie');
+    const gridSize = isValerie ? 10 : 8;  // 姐姐 10x10，妹妹 8x8
+    const maxTargetWords = isValerie ? 8 : 5; // 姐姐找 8 个词，妹妹找 5 个词
+
     let grid = [];
     let targetWords = [];
     let foundWordsCount = 0;
@@ -94,9 +98,6 @@
     let startCell = null;
     let currentHighlight = [];
     
-    let curUser = localStorage.getItem('currentPlayer') || 'Valerie';
-    let curGrade = localStorage.getItem('currentGrade') || 'P3';
-
     let startTime = 0;
     let timerInterval = null;
 
@@ -112,10 +113,8 @@
             osc.type = 'sine';
             osc.frequency.setValueAtTime(800, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-            
             masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
             masterGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            
             osc.connect(masterGain);
             osc.start();
             osc.stop(audioCtx.currentTime + 0.2);
@@ -133,33 +132,62 @@
                 osc.stop(startTime + duration);
             };
             let now = audioCtx.currentTime;
-            playNote(523.25, now, 0.4);       
+            playNote(523.25, now, 0.4);      
             playNote(659.25, now + 0.15, 0.4); 
             playNote(783.99, now + 0.3, 0.5);  
             playNote(1046.50, now + 0.45, 0.8);
         }
     }
 
+    // 格式化秒数为 MM:SS
+    function formatTime(seconds) {
+        let m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        let s = String(seconds % 60).padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    // 读取本地最高纪录
+    function getPBText() {
+        let pb = localStorage.getItem(`wordsearch_pb_${curUser}`);
+        return pb ? formatTime(parseInt(pb)) : "--:--";
+    }
+
     async function init() {
+        document.getElementById('player-tag').innerText = `🔍 ${curUser} - Word Search`;
+        
         Papa.parse(`https://docs.google.com/spreadsheets/d/e/2PACX-${SHEET_ID}/pub?gid=${ENG_GID}&single=true&output=csv&t=${Date.now()}`, {
             download: true, header: true, skipEmptyLines: 'greedy',
             complete: function(results) {
                 let allWords = [];
+                if (results.data.length === 0) return;
+                
+                // 动态获取表格中所有的列标题
+                let headers = Object.keys(results.data[0]);
+
                 results.data.forEach(row => {
-                    let grade = (row.Grade || row.GRADE || "").toUpperCase();
+                    let grade = (row.Grade || row.GRADE || row[headers[1]] || "").toString().toUpperCase().trim();
                     if (grade !== curGrade) return; 
 
-                    let ans = (row['Correct Answer'] || row['ANSWER'] || "").toString().trim().toUpperCase();
-                    if (ans && /^[A-Z]{3,7}$/.test(ans)) allWords.push(ans);
+                    // 🌟 升级：扫描 C, E, F, G 四个列 (对应的 index 是 2, 4, 5, 6)
+                    let checkIndices = [2, 4, 5, 6];
+                    checkIndices.forEach(idx => {
+                        if (idx < headers.length) {
+                            let ans = (row[headers[idx]] || "").toString().trim().toUpperCase();
+                            // 只抓取长度在 3 到 11 之间的纯英文有效单词
+                            if (ans && /^[A-Z]{3,11}$/.test(ans)) {
+                                allWords.push(ans);
+                            }
+                        }
+                    });
                 });
                 
                 allWords = [...new Set(allWords)].sort(() => 0.5 - Math.random());
                 
-                if (allWords.length < 5) {
-                    allWords = ["APPLE", "BUS", "WHEEL", "SEAT", "HAPPY", "SCHOOL", "BOOK"];
+                if (allWords.length < maxTargetWords) {
+                    allWords = ["APPLE", "WHEEL", "HAPPY", "SCHOOL", "BOOK", "ORANGE", "BANANA", "FLOWER", "SUMMER"];
                 }
                 
-                targetWords = allWords.slice(0, 5);
+                targetWords = allWords.slice(0, maxTargetWords);
                 generateGrid();
                 renderGame();
             },
@@ -170,25 +198,48 @@
     function generateGrid() {
         grid = Array.from({ length: gridSize }, () => Array(gridSize).fill(''));
         
+        // 🌟 升级：如果是姐姐，开启 8 方向排列模式；妹妹保持 3 方向正向排列
+        const dirs = isValerie ? [
+            { dr: 0, dc: 1 },   // 右
+            { dr: 0, dc: -1 },  // 左（反向）
+            { dr: 1, dc: 0 },   // 下
+            { dr: -1, dc: 0 },  // 上（反向）
+            { dr: 1, dc: 1 },   // 右下斜
+            { dr: -1, dc: -1 }, // 左上斜
+            { dr: 1, dc: -1 },  // 左下斜
+            { dr: -1, dc: 1 }   // 右上斜
+        ] : [
+            { dr: 0, dc: 1 },   // 右
+            { dr: 1, dc: 0 },   // 下
+            { dr: 1, dc: 1 }    // 右下斜
+        ];
+
         targetWords.forEach(word => {
             let placed = false;
             let attempts = 0;
-            while (!placed && attempts < 100) {
-                let dir = Math.floor(Math.random() * 3); 
+            while (!placed && attempts < 200) {
+                let dirObj = dirs[Math.floor(Math.random() * dirs.length)];
                 let r = Math.floor(Math.random() * gridSize);
                 let c = Math.floor(Math.random() * gridSize);
                 
-                let dr = dir === 1 || dir === 2 ? 1 : 0;
-                let dc = dir === 0 || dir === 2 ? 1 : 0;
+                let dr = dirObj.dr;
+                let dc = dirObj.dc;
                 
-                if (r + dr * word.length <= gridSize && c + dc * word.length <= gridSize) {
+                let endR = r + dr * (word.length - 1);
+                let endC = c + dc * (word.length - 1);
+                
+                if (endR >= 0 && endR < gridSize && endC >= 0 && endC < gridSize) {
                     let canPlace = true;
                     for (let i = 0; i < word.length; i++) {
-                        let existing = grid[r + i * dr][c + i * dc];
+                        let currR = r + i * dr;
+                        let currC = c + i * dc;
+                        let existing = grid[currR][currC];
                         if (existing !== '' && existing !== word[i]) { canPlace = false; break; }
                     }
                     if (canPlace) {
-                        for (let i = 0; i < word.length; i++) { grid[r + i * dr][c + i * dc] = word[i]; }
+                        for (let i = 0; i < word.length; i++) { 
+                            grid[r + i * dr][c + i * dc] = word[i]; 
+                        }
                         placed = true;
                     }
                 }
@@ -196,19 +247,26 @@
             }
         });
 
+        // 🌟 升级：如果是姐姐，干扰字母有 60% 概率从目标词里抽取，产生大量“高仿”词，极具迷惑性
         const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let targetLettersPool = targetWords.join('');
+        
         for (let r = 0; r < gridSize; r++) {
             for (let c = 0; c < gridSize; c++) {
-                if (grid[r][c] === '') grid[r][c] = letters.charAt(Math.floor(Math.random() * letters.length));
+                if (grid[r][c] === '') {
+                    if (isValerie && targetLettersPool.length > 0 && Math.random() < 0.6) {
+                        grid[r][c] = targetLettersPool.charAt(Math.floor(Math.random() * targetLettersPool.length));
+                    } else {
+                        grid[r][c] = letters.charAt(Math.floor(Math.random() * letters.length));
+                    }
+                }
             }
         }
     }
 
     function updateTimer() {
         let diff = Math.floor((Date.now() - startTime) / 1000);
-        let m = String(Math.floor(diff / 60)).padStart(2, '0');
-        let s = String(diff % 60).padStart(2, '0');
-        document.getElementById('timer-display').innerText = `⏱️ ${m}:${s}`;
+        document.getElementById('timer-display').innerText = `⏱️ ${formatTime(diff)} | 🏆 Personal Best: ${getPBText()}`;
     }
 
     function renderGame() {
@@ -326,25 +384,42 @@
     function checkWin() {
         if (foundWordsCount >= targetWords.length) {
             if(timerInterval) clearInterval(timerInterval);
-            let finalTimeStr = document.getElementById('timer-display').innerText.replace('⏱️ ', '');
+            
+            let finalTimeSec = Math.floor((Date.now() - startTime) / 1000);
+            let oldPB = localStorage.getItem(`wordsearch_pb_${curUser}`);
+            let isNewPB = false;
+
+            // 🌟 核心：计算和更新最高纪录 Personal Best
+            if (!oldPB || finalTimeSec < parseInt(oldPB)) {
+                localStorage.setItem(`wordsearch_pb_${curUser}`, finalTimeSec);
+                isNewPB = true;
+            }
 
             playSound('tada'); 
             confetti({ particleCount: 300, spread: 100, origin: { y: 0.5 } });
             
             try {
-                fetch(SYNC_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'badge', user: curUser, grade: curGrade, subject: 'English', icon: '🔍', title: '火眼金睛', desc: `完成找单词游戏, 用时: ${finalTimeStr}` }) });
+                fetch(SYNC_API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: 'badge', user: curUser, grade: curGrade, subject: 'English', icon: '🔍', title: '火眼金睛', desc: `完成找单词游戏, 用时: ${formatTime(finalTimeSec)}` }) });
             } catch(e) {}
 
             setTimeout(() => {
-                document.getElementById('game-area').innerHTML = `
+                let winHtml = `
                     <div style="font-size:80px; margin:20px 0;">🎉</div>
                     <h2 style="color:#0f172a; font-weight:900; font-size: 28px; margin-bottom: 5px;">You found them all!</h2>
-                    <p style="color:#d97706; font-weight:900; font-size:22px; margin-top: 10px;">⏱️ ${finalTimeStr}</p>
+                    <p style="color:#d97706; font-weight:900; font-size:24px; margin-top: 10px;">⏱️ Time: ${formatTime(finalTimeSec)}</p>
+                `;
+                
+                if (isNewPB) {
+                    winHtml += `<div style="background:#ef4444; color:white; font-weight:900; padding:5px 15px; border-radius:15px; display:inline-block; margin-bottom:10px; animation: pulse 1s infinite alternate;">🔥 NEW RECORD! 新历史纪录!</div>`;
+                }
+
+                winHtml += `
                     <div style="display:flex; gap: 15px; width: 100%; margin-top: 30px;">
                         <button class="btn-action" style="flex:1; background:#f1f5f9; color:#64748b; border: 4px solid #e2e8f0; box-shadow: 0 6px 0 #cbd5e1; font-size: 16px;" onclick="window.location.href='https://andydang2007.github.io/valerie-venessa-learn/index.html'">← Home</button>
                         <button class="btn-action" style="flex:1; background:#3b82f6; color:white; box-shadow: 0 6px 0 #2563eb; font-size: 16px;" onclick="window.location.reload()">Play Again 🔄</button>
                     </div>
                 `;
+                document.getElementById('game-area').innerHTML = winHtml;
             }, 1500);
         }
     }
