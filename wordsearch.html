@@ -174,7 +174,7 @@
                         if (idx < headers.length) {
                             let ans = (row[headers[idx]] || "").toString().trim().toUpperCase();
                             // 只抓取长度在 3 到 11 之间的纯英文有效单词
-                            if (ans && /^[A-Z]{3,11}$/.test(ans)) {
+                            if (ans && /^[A-Z]{3,10}$/.test(ans)) {
                                 allWords.push(ans);
                             }
                         }
